@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lava Leap - Save Your Friend!</title>
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <canvas id="gameCanvas"></canvas>
+  <div id="ui-overlay">
+    <div id="menu-screen" class="menu-screen">
+      <h1>LAVA LEAP</h1>
+      <h2>Jump across the lava to save your friend!</h2>
+      <h3>Choose Your Hero</h3>
+      <div class="character-grid" id="hero-grid"></div>
+      <h3>Choose Who to Save</h3>
+      <div class="character-grid" id="rescue-grid"></div>
+
+      <h3>Difficulty</h3>
+      <div class="option-row" id="diff-row">
+        <div class="opt-card selected" data-diff="easy">
+          <div class="opt-label">Easy</div>
+          <div class="opt-desc">Few fake blocks</div>
+        </div>
+        <div class="opt-card" data-diff="medium">
+          <div class="opt-label">Medium</div>
+          <div class="opt-desc">Many fake blocks</div>
+        </div>
+        <div class="opt-card" data-diff="hard">
+          <div class="opt-label">Hard</div>
+          <div class="opt-desc">Most blocks are fake</div>
+        </div>
+      </div>
+
+      <h3>Grid Size</h3>
+      <div class="option-row" id="size-row">
+        <div class="opt-card" data-size="small">
+          <div class="opt-label">Small</div>
+          <div class="opt-desc">4 cols &times; 8 rows</div>
+        </div>
+        <div class="opt-card selected" data-size="medium">
+          <div class="opt-label">Medium</div>
+          <div class="opt-desc">5 cols &times; 12 rows</div>
+        </div>
+        <div class="opt-card" data-size="large">
+          <div class="opt-label">Large</div>
+          <div class="opt-desc">6 cols &times; 16 rows</div>
+        </div>
+      </div>
+
+      <button class="btn" id="start-btn" disabled>START GAME</button>
+      <div class="instructions">
+        <kbd>&larr;</kbd> <kbd>&rarr;</kbd> Hop left / right (same row)<br>
+        <kbd>&uarr;</kbd> / <kbd>Space</kbd> Jump forward (next row)<br>
+        Position yourself, then leap forward &mdash; memorize the safe platforms!
+      </div>
+    </div>
+
+    <div id="win-screen" class="menu-screen" style="display:none;">
+      <h1>YOU DID IT!</h1>
+      <div class="win-emojis" id="win-emojis"></div>
+      <h2 id="win-msg"></h2>
+      <button class="btn" id="play-again-btn">PLAY AGAIN</button>
+    </div>
+  </div>
+
+  <div id="game-hud" style="display:none;">
+    <div id="hud-text"></div>
+  </div>
+
+  <script src="js/config.js"></script>
+  <script src="js/state.js"></script>
+  <script src="js/timers.js"></script>
+  <script src="js/audio.js"></script>
+  <script src="js/platforms.js"></script>
+  <script src="js/player.js"></script>
+  <script src="js/drawing.js"></script>
+  <script src="js/effects.js"></script>
+  <script src="js/scenes.js"></script>
+  <script src="js/logic.js"></script>
+  <script src="js/input.js"></script>
+  <script src="js/loop.js"></script>
+  <script src="js/menu.js"></script>
+  <script src="js/init.js"></script>
+</body>
+</html>

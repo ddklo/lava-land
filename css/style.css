@@ -1,0 +1,220 @@
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #1a0a0a;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  overflow: hidden;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+canvas {
+  display: block;
+  border: 3px solid #ff4400;
+  border-radius: 8px;
+  box-shadow: 0 0 40px rgba(255, 68, 0, 0.4);
+}
+
+#ui-overlay {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  pointer-events: none;
+}
+
+#ui-overlay > div { pointer-events: auto; }
+
+.menu-screen {
+  background: rgba(10, 5, 5, 0.95);
+  border: 2px solid #ff6600;
+  border-radius: 16px;
+  padding: 40px;
+  text-align: center;
+  color: #fff;
+  max-width: 600px;
+  box-shadow: 0 0 60px rgba(255, 100, 0, 0.3);
+}
+
+.menu-screen h1 {
+  font-size: 48px;
+  color: #ff6600;
+  text-shadow: 0 0 20px rgba(255, 100, 0, 0.6);
+  margin-bottom: 8px;
+}
+
+.menu-screen h2 {
+  font-size: 18px;
+  color: #ff9944;
+  margin-bottom: 30px;
+  font-weight: normal;
+}
+
+.menu-screen h3 {
+  font-size: 20px;
+  color: #ffaa55;
+  margin: 20px 0 12px;
+}
+
+.character-grid {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.char-card {
+  width: 90px;
+  height: 110px;
+  background: rgba(255, 100, 0, 0.1);
+  border: 2px solid #553300;
+  border-radius: 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.char-card:hover {
+  border-color: #ff8800;
+  background: rgba(255, 100, 0, 0.2);
+  transform: scale(1.05);
+}
+
+.char-card.selected {
+  border-color: #ffaa00;
+  background: rgba(255, 150, 0, 0.3);
+  box-shadow: 0 0 15px rgba(255, 150, 0, 0.4);
+}
+
+.char-card .emoji { font-size: 36px; margin-bottom: 6px; }
+.char-card .name { font-size: 12px; color: #ffcc88; }
+
+.btn {
+  background: linear-gradient(180deg, #ff6600, #cc3300);
+  color: white;
+  border: none;
+  padding: 14px 40px;
+  font-size: 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 20px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+
+.btn:hover {
+  background: linear-gradient(180deg, #ff8800, #dd4400);
+  transform: scale(1.05);
+}
+
+.btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+.instructions {
+  color: #aa8866;
+  font-size: 13px;
+  margin-top: 18px;
+  line-height: 1.6;
+}
+
+.instructions kbd {
+  background: #332211;
+  border: 1px solid #664422;
+  padding: 2px 7px;
+  border-radius: 4px;
+  font-family: monospace;
+  color: #ffcc88;
+}
+
+#game-hud {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: #fff;
+  font-size: 16px;
+  pointer-events: none;
+  text-align: center;
+  text-shadow: 0 0 10px rgba(0,0,0,0.8);
+}
+
+#game-hud .timer-warn {
+  color: #ffcc00;
+  font-size: 28px;
+  font-weight: bold;
+  animation: pulse 0.5s infinite alternate;
+}
+
+@keyframes pulse {
+  from { opacity: 1; }
+  to { opacity: 0.5; }
+}
+
+#win-screen h1 {
+  font-size: 52px;
+  color: #ffdd00;
+  text-shadow: 0 0 30px rgba(255, 220, 0, 0.8);
+}
+
+.win-emojis {
+  font-size: 40px;
+  margin: 10px 0;
+  animation: bounce 0.6s infinite alternate;
+}
+
+@keyframes bounce {
+  from { transform: translateY(0); }
+  to { transform: translateY(-10px); }
+}
+
+.option-row {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+
+.opt-card {
+  padding: 10px 20px;
+  background: rgba(255, 100, 0, 0.1);
+  border: 2px solid #553300;
+  border-radius: 10px;
+  cursor: pointer;
+  color: #ffcc88;
+  font-size: 14px;
+  transition: all 0.2s;
+  min-width: 100px;
+}
+
+.opt-card:hover {
+  border-color: #ff8800;
+  background: rgba(255, 100, 0, 0.2);
+  transform: scale(1.05);
+}
+
+.opt-card.selected {
+  border-color: #ffaa00;
+  background: rgba(255, 150, 0, 0.3);
+  box-shadow: 0 0 12px rgba(255, 150, 0, 0.4);
+  color: #fff;
+}
+
+.opt-card .opt-label {
+  font-weight: bold;
+  font-size: 15px;
+  margin-bottom: 2px;
+}
+
+.opt-card .opt-desc {
+  font-size: 11px;
+  color: #aa8866;
+}
+
+.opt-card.selected .opt-desc { color: #ddbb99; }

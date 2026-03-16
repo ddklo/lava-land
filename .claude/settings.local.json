@@ -1,0 +1,14 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(start \"\" \"C:/code/ellie-game-v1/index.html\")",
+      "Bash(for f in /c/code/ellie-game-v1/index.html /c/code/ellie-game-v1/css/style.css /c/code/ellie-game-v1/js/*.js)",
+      "Bash(do echo '$\\(wc -l < $f\\) $f')",
+      "Bash(done)",
+      "Bash(for f in index.html css/style.css js/config.js js/state.js js/audio.js js/platforms.js js/player.js js/drawing.js js/effects.js js/logic.js js/input.js js/loop.js js/menu.js js/init.js)",
+      "Bash(do wc -l \"C:/code/ellie-game-v1/$f\")",
+      "WebSearch",
+      "Bash(start \"\" \"C:\\\\code\\\\ellie-game-v1\\\\index.html\")"
+    ]
+  }
+}
