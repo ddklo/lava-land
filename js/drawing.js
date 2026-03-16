@@ -329,14 +329,20 @@ function drawPlayer() {
   ctx.ellipse(px, shadowY, 14 * shadowScale, 5 * shadowScale, 0, 0, Math.PI * 2);
   ctx.fill();
 
-  // Player emoji — bigger and fully opaque, centered on platform face
+  // Player emoji — large, fully opaque, centered on platform face
   ctx.save();
   ctx.globalAlpha = 1;
   ctx.translate(px, py + drawOffsetY + bob);
   ctx.scale(scaleX, scaleY);
-  ctx.font = '36px serif';
+  ctx.font = '48px serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  // Dark outline pass for contrast against lava
+  ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.shadowBlur = 6;
+  ctx.fillText(charData.emoji, 0, 0);
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
   ctx.fillText(charData.emoji, 0, 0);
   ctx.restore();
 }
@@ -360,14 +366,19 @@ function drawRescueCharacter() {
   ctx.fill();
 
   ctx.globalAlpha = 1;
-  ctx.font = '36px serif';
+  ctx.font = '48px serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.shadowBlur = 6;
+  ctx.fillText(charData.emoji, gx, gy + floatY);
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
   ctx.fillText(charData.emoji, gx, gy + floatY);
 
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 13px sans-serif';
-  ctx.fillText('Help!', gx, gy + floatY - 24);
+  ctx.font = 'bold 14px sans-serif';
+  ctx.fillText('Help!', gx, gy + floatY - 30);
 }
 
 // Update particle physics — called from scene update(), not render
@@ -468,6 +479,53 @@ function spawnCrumbleParticles(plat) {
       life: 1,
     });
   }
+}
+
+function updateTrailMarks(dt) {
+  for (let i = G.trailMarks.length - 1; i >= 0; i--) {
+    G.trailMarks[i].life -= dt * 0.12;
+    if (G.trailMarks[i].life <= 0) G.trailMarks.splice(i, 1);
+  }
+}
+
+function drawTrailMarks() {
+  const ctx = G.ctx;
+  for (const m of G.trailMarks) {
+    const screenY = m.y - G.camera.y;
+    if (screenY < -30 || screenY > CANVAS_H + 30) continue;
+
+    const a = m.life;
+    const pulse = 0.8 + Math.sin(G.lavaTime * 4 + m.x * 0.05) * 0.2;
+    const r = 8 + (1 - a) * 4;
+
+    // Outer glow
+    ctx.globalAlpha = a * 0.25 * pulse;
+    ctx.fillStyle = '#ffaa44';
+    ctx.beginPath();
+    ctx.arc(m.x, screenY, r + 6, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Mid glow
+    ctx.globalAlpha = a * 0.4 * pulse;
+    ctx.fillStyle = '#ffcc66';
+    ctx.beginPath();
+    ctx.arc(m.x, screenY, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Bright core
+    ctx.globalAlpha = a * 0.7;
+    ctx.fillStyle = '#ffeecc';
+    ctx.beginPath();
+    ctx.arc(m.x, screenY, r * 0.4, 0, Math.PI * 2);
+    ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+
+function formatTime(seconds) {
+  const m = Math.floor(seconds / 60);
+  const s = Math.floor(seconds % 60);
+  return m > 0 ? `${m}:${s.toString().padStart(2, '0')}` : `${s}s`;
 }
 
 function spawnLavaSplash(x, y) {

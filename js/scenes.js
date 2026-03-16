@@ -87,11 +87,14 @@ const MenuScene = {
   onEnter() {
     G.gameState = 'menu';
     document.getElementById('menu-screen').style.display = 'block';
+    document.getElementById('settings-screen').style.display = 'none';
     document.getElementById('win-screen').style.display = 'none';
+    document.getElementById('lose-screen').style.display = 'none';
     document.getElementById('game-hud').style.display = 'none';
   },
   onExit() {
     document.getElementById('menu-screen').style.display = 'none';
+    document.getElementById('settings-screen').style.display = 'none';
   },
   update(dt) {
     G.lavaTime += dt;
@@ -114,6 +117,7 @@ const MemorizeScene = {
     G.camera.y = 0;
     this._lastSecs = -1;
     document.getElementById('game-hud').style.display = 'block';
+    document.getElementById('lose-screen').style.display = 'none';
     playMemorizeMusic();
   },
   onExit() {
@@ -171,8 +175,15 @@ const PlayingScene = {
 
   onEnter() {
     G.gameState = 'playing';
+    G.playTimer = 0;
     this._lastRow = -1;
     playActionMusic();
+
+    // First trail mark on starting platform
+    if (G.player.onPlatform) {
+      const p = G.player.onPlatform;
+      G.trailMarks.push({ x: p.x + p.w / 2, y: p.y + (PLAT_H - 7) / 2, life: 1.0 });
+    }
     document.getElementById('hud-text').innerHTML =
       '<div style="color:#ffcc88;">&larr; &rarr; move sideways &nbsp; | &nbsp; &uarr; / Space jump forward</div>';
   },
@@ -181,10 +192,12 @@ const PlayingScene = {
   },
   update(dt) {
     G.lavaTime += dt;
+    G.playTimer += dt;
     updateParticles(dt);
     updateTimers(dt);
     updateCrumbleTimers(dt);
     updatePlatformBob(dt);
+    updateTrailMarks(dt);
 
     // Jump animation
     if (G.jumpAnim.active) {
@@ -204,12 +217,10 @@ const PlayingScene = {
     // Shake decay
     if (G.shakeTimer > 0) G.shakeTimer -= 1;
 
-    // HUD — only update when row changes
-    if (G.player.row !== this._lastRow) {
-      this._lastRow = G.player.row;
-      document.getElementById('hud-text').innerHTML =
-        `<div style="color:#ffcc88;">Row ${G.player.row + 1} / ${G.platforms.length}</div>`;
-    }
+    // HUD — update row, col + timer
+    document.getElementById('hud-text').innerHTML =
+      `<div style="color:#ffcc88;">Row ${G.player.row + 1}/${G.platforms.length} &nbsp; Col ${G.player.col + 1}/${G.platforms[0].length}</div>` +
+      `<div style="color:#ff9966;font-size:13px;">${formatTime(G.playTimer)}</div>`;
   },
   render() {
     const ctx = G.ctx;
@@ -219,6 +230,7 @@ const PlayingScene = {
 
     drawLava(G.camera.y, CANVAS_H);
     renderPlatforms(false);
+    drawTrailMarks();
     drawRescueCharacter();
     drawParticles();
     drawPlayer();
@@ -231,27 +243,49 @@ const PlayingScene = {
 // FALLING SCENE
 // ═══════════════════════════════════════════════════════════════
 const FallingScene = {
+  _spoken: false,
+
   onEnter() {
     G.gameState = 'falling';
     G.shakeTimer = 15;
     G.fallY = G.player.y;
+    this._spoken = false;
     playFallSound();
+    stopMusic();
     spawnLavaSplash(G.player.x, G.player.y + 40);
 
-    addTimer(1.2, () => {
-      resetPlayer();
-      G.platforms.forEach(row => row.forEach(p => { p.crumbling = false; p.crumbleTimer = 0; }));
-      SceneManager.replace(MemorizeScene);
+    addTimer(1.0, () => {
+      playLoseSound();
+    });
+    addTimer(1.8, () => {
+      if (!this._spoken) {
+        this._spoken = true;
+        speakLose();
+      }
+      // Show lose screen
+      const heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
+      const rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
+      document.getElementById('lose-emoji').textContent = heroChar.emoji + ' \uD83D\uDD25';
+      const messages = [
+        `${heroChar.name} fell into the lava!`,
+        `${heroChar.name} couldn't save ${rescueChar.name}!`,
+        `The lava got ${heroChar.name}!`,
+      ];
+      document.getElementById('lose-msg').textContent = messages[Math.floor(Math.random() * messages.length)];
+      document.getElementById('lose-screen').style.display = 'block';
+      document.getElementById('game-hud').style.display = 'none';
     });
   },
   onExit() {
     clearTimers();
+    document.getElementById('lose-screen').style.display = 'none';
   },
   update(dt) {
     G.lavaTime += dt;
     updateParticles(dt);
     updateTimers(dt);
     updateCrumbleTimers(dt);
+    updateTrailMarks(dt);
     G.fallY += 5;
     if (G.shakeTimer > 0) G.shakeTimer -= 1;
   },
@@ -263,16 +297,21 @@ const FallingScene = {
 
     drawLava(G.camera.y, CANVAS_H);
     renderPlatforms(false);
+    drawTrailMarks();
     drawRescueCharacter();
     drawParticles();
 
     // Falling player emoji
     const charData = CHARACTERS.find(c => c.id === G.heroChoice);
     ctx.globalAlpha = 1;
-    ctx.font = '36px serif';
+    ctx.font = '48px serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+    ctx.shadowBlur = 6;
     ctx.fillText(charData.emoji, G.player.x, G.fallY - G.camera.y);
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
 
     ctx.restore();
   }
@@ -286,6 +325,7 @@ const WonScene = {
   _fwTimer: 0,
   _spoken: false,
   _showScreenTimer: -1,
+  _walkX: 0,
 
   onEnter() {
     G.gameState = 'won';
@@ -294,6 +334,7 @@ const WonScene = {
     this._fwTimer = 0;
     this._spoken = false;
     this._showScreenTimer = -1;
+    this._walkX = -80;
 
     stopMusic();
     playWinSound();
@@ -301,7 +342,7 @@ const WonScene = {
     const rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
     const heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
     document.getElementById('win-emojis').textContent =
-      `${heroChar.emoji} \u2764\uFE0F ${rescueChar.emoji}`;
+      `${heroChar.emoji} \u{1F91D} ${rescueChar.emoji}`;
     document.getElementById('win-msg').textContent =
       `${heroChar.name} saved ${rescueChar.name}!`;
   },
@@ -314,7 +355,11 @@ const WonScene = {
     updateTimers(dt);
     G.winTimer += dt;
 
-    // Fireworks sequence — replaces old setInterval
+    // Characters walk across the screen
+    this._walkX += dt * 80;
+    if (this._walkX > CANVAS_W + 80) this._walkX = -80;
+
+    // Fireworks sequence
     if (this._fwCount < 25) {
       this._fwTimer += dt;
       if (this._fwTimer >= 0.32) {
@@ -356,7 +401,39 @@ const WonScene = {
     drawLava(G.camera.y, CANVAS_H);
     renderPlatforms(false);
     drawParticles();
-    drawPlayer();
+
+    // Celebrating characters walking across screen
+    const heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
+    const rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
+    const t = G.winTimer;
+    const walkY = CANVAS_H * 0.55;
+    const bounce1 = Math.abs(Math.sin(t * 5)) * 25;
+    const bounce2 = Math.abs(Math.sin(t * 5 + 1.2)) * 25;
+
+    ctx.globalAlpha = 1;
+    ctx.font = '52px serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+    ctx.shadowBlur = 6;
+
+    // Hero leading
+    ctx.fillText(heroChar.emoji, this._walkX, walkY - bounce1);
+    // Rescued friend following
+    ctx.fillText(rescueChar.emoji, this._walkX - 60, walkY - bounce2);
+
+    // Stars/sparkles trail
+    ctx.font = '20px serif';
+    for (let i = 1; i <= 3; i++) {
+      const sx = this._walkX - 60 - i * 30;
+      const sy = walkY - 10 + Math.sin(t * 8 + i * 2) * 8;
+      ctx.globalAlpha = Math.max(0, 0.7 - i * 0.2);
+      ctx.fillText('\u2728', sx, sy);
+    }
+
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    ctx.globalAlpha = 1;
 
     ctx.restore();
   }

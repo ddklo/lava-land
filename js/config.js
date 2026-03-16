@@ -1,15 +1,21 @@
 // ─── CONSTANTS ──────────────────────────────────────────────────
+const GAME_TITLE = 'LAVA LAND';
+const GAME_AUTHOR = 'made by Ellie Hellesvik Kloven';
 const CANVAS_W = 800;
 const CANVAS_H = 700;
 const PLATFORM_REAL_COLOR = '#665544';
 const PLATFORM_REAL_TOP = '#887766';
-const MEMORIZE_TIME = 10;
+const MEMORIZE_TIMES = {
+  short:  5,
+  medium: 10,
+  long:   20,
+};
 const PLAT_H = 48;
 
 const GRID_SIZES = {
-  small:  { cols: 4, rows: 8 },
-  medium: { cols: 5, rows: 12 },
-  large:  { cols: 6, rows: 16 },
+  small:  { cols: 5, rows: 8 },
+  medium: { cols: 6, rows: 12 },
+  large:  { cols: 7, rows: 16 },
 };
 
 const DIFFICULTY_FAKE_CHANCE = {

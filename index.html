@@ -3,19 +3,43 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-  <title>Lava Leap - Save Your Friend!</title>
+  <title>Lava Land - Save Your Friend!</title>
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
+  <div id="bg-header">
+    <div id="bg-title"></div>
+    <div id="bg-author"></div>
+  </div>
   <canvas id="gameCanvas"></canvas>
   <div id="ui-overlay">
     <div id="menu-screen" class="menu-screen">
-      <h1>LAVA LEAP</h1>
+      <h1 id="menu-title">LAVA LAND</h1>
       <h2>Jump across the lava to save your friend!</h2>
       <h3>Choose Your Hero</h3>
       <div class="character-grid" id="hero-grid"></div>
       <h3>Choose Who to Save</h3>
       <div class="character-grid" id="rescue-grid"></div>
+
+      <div class="menu-buttons">
+        <button class="btn" id="start-btn" disabled>START GAME</button>
+        <button class="btn btn-settings" id="settings-btn">&#9881; SETTINGS</button>
+      </div>
+      <div id="settings-summary" class="settings-summary">Easy &middot; Medium grid &middot; 10s memorize</div>
+      <div class="instructions" id="instructions-keyboard">
+        <kbd>&larr;</kbd> <kbd>&rarr;</kbd> Hop left / right (same row)<br>
+        <kbd>&uarr;</kbd> / <kbd>Space</kbd> Jump forward (next row)<br>
+        Position yourself, then leap forward &mdash; memorize the safe platforms!
+      </div>
+      <div class="instructions" id="instructions-touch" style="display:none;">
+        Swipe &larr; &rarr; to hop sideways<br>
+        Tap or swipe &uarr; to jump forward<br>
+        Memorize the safe platforms, then jump!
+      </div>
+    </div>
+
+    <div id="settings-screen" class="menu-screen" style="display:none;">
+      <h1>&#9881; SETTINGS</h1>
 
       <h3>Difficulty</h3>
       <div class="option-row" id="diff-row">
@@ -37,29 +61,43 @@
       <div class="option-row" id="size-row">
         <div class="opt-card" data-size="small">
           <div class="opt-label">Small</div>
-          <div class="opt-desc">4 cols &times; 8 rows</div>
+          <div class="opt-desc">5 cols &times; 8 rows</div>
         </div>
         <div class="opt-card selected" data-size="medium">
           <div class="opt-label">Medium</div>
-          <div class="opt-desc">5 cols &times; 12 rows</div>
+          <div class="opt-desc">6 cols &times; 12 rows</div>
         </div>
         <div class="opt-card" data-size="large">
           <div class="opt-label">Large</div>
-          <div class="opt-desc">6 cols &times; 16 rows</div>
+          <div class="opt-desc">7 cols &times; 16 rows</div>
         </div>
       </div>
 
-      <button class="btn" id="start-btn" disabled>START GAME</button>
-      <div class="instructions" id="instructions-keyboard">
-        <kbd>&larr;</kbd> <kbd>&rarr;</kbd> Hop left / right (same row)<br>
-        <kbd>&uarr;</kbd> / <kbd>Space</kbd> Jump forward (next row)<br>
-        Position yourself, then leap forward &mdash; memorize the safe platforms!
+      <h3>Memorize Time</h3>
+      <div class="option-row" id="memtime-row">
+        <div class="opt-card" data-memtime="short">
+          <div class="opt-label">Short</div>
+          <div class="opt-desc">5 seconds</div>
+        </div>
+        <div class="opt-card selected" data-memtime="medium">
+          <div class="opt-label">Medium</div>
+          <div class="opt-desc">10 seconds</div>
+        </div>
+        <div class="opt-card" data-memtime="long">
+          <div class="opt-label">Long</div>
+          <div class="opt-desc">20 seconds</div>
+        </div>
       </div>
-      <div class="instructions" id="instructions-touch" style="display:none;">
-        Swipe &larr; &rarr; to hop sideways<br>
-        Tap or swipe &uarr; to jump forward<br>
-        Memorize the safe platforms, then jump!
-      </div>
+
+      <button class="btn" id="settings-back-btn">DONE</button>
+    </div>
+
+    <div id="lose-screen" class="menu-screen" style="display:none;">
+      <h1>OH NO!</h1>
+      <div class="lose-emoji" id="lose-emoji"></div>
+      <h2 id="lose-msg"></h2>
+      <button class="btn" id="try-again-btn">TRY AGAIN</button>
+      <button class="btn btn-secondary" id="lose-menu-btn">BACK TO MENU</button>
     </div>
 
     <div id="win-screen" class="menu-screen" style="display:none;">

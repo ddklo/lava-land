@@ -1,7 +1,7 @@
 // ─── SHARED MUTABLE STATE ───────────────────────────────────────
 const G = {
   // Configurable settings
-  gridCols: 5,
+  gridCols: 6,
   gridRows: 12,
   difficulty: 'easy',
 
@@ -19,6 +19,7 @@ const G = {
   heroChoice: null,
   rescueChoice: null,
   selectedSize: 'medium',
+  selectedMemTime: 'medium',
 
   // Game state
   gameState: 'menu',
@@ -32,7 +33,9 @@ const G = {
   shakeTimer: 0,
   jumpAnim: { active: false, startX: 0, startY: 0, endX: 0, endY: 0, t: 0 },
   safePath: [],
+  trailMarks: [],
   winTimer: 0,
+  playTimer: 0,
 
   // Managed timers (replaces setTimeout/setInterval in game logic)
   timers: [],

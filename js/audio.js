@@ -18,221 +18,365 @@ function stopMusic() {
   }
 }
 
-// ─── MEMORIZE MUSIC: Dramatic, tense, slow, suspenseful ────────
+// ─── MEMORIZE MUSIC: Loud ticking clock + thriller tension ─────
 function playMemorizeMusic() {
   initAudio();
   stopMusic();
   G.currentMusic = 'memorize';
 
   G.musicGain = G.audioCtx.createGain();
-  G.musicGain.gain.value = 0.15;
+  G.musicGain.gain.value = 0.18;
   G.musicGain.connect(G.audioCtx.destination);
 
-  // Deep dramatic minor chord progression
+  // Tense minor chords that shift slowly
   const chords = [
-    [55, 130.81, 155.56, 196],    // Cm: C2, C3, Eb3, G3
-    [51.91, 123.47, 155.56, 185], // Abmaj: Ab1, B2, Eb3, Gb3
-    [49, 116.54, 146.83, 174.61], // Bbm: Bb1, Bb2, D3, F3
-    [46.25, 110, 138.59, 164.81], // G dim-ish
+    [55, 130.81, 155.56, 196],     // Cm
+    [51.91, 123.47, 155.56, 185],  // Ab
+    [49, 116.54, 146.83, 174.61],  // Bbm
+    [46.25, 110, 138.59, 164.81],  // Gdim
   ];
   let chordIdx = 0;
+  let tickCount = 0;
 
-  function playChord() {
+  // Pre-create tick buffer — sharp metallic click
+  const tickBuf = G.audioCtx.createBuffer(1, G.audioCtx.sampleRate * 0.06, G.audioCtx.sampleRate);
+  const tickData = tickBuf.getChannelData(0);
+  for (let s = 0; s < tickData.length; s++) {
+    tickData[s] = Math.sin(s / (G.audioCtx.sampleRate * 0.0004)) *
+                  Math.exp(-s / (G.audioCtx.sampleRate * 0.012));
+  }
+
+  function playSection() {
     if (G.currentMusic !== 'memorize') return;
     const now = G.audioCtx.currentTime;
     const chord = chords[chordIdx % chords.length];
     chordIdx++;
 
-    // Deep rumbling bass
-    const bass = G.audioCtx.createOscillator();
-    bass.type = 'sawtooth';
-    bass.frequency.value = chord[0];
-    const bassG = G.audioCtx.createGain();
-    bassG.gain.setValueAtTime(0, now);
-    bassG.gain.linearRampToValueAtTime(0.35, now + 0.8);
-    bassG.gain.setValueAtTime(0.35, now + 2.5);
-    bassG.gain.linearRampToValueAtTime(0, now + 3.2);
-    bass.connect(bassG).connect(G.musicGain);
-    bass.start(now);
-    bass.stop(now + 3.3);
+    // ── TICKING CLOCK — loud, prominent, every half second ──
+    for (let tick = 0; tick < 4; tick++) {
+      const t = now + tick * 0.5;
 
-    // Sustained minor chord pads
+      // Main tick — high-pitched metallic click
+      const tickSrc = G.audioCtx.createBufferSource();
+      tickSrc.buffer = tickBuf;
+      const tg = G.audioCtx.createGain();
+      tg.gain.setValueAtTime(0.35, t);
+      tg.gain.linearRampToValueAtTime(0, t + 0.05);
+      tickSrc.connect(tg).connect(G.musicGain);
+      tickSrc.start(t);
+
+      // Resonant ping — alternating pitch for tick-tock feel
+      const ping = G.audioCtx.createOscillator();
+      ping.type = 'sine';
+      ping.frequency.value = (tickCount + tick) % 2 === 0 ? 3200 : 2400;
+      const pg = G.audioCtx.createGain();
+      pg.gain.setValueAtTime(0.18, t);
+      pg.gain.exponentialRampToValueAtTime(0.001, t + 0.08);
+      ping.connect(pg).connect(G.musicGain);
+      ping.start(t);
+      ping.stop(t + 0.09);
+
+      // Woody knock body
+      const knock = G.audioCtx.createOscillator();
+      knock.type = 'triangle';
+      knock.frequency.setValueAtTime(800, t);
+      knock.frequency.exponentialRampToValueAtTime(300, t + 0.02);
+      const kg = G.audioCtx.createGain();
+      kg.gain.setValueAtTime(0.12, t);
+      kg.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
+      knock.connect(kg).connect(G.musicGain);
+      knock.start(t);
+      knock.stop(t + 0.05);
+    }
+    tickCount += 4;
+
+    // ── THRILLER PAD — dark, slowly swelling, unsettling ──
     chord.slice(1).forEach((freq, i) => {
       const osc = G.audioCtx.createOscillator();
       osc.type = 'sine';
       osc.frequency.value = freq;
-      // Slow vibrato for tension
+      // Eerie slow detune
       osc.frequency.setValueAtTime(freq, now);
-      osc.frequency.linearRampToValueAtTime(freq * 1.003, now + 1.5);
-      osc.frequency.linearRampToValueAtTime(freq * 0.997, now + 3);
+      osc.frequency.linearRampToValueAtTime(freq * 1.005, now + 1);
+      osc.frequency.linearRampToValueAtTime(freq * 0.995, now + 2);
       const g = G.audioCtx.createGain();
-      g.gain.setValueAtTime(0, now + i * 0.15);
-      g.gain.linearRampToValueAtTime(0.2, now + 0.6 + i * 0.15);
-      g.gain.setValueAtTime(0.2, now + 2.2);
-      g.gain.linearRampToValueAtTime(0, now + 3.2);
+      g.gain.setValueAtTime(0, now);
+      g.gain.linearRampToValueAtTime(0.12, now + 0.5);
+      g.gain.setValueAtTime(0.12, now + 1.5);
+      g.gain.linearRampToValueAtTime(0, now + 2.0);
       osc.connect(g).connect(G.musicGain);
       osc.start(now);
-      osc.stop(now + 3.3);
+      osc.stop(now + 2.1);
+
+      // Detuned double for width/unease
+      const d = G.audioCtx.createOscillator();
+      d.type = 'sine';
+      d.frequency.value = freq * 0.997;
+      const dg = G.audioCtx.createGain();
+      dg.gain.setValueAtTime(0, now);
+      dg.gain.linearRampToValueAtTime(0.08, now + 0.6);
+      dg.gain.linearRampToValueAtTime(0, now + 2.0);
+      d.connect(dg).connect(G.musicGain);
+      d.start(now);
+      d.stop(now + 2.1);
     });
 
-    // Dramatic string-like high tone
-    const high = G.audioCtx.createOscillator();
-    high.type = 'triangle';
-    high.frequency.setValueAtTime(chord[3] * 2, now);
-    high.frequency.linearRampToValueAtTime(chord[3] * 2 * 1.02, now + 3);
-    const hg = G.audioCtx.createGain();
-    hg.gain.setValueAtTime(0, now);
-    hg.gain.linearRampToValueAtTime(0.08, now + 1);
-    hg.gain.linearRampToValueAtTime(0.1, now + 2);
-    hg.gain.linearRampToValueAtTime(0, now + 3.2);
-    high.connect(hg).connect(G.musicGain);
-    high.start(now);
-    high.stop(now + 3.3);
+    // ── DEEP SUB RUMBLE — ominous low drone ──
+    const sub = G.audioCtx.createOscillator();
+    sub.type = 'sine';
+    sub.frequency.value = chord[0];
+    sub.frequency.setValueAtTime(chord[0], now);
+    sub.frequency.linearRampToValueAtTime(chord[0] * 0.97, now + 2);
+    const sg = G.audioCtx.createGain();
+    sg.gain.setValueAtTime(0, now);
+    sg.gain.linearRampToValueAtTime(0.2, now + 0.3);
+    sg.gain.setValueAtTime(0.2, now + 1.5);
+    sg.gain.linearRampToValueAtTime(0, now + 2.0);
+    sub.connect(sg).connect(G.musicGain);
+    sub.start(now);
+    sub.stop(now + 2.1);
 
-    // Heartbeat-like low pulse
-    for (let beat = 0; beat < 2; beat++) {
-      const pulse = G.audioCtx.createOscillator();
-      pulse.type = 'sine';
-      pulse.frequency.value = 40;
-      const pg = G.audioCtx.createGain();
-      const t = now + beat * 1.5;
-      pg.gain.setValueAtTime(0, t);
-      pg.gain.linearRampToValueAtTime(0.3, t + 0.05);
-      pg.gain.linearRampToValueAtTime(0, t + 0.3);
-      pulse.connect(pg).connect(G.musicGain);
-      pulse.start(t);
-      pulse.stop(t + 0.35);
+    // ── TENSION STINGER — dissonant hit every other cycle ──
+    if (chordIdx % 2 === 0) {
+      const t = now + 1.0;
+      // Cluster of close frequencies = dissonance
+      [chord[2], chord[2] * 1.06, chord[3] * 0.98].forEach(freq => {
+        const osc = G.audioCtx.createOscillator();
+        osc.type = 'sawtooth';
+        osc.frequency.value = freq * 2;
+        const g = G.audioCtx.createGain();
+        g.gain.setValueAtTime(0, t);
+        g.gain.linearRampToValueAtTime(0.06, t + 0.05);
+        g.gain.linearRampToValueAtTime(0, t + 0.6);
+        osc.connect(g).connect(G.musicGain);
+        osc.start(t);
+        osc.stop(t + 0.65);
+      });
     }
 
-    // Ticking clock sound for urgency
-    for (let tick = 0; tick < 6; tick++) {
-      const t = now + tick * 0.5;
-      const tickOsc = G.audioCtx.createOscillator();
-      tickOsc.type = 'sine';
-      tickOsc.frequency.value = 800 + (tick % 2) * 200;
-      const tg = G.audioCtx.createGain();
-      tg.gain.setValueAtTime(0, t);
-      tg.gain.linearRampToValueAtTime(0.06, t + 0.01);
-      tg.gain.linearRampToValueAtTime(0, t + 0.06);
-      tickOsc.connect(tg).connect(G.musicGain);
-      tickOsc.start(t);
-      tickOsc.stop(t + 0.07);
+    // ── HEARTBEAT — deep thump every second ──
+    for (let i = 0; i < 2; i++) {
+      const t = now + i * 1.0;
+      // Double-beat like a real heartbeat: thump-THUMP
+      [0, 0.15].forEach((offset, j) => {
+        const hb = G.audioCtx.createOscillator();
+        hb.type = 'sine';
+        hb.frequency.setValueAtTime(j === 0 ? 50 : 40, t + offset);
+        hb.frequency.exponentialRampToValueAtTime(25, t + offset + 0.15);
+        const hg = G.audioCtx.createGain();
+        hg.gain.setValueAtTime(j === 0 ? 0.15 : 0.25, t + offset);
+        hg.gain.linearRampToValueAtTime(0, t + offset + 0.2);
+        hb.connect(hg).connect(G.musicGain);
+        hb.start(t + offset);
+        hb.stop(t + offset + 0.22);
+      });
     }
 
-    G.musicTimerId = setTimeout(playChord, 3000);
+    G.musicTimerId = setTimeout(playSection, 2000);
   }
-  playChord();
+  playSection();
 }
 
-// ─── ACTION MUSIC: Up-tempo, driving, energetic ────────────────
+// ─── ACTION MUSIC: 80s synth-funk, Beverly Hills Cop vibe ─────
 function playActionMusic() {
   initAudio();
   stopMusic();
   G.currentMusic = 'action';
 
   G.musicGain = G.audioCtx.createGain();
-  G.musicGain.gain.value = 0.13;
+  G.musicGain.gain.value = 0.14;
   G.musicGain.connect(G.audioCtx.destination);
 
-  // Driving bass patterns in minor key
-  const bassPatterns = [
-    [110, 110, 130.81, 110, 146.83, 110, 130.81, 123.47],  // Am riff
-    [98, 98, 116.54, 98, 130.81, 98, 116.54, 110],          // Gm riff
-    [82.41, 82.41, 98, 82.41, 110, 98, 82.41, 98],          // Em riff
-    [92.5, 92.5, 110, 92.5, 123.47, 110, 92.5, 110],        // F#m riff
+  const BPM = 108;
+  const beat = 60 / BPM;
+  const eighth = beat / 2;
+  const sixteenth = beat / 4;
+  const barLen = beat * 4;
+
+  // Notes
+  const F4 = 349.23, Ab4 = 415.30, Bb4 = 466.16, C5 = 523.25;
+  const Eb4 = 311.13, Db4 = 277.18, C4 = 261.63, Ab3 = 207.65;
+  const F3 = 174.61, Eb3 = 155.56, Db3 = 138.59, Bb3 = 233.08;
+
+  // Melody: bouncy 80s synth hook in F minor — [freq, start16th, dur16ths]
+  const melodyBars = [
+    // Bar 1: iconic opening phrase
+    [[F4,0,3],[Ab4,3,3],[F4,6,2],[F4,8,1],[Bb4,9,3],[F4,12,2],[Eb4,14,2]],
+    // Bar 2: continuation
+    [[F4,0,3],[C5,3,3],[F4,6,2],[Eb4,8,1],[Eb4,9,2],[C4,11,2],[Ab3,13,1],[F4,14,2]],
+    // Bar 3: variation — descending
+    [[F4,0,2],[Eb4,2,2],[Db4,4,2],[C4,6,2],[Db4,8,3],[Eb4,11,3],[F4,14,2]],
+    // Bar 4: resolve with flair
+    [[Ab4,0,2],[F4,2,2],[Eb4,4,1],[F4,5,3],[0,8,2],[C4,10,1],[Db4,11,1],[Eb4,12,2],[F4,14,2]],
   ];
-  let patternIdx = 0;
-  const BPM = 160;
-  const beatLen = 60 / BPM;
+
+  // Bass: syncopated F minor funk — 16th note grid (0 = rest)
+  const bassF = F3 / 2, bassAb = Ab3 / 2, bassBb = Bb3 / 2, bassEb = Eb3 / 2, bassDb = Db3 / 2;
+  const bassLines = [
+    [bassF,0,bassF,0, 0,bassF,0,0, bassF,0,bassF,0, 0,0,bassAb,bassBb],
+    [bassAb,0,bassAb,0, 0,bassAb,0,0, bassBb,0,bassAb,0, bassF,0,0,bassF],
+    [bassDb,0,bassDb,0, 0,bassDb,0,bassEb, bassF,0,0,bassF, 0,bassEb,0,bassDb],
+    [bassEb,0,bassEb,0, bassDb,0,0,bassDb, bassF,0,bassF,0, 0,0,bassF,0],
+  ];
+
+  let barIdx = 0;
+
+  // Pre-create drum buffers
+  const hatBuf = G.audioCtx.createBuffer(1, G.audioCtx.sampleRate * 0.05, G.audioCtx.sampleRate);
+  const hatData = hatBuf.getChannelData(0);
+  for (let s = 0; s < hatData.length; s++)
+    hatData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (G.audioCtx.sampleRate * 0.008));
+
+  const snareBuf = G.audioCtx.createBuffer(1, G.audioCtx.sampleRate * 0.15, G.audioCtx.sampleRate);
+  const snareData = snareBuf.getChannelData(0);
+  for (let s = 0; s < snareData.length; s++)
+    snareData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (G.audioCtx.sampleRate * 0.05));
 
   function playBar() {
     if (G.currentMusic !== 'action') return;
     const now = G.audioCtx.currentTime;
-    const pattern = bassPatterns[patternIdx % bassPatterns.length];
-    patternIdx++;
+    const melody = melodyBars[barIdx % melodyBars.length];
+    const bass = bassLines[barIdx % bassLines.length];
+    barIdx++;
 
-    // Driving bass line — 8 eighth notes per bar
-    pattern.forEach((freq, i) => {
-      const t = now + i * beatLen;
-      const osc = G.audioCtx.createOscillator();
-      osc.type = 'sawtooth';
-      osc.frequency.value = freq;
-      const g = G.audioCtx.createGain();
-      g.gain.setValueAtTime(0.3, t);
-      g.gain.linearRampToValueAtTime(0.15, t + beatLen * 0.7);
-      g.gain.linearRampToValueAtTime(0, t + beatLen * 0.95);
-      osc.connect(g).connect(G.musicGain);
-      osc.start(t);
-      osc.stop(t + beatLen);
+    // ── Synth lead melody (bright, 80s poly-synth feel) ──
+    melody.forEach(([freq, start, dur]) => {
+      if (!freq) return;
+      const t = now + start * sixteenth;
+      const len = dur * sixteenth;
+
+      // Layer 1: Square wave — classic 80s synth
+      const sq = G.audioCtx.createOscillator();
+      sq.type = 'square';
+      sq.frequency.value = freq;
+      const sqg = G.audioCtx.createGain();
+      sqg.gain.setValueAtTime(0, t);
+      sqg.gain.linearRampToValueAtTime(0.11, t + 0.008);
+      sqg.gain.setValueAtTime(0.09, t + len * 0.6);
+      sqg.gain.linearRampToValueAtTime(0, t + len * 0.95);
+      sq.connect(sqg).connect(G.musicGain);
+      sq.start(t);
+      sq.stop(t + len);
+
+      // Layer 2: Detuned sawtooth for thickness
+      const saw = G.audioCtx.createOscillator();
+      saw.type = 'sawtooth';
+      saw.frequency.value = freq * 1.003;
+      const sawg = G.audioCtx.createGain();
+      sawg.gain.setValueAtTime(0, t);
+      sawg.gain.linearRampToValueAtTime(0.05, t + 0.01);
+      sawg.gain.linearRampToValueAtTime(0, t + len * 0.9);
+      saw.connect(sawg).connect(G.musicGain);
+      saw.start(t);
+      saw.stop(t + len);
+
+      // Layer 3: High octave sine shimmer
+      const shi = G.audioCtx.createOscillator();
+      shi.type = 'sine';
+      shi.frequency.value = freq * 2;
+      const shig = G.audioCtx.createGain();
+      shig.gain.setValueAtTime(0, t);
+      shig.gain.linearRampToValueAtTime(0.03, t + 0.01);
+      shig.gain.linearRampToValueAtTime(0, t + len * 0.7);
+      shi.connect(shig).connect(G.musicGain);
+      shi.start(t);
+      shi.stop(t + len);
     });
 
-    // Punchy kick-like hits on beats 1, 3, 5, 7
-    for (let beat = 0; beat < 8; beat += 2) {
-      const t = now + beat * beatLen;
+    // ── Synth bass (16th note grid, funky) ──
+    bass.forEach((freq, i) => {
+      if (!freq) return;
+      const t = now + i * sixteenth;
+      const osc = G.audioCtx.createOscillator();
+      osc.type = 'sawtooth';
+      osc.frequency.setValueAtTime(freq * 1.015, t);
+      osc.frequency.exponentialRampToValueAtTime(freq, t + sixteenth * 0.25);
+      const g = G.audioCtx.createGain();
+      g.gain.setValueAtTime(0.28, t);
+      g.gain.linearRampToValueAtTime(0.12, t + sixteenth * 0.5);
+      g.gain.linearRampToValueAtTime(0, t + sixteenth * 0.88);
+      osc.connect(g).connect(G.musicGain);
+      osc.start(t);
+      osc.stop(t + sixteenth);
+
+      // Sub sine for weight
+      const sub = G.audioCtx.createOscillator();
+      sub.type = 'sine';
+      sub.frequency.value = freq;
+      const sg = G.audioCtx.createGain();
+      sg.gain.setValueAtTime(0.22, t);
+      sg.gain.linearRampToValueAtTime(0, t + sixteenth * 0.8);
+      sub.connect(sg).connect(G.musicGain);
+      sub.start(t);
+      sub.stop(t + sixteenth);
+    });
+
+    // ── LinnDrum-style kick: beats 1 and 3 ──
+    [0, 2].forEach(b => {
+      const t = now + b * beat;
       const kick = G.audioCtx.createOscillator();
       kick.type = 'sine';
-      kick.frequency.setValueAtTime(120, t);
-      kick.frequency.exponentialRampToValueAtTime(35, t + 0.08);
+      kick.frequency.setValueAtTime(130, t);
+      kick.frequency.exponentialRampToValueAtTime(35, t + 0.1);
       const kg = G.audioCtx.createGain();
-      kg.gain.setValueAtTime(0.35, t);
-      kg.gain.linearRampToValueAtTime(0, t + 0.1);
+      kg.gain.setValueAtTime(0.38, t);
+      kg.gain.linearRampToValueAtTime(0, t + 0.15);
       kick.connect(kg).connect(G.musicGain);
       kick.start(t);
-      kick.stop(t + 0.12);
-    }
+      kick.stop(t + 0.17);
+    });
 
-    // Hi-hat-like noise on every beat
-    const hatBuf = G.audioCtx.createBuffer(1, G.audioCtx.sampleRate * 0.03, G.audioCtx.sampleRate);
-    const hatData = hatBuf.getChannelData(0);
-    for (let s = 0; s < hatData.length; s++) {
-      hatData[s] = (Math.random() * 2 - 1) * Math.exp(-s / (G.audioCtx.sampleRate * 0.008));
-    }
-    for (let beat = 0; beat < 8; beat++) {
-      const t = now + beat * beatLen;
+    // ── Snare clap: beats 2 and 4 ──
+    [1, 3].forEach(b => {
+      const t = now + b * beat;
+      const snare = G.audioCtx.createBufferSource();
+      snare.buffer = snareBuf;
+      const sg = G.audioCtx.createGain();
+      sg.gain.setValueAtTime(0.2, t);
+      sg.gain.linearRampToValueAtTime(0, t + 0.12);
+      snare.connect(sg).connect(G.musicGain);
+      snare.start(t);
+      // Body tone
+      const body = G.audioCtx.createOscillator();
+      body.type = 'triangle';
+      body.frequency.setValueAtTime(180, t);
+      body.frequency.exponentialRampToValueAtTime(100, t + 0.06);
+      const bg = G.audioCtx.createGain();
+      bg.gain.setValueAtTime(0.15, t);
+      bg.gain.linearRampToValueAtTime(0, t + 0.07);
+      body.connect(bg).connect(G.musicGain);
+      body.start(t);
+      body.stop(t + 0.09);
+    });
+
+    // ── Hi-hats: steady 8ths, accented offbeats (80s drum machine) ──
+    for (let i = 0; i < 8; i++) {
+      const t = now + i * eighth;
       const hat = G.audioCtx.createBufferSource();
       hat.buffer = hatBuf;
       const hg = G.audioCtx.createGain();
-      hg.gain.setValueAtTime(beat % 2 === 0 ? 0.12 : 0.06, t);
-      hg.gain.linearRampToValueAtTime(0, t + 0.03);
+      hg.gain.setValueAtTime(i % 2 === 1 ? 0.13 : 0.06, t);
+      hg.gain.linearRampToValueAtTime(0, t + 0.04);
       hat.connect(hg).connect(G.musicGain);
       hat.start(t);
     }
 
-    // Synth melody stabs — short aggressive notes on offbeats
-    const melodyNotes = [330, 392, 349, 294, 330, 440, 392, 349];
-    for (let i = 1; i < 8; i += 2) {
-      const t = now + i * beatLen;
-      const mel = G.audioCtx.createOscillator();
-      mel.type = 'square';
-      mel.frequency.value = melodyNotes[i];
-      const mg = G.audioCtx.createGain();
-      mg.gain.setValueAtTime(0, t);
-      mg.gain.linearRampToValueAtTime(0.1, t + 0.02);
-      mg.gain.setValueAtTime(0.1, t + beatLen * 0.3);
-      mg.gain.linearRampToValueAtTime(0, t + beatLen * 0.6);
-      mel.connect(mg).connect(G.musicGain);
-      mel.start(t);
-      mel.stop(t + beatLen);
-    }
-
-    // Power chord stab on beat 1 and 5
-    [0, 4].forEach(beat => {
-      const t = now + beat * beatLen;
-      [pattern[beat], pattern[beat] * 1.5, pattern[beat] * 2].forEach(freq => {
-        const osc = G.audioCtx.createOscillator();
-        osc.type = 'sawtooth';
-        osc.frequency.value = freq;
-        const g = G.audioCtx.createGain();
-        g.gain.setValueAtTime(0.08, t);
-        g.gain.linearRampToValueAtTime(0, t + beatLen * 1.5);
-        osc.connect(g).connect(G.musicGain);
-        osc.start(t);
-        osc.stop(t + beatLen * 1.6);
-      });
+    // ── Synth pad: sustained Fm chord, warm background ──
+    const padFreqs = [F3, Ab3, C4];
+    padFreqs.forEach(freq => {
+      const osc = G.audioCtx.createOscillator();
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const g = G.audioCtx.createGain();
+      g.gain.setValueAtTime(0.04, now);
+      g.gain.setValueAtTime(0.04, now + barLen * 0.8);
+      g.gain.linearRampToValueAtTime(0.03, now + barLen);
+      osc.connect(g).connect(G.musicGain);
+      osc.start(now);
+      osc.stop(now + barLen + 0.05);
     });
 
-    const barLen = 8 * beatLen * 1000;
-    G.musicTimerId = setTimeout(playBar, barLen - 50);
+    G.musicTimerId = setTimeout(playBar, barLen * 1000 - 50);
   }
   playBar();
 }
@@ -482,6 +626,64 @@ function speakCongrats() {
     const msg = new SpeechSynthesisUtterance('You did a great job!');
     msg.rate = 0.9;
     msg.pitch = 1.1;
+    msg.volume = 1.0;
+    window.speechSynthesis.speak(msg);
+  }
+}
+
+function playLoseSound() {
+  initAudio();
+  const now = G.audioCtx.currentTime;
+  const loseGain = G.audioCtx.createGain();
+  loseGain.gain.value = 0.22;
+  loseGain.connect(G.audioCtx.destination);
+
+  // Sad descending trombone "wah wah wah wahhh"
+  const notes = [293.66, 277.18, 261.63, 220];
+  const durations = [0.4, 0.4, 0.4, 1.0];
+  let t = now;
+  notes.forEach((freq, i) => {
+    const osc = G.audioCtx.createOscillator();
+    osc.type = 'sawtooth';
+    osc.frequency.setValueAtTime(freq, t);
+    if (i === notes.length - 1) {
+      osc.frequency.linearRampToValueAtTime(freq * 0.85, t + durations[i]);
+    }
+    const g = G.audioCtx.createGain();
+    g.gain.setValueAtTime(0, t);
+    g.gain.linearRampToValueAtTime(0.3, t + 0.04);
+    g.gain.setValueAtTime(0.25, t + durations[i] * 0.7);
+    g.gain.linearRampToValueAtTime(0, t + durations[i] * 0.95);
+    osc.connect(g).connect(loseGain);
+    osc.start(t);
+    osc.stop(t + durations[i]);
+
+    // Harmony a fifth below
+    const h = G.audioCtx.createOscillator();
+    h.type = 'triangle';
+    h.frequency.value = freq * 0.667;
+    const hg = G.audioCtx.createGain();
+    hg.gain.setValueAtTime(0, t);
+    hg.gain.linearRampToValueAtTime(0.12, t + 0.04);
+    hg.gain.linearRampToValueAtTime(0, t + durations[i] * 0.9);
+    h.connect(hg).connect(loseGain);
+    h.start(t);
+    h.stop(t + durations[i]);
+
+    t += durations[i];
+  });
+}
+
+function speakLose() {
+  if ('speechSynthesis' in window) {
+    const phrases = [
+      'Oh no! You fell in the lava!',
+      'Oops! Try again!',
+      'Into the lava! Better luck next time!',
+    ];
+    const msg = new SpeechSynthesisUtterance(phrases[Math.floor(Math.random() * phrases.length)]);
+    msg.rate = 0.9;
+    msg.pitch = 0.8;
     msg.volume = 1.0;
     window.speechSynthesis.speak(msg);
   }

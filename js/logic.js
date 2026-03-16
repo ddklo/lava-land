@@ -41,7 +41,7 @@ function tryJump(direction) {
   // Forward jump — advance one row
   const targetRow = currentRow + 1;
   if (targetRow >= G.platforms.length) {
-    SceneManager.replace(WonScene);
+    // Can't jump past the last row
     return;
   }
 
@@ -81,6 +81,12 @@ function tryJump(direction) {
 }
 
 function landOnPlatform(plat, row, col) {
+  if (plat.destroyed) {
+    playFallSound();
+    spawnLavaSplash(plat.x + plat.w / 2, plat.y + 40);
+    SceneManager.replace(FallingScene);
+    return;
+  }
   if (plat.fake) {
     plat.crumbling = true;
     spawnCrumbleParticles(plat);
@@ -99,7 +105,16 @@ function landOnPlatform(plat, row, col) {
     plat.bobOffset = 5;
     plat.bobVel = 60;
 
-    if (row === G.platforms.length - 1) {
+    // Trail mark
+    G.trailMarks.push({
+      x: plat.x + plat.w / 2,
+      y: plat.y + (PLAT_H - 7) / 2,
+      life: 1.0,
+    });
+
+    // Win only when landing on the rescue character's platform
+    const rescueCol = G.safePath[G.safePath.length - 1];
+    if (row === G.platforms.length - 1 && col === rescueCol) {
       SceneManager.replace(WonScene);
     }
   }

@@ -26,24 +26,34 @@ function generatePlatforms() {
     G.platforms.push(rowPlatforms);
   }
 
-  // Build guaranteed safe path (forward = nearest)
+  // Build guaranteed safe path — biased toward sideways movement
   G.safePath = new Array(G.gridRows);
   G.safePath[0] = Math.floor(Math.random() * G.gridCols);
 
   for (let row = 1; row < G.gridRows; row++) {
-    const prevPlat = G.platforms[row - 1][G.safePath[row - 1]];
-    const prevCenter = prevPlat.x + prevPlat.w / 2;
-    let nearestCol = 0;
-    let nearestDist = Infinity;
-    for (let i = 0; i < G.platforms[row].length; i++) {
-      const center = G.platforms[row][i].x + G.platforms[row][i].w / 2;
-      const dist = Math.abs(center - prevCenter);
-      if (dist < nearestDist) {
-        nearestDist = dist;
-        nearestCol = i;
+    const prevCol = G.safePath[row - 1];
+    // 70% chance to move sideways, 30% to stay in same column
+    if (Math.random() < 0.7) {
+      // Pick -1 or +1 (or -2/+2 occasionally for wider grids)
+      const maxShift = G.gridCols >= 6 ? 2 : 1;
+      let shift = Math.random() < 0.7 ? 1 : maxShift;
+      if (Math.random() < 0.5) shift = -shift;
+      G.safePath[row] = Math.max(0, Math.min(G.gridCols - 1, prevCol + shift));
+      // If clamped to same column, force opposite direction
+      if (G.safePath[row] === prevCol) {
+        G.safePath[row] = Math.max(0, Math.min(G.gridCols - 1, prevCol - shift));
       }
+    } else {
+      G.safePath[row] = prevCol;
     }
-    G.safePath[row] = nearestCol;
+  }
+
+  // Guarantee at least one horizontal move (safety net)
+  const hasSideMove = G.safePath.some((col, i) => i > 0 && col !== G.safePath[i - 1]);
+  if (!hasSideMove) {
+    const row = 1 + Math.floor(Math.random() * (G.gridRows - 1));
+    const prev = G.safePath[row - 1];
+    G.safePath[row] = prev > 0 ? prev - 1 : prev + 1;
   }
 
   // Mark non-path as fake based on difficulty

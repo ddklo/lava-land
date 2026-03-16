@@ -14,6 +14,33 @@ body {
   user-select: none;
 }
 
+#bg-header {
+  position: absolute;
+  top: 8px;
+  left: 0;
+  right: 0;
+  text-align: center;
+  pointer-events: none;
+  z-index: 0;
+}
+
+#bg-title {
+  font-size: 52px;
+  font-weight: bold;
+  color: #ff6600;
+  opacity: 0.18;
+  text-shadow: 0 0 30px rgba(255, 100, 0, 0.3);
+  line-height: 1;
+}
+
+#bg-author {
+  font-size: 14px;
+  font-weight: bold;
+  color: #ffddaa;
+  opacity: 0.5;
+  margin-top: 2px;
+}
+
 canvas {
   display: block;
   border: 3px solid #ff4400;
@@ -129,6 +156,32 @@ canvas {
 
 .btn:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
 
+.menu-buttons {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.btn-settings {
+  background: linear-gradient(180deg, #555, #333);
+  padding: 14px 24px;
+}
+
+.btn-settings:hover {
+  background: linear-gradient(180deg, #666, #444);
+}
+
+.settings-summary {
+  color: #aa8866;
+  font-size: 13px;
+  margin-top: 10px;
+}
+
+#settings-screen h1 {
+  font-size: 36px;
+}
+
 .instructions {
   color: #aa8866;
   font-size: 13px;
@@ -148,12 +201,11 @@ canvas {
 #game-hud {
   position: absolute;
   top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
+  right: 14px;
   color: #fff;
-  font-size: 16px;
+  font-size: 14px;
   pointer-events: none;
-  text-align: center;
+  text-align: right;
   text-shadow: 0 0 10px rgba(0,0,0,0.8);
 }
 
@@ -167,6 +219,30 @@ canvas {
 @keyframes pulse {
   from { opacity: 1; }
   to { opacity: 0.5; }
+}
+
+#lose-screen h1 {
+  font-size: 52px;
+  color: #ff4444;
+  text-shadow: 0 0 30px rgba(255, 50, 0, 0.8);
+}
+
+.lose-emoji {
+  font-size: 48px;
+  margin: 10px 0;
+}
+
+#lose-screen h2 {
+  color: #ff8866;
+}
+
+.btn-secondary {
+  background: linear-gradient(180deg, #555, #333);
+  margin-left: 10px;
+}
+
+.btn-secondary:hover {
+  background: linear-gradient(180deg, #666, #444);
 }
 
 #win-screen h1 {
@@ -275,7 +351,7 @@ canvas {
 
   .instructions { font-size: 12px; margin-top: 12px; }
 
-  #game-hud { font-size: 14px; }
+  #game-hud { font-size: 12px; right: 8px; }
   #game-hud .timer-warn { font-size: 22px; }
 
   #win-screen h1 { font-size: 36px; }
