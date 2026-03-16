@@ -5,9 +5,13 @@ body {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   overflow: hidden;
   height: 100vh;
+  height: 100dvh;
   display: flex;
   justify-content: center;
   align-items: center;
+  touch-action: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 canvas {
@@ -15,6 +19,10 @@ canvas {
   border: 3px solid #ff4400;
   border-radius: 8px;
   box-shadow: 0 0 40px rgba(255, 68, 0, 0.4);
+  max-width: 100vw;
+  max-height: 100vh;
+  max-height: 100dvh;
+  touch-action: none;
 }
 
 #ui-overlay {
@@ -24,6 +32,9 @@ canvas {
   justify-content: center;
   align-items: center;
   pointer-events: none;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  padding: 10px;
 }
 
 #ui-overlay > div { pointer-events: auto; }
@@ -36,6 +47,7 @@ canvas {
   text-align: center;
   color: #fff;
   max-width: 600px;
+  width: 100%;
   box-shadow: 0 0 60px rgba(255, 100, 0, 0.3);
 }
 
@@ -179,6 +191,7 @@ canvas {
   gap: 12px;
   justify-content: center;
   margin-bottom: 16px;
+  flex-wrap: wrap;
 }
 
 .opt-card {
@@ -218,3 +231,64 @@ canvas {
 }
 
 .opt-card.selected .opt-desc { color: #ddbb99; }
+
+/* ─── Mobile responsive ──────────────────────────────────── */
+
+@media (max-width: 600px) {
+  #ui-overlay {
+    align-items: flex-start;
+  }
+
+  .menu-screen {
+    padding: 20px 14px;
+    border-radius: 12px;
+    max-height: 100%;
+    overflow-y: auto;
+  }
+
+  .menu-screen h1 { font-size: 32px; margin-bottom: 4px; }
+  .menu-screen h2 { font-size: 14px; margin-bottom: 16px; }
+  .menu-screen h3 { font-size: 16px; margin: 12px 0 8px; }
+
+  .character-grid { gap: 8px; margin-bottom: 12px; }
+  .char-card {
+    width: 68px;
+    height: 84px;
+    border-radius: 8px;
+  }
+  .char-card .emoji { font-size: 28px; margin-bottom: 3px; }
+  .char-card .name { font-size: 10px; }
+
+  .option-row { gap: 8px; }
+  .opt-card {
+    padding: 8px 12px;
+    min-width: 80px;
+    border-radius: 8px;
+  }
+  .opt-card .opt-label { font-size: 13px; }
+  .opt-card .opt-desc { font-size: 10px; }
+
+  .btn {
+    padding: 12px 30px;
+    font-size: 18px;
+  }
+
+  .instructions { font-size: 12px; margin-top: 12px; }
+
+  #game-hud { font-size: 14px; }
+  #game-hud .timer-warn { font-size: 22px; }
+
+  #win-screen h1 { font-size: 36px; }
+  .win-emojis { font-size: 32px; }
+}
+
+@media (max-height: 500px) {
+  .menu-screen { padding: 12px 10px; }
+  .menu-screen h1 { font-size: 26px; }
+  .menu-screen h2 { font-size: 12px; margin-bottom: 8px; }
+  .menu-screen h3 { font-size: 14px; margin: 8px 0 6px; }
+  .character-grid { gap: 6px; margin-bottom: 8px; }
+  .char-card { width: 58px; height: 72px; }
+  .char-card .emoji { font-size: 24px; }
+  .char-card .name { font-size: 9px; }
+}

@@ -348,7 +348,7 @@ function drawRescueCharacter() {
   const goalPlat = lastRow[G.safePath[G.safePath.length - 1]];
   if (!goalPlat) return;
   const gx = goalPlat.x + goalPlat.w / 2;
-  const gy = goalPlat.y - 20 - G.camera.y;
+  const gy = goalPlat.y + (PLAT_H - 7) / 2 - G.camera.y;
   if (gy < -50 || gy > CANVAS_H + 50) return;
 
   const charData = CHARACTERS.find(c => c.id === G.rescueChoice);
@@ -356,16 +356,17 @@ function drawRescueCharacter() {
 
   ctx.fillStyle = 'rgba(255,100,100,0.3)';
   ctx.beginPath();
-  ctx.arc(gx, gy + floatY, 25 + Math.sin(G.lavaTime * 4) * 5, 0, Math.PI * 2);
+  ctx.arc(gx, gy + floatY, 28 + Math.sin(G.lavaTime * 4) * 5, 0, Math.PI * 2);
   ctx.fill();
 
-  ctx.font = '28px serif';
+  ctx.globalAlpha = 1;
+  ctx.font = '36px serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(charData.emoji, gx, gy + floatY);
 
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 12px sans-serif';
+  ctx.font = 'bold 13px sans-serif';
   ctx.fillText('Help!', gx, gy + floatY - 24);
 }
 
@@ -397,6 +398,25 @@ function drawParticles() {
     }
   }
   ctx.globalAlpha = 1;
+}
+
+function spawnPlatformExplosion(plat) {
+  const cx = plat.x + plat.w / 2;
+  const cy = plat.y + plat.h / 2;
+  for (let i = 0; i < 18; i++) {
+    const angle = (i / 18) * Math.PI * 2 + Math.random() * 0.3;
+    const speed = 2 + Math.random() * 4;
+    G.particles.push({
+      x: plat.x + Math.random() * plat.w,
+      y: plat.y + Math.random() * plat.h,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.5,
+      size: 3 + Math.random() * 5,
+      color: ['#886655', '#775544', '#aa8866', '#665544', '#998877'][Math.floor(Math.random() * 5)],
+      life: 0.7 + Math.random() * 0.4,
+      gravity: 0.12,
+    });
+  }
 }
 
 function spawnJumpDust(plat) {

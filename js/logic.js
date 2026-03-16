@@ -17,12 +17,11 @@ function tryJump(direction) {
     const targetPlat = row[targetCol];
     playHopSound();
 
-    // Departure effects on current platform
+    // Departure: explode and destroy current platform
     const departurePlat = G.player.onPlatform;
     if (departurePlat) {
-      spawnJumpDust(departurePlat);
-      departurePlat.bobOffset = -3;
-      departurePlat.bobVel = -40;
+      spawnPlatformExplosion(departurePlat);
+      departurePlat.destroyed = true;
     }
 
     G.jumpAnim = {
@@ -61,12 +60,11 @@ function tryJump(direction) {
   const targetPlat = nextRowPlats[nearest];
   playJumpSound();
 
-  // Departure effects on current platform
+  // Departure: explode and destroy current platform
   const departurePlat = G.player.onPlatform;
   if (departurePlat) {
-    spawnJumpDust(departurePlat);
-    departurePlat.bobOffset = -4;
-    departurePlat.bobVel = -50;
+    spawnPlatformExplosion(departurePlat);
+    departurePlat.destroyed = true;
   }
 
   G.jumpAnim = {

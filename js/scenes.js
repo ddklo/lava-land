@@ -38,6 +38,7 @@ const SceneManager = {
 function renderPlatforms(reveal) {
   for (const row of G.platforms) {
     for (const plat of row) {
+      if (plat.destroyed) continue;
       if (plat.crumbling && plat.crumbleTimer > 0.5) continue;
       drawPlatform(plat, reveal);
     }
