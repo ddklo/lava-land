@@ -1,0 +1,358 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+
+    <!-- Sky: near-black at top blending to dark volcanic red at horizon -->
+    <linearGradient id="skyGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#020002"/>
+      <stop offset="35%"  stop-color="#08010a"/>
+      <stop offset="65%"  stop-color="#120300"/>
+      <stop offset="100%" stop-color="#250700"/>
+    </linearGradient>
+
+    <!-- Volcanic atmosphere: warm radial glow rising from below -->
+    <radialGradient id="lavaAtmo" cx="50%" cy="90%" r="70%">
+      <stop offset="0%"   stop-color="#ff4400" stop-opacity="0.22"/>
+      <stop offset="25%"  stop-color="#bb2200" stop-opacity="0.14"/>
+      <stop offset="60%"  stop-color="#550a00" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Central caldera glow -->
+    <radialGradient id="calderaGlow" cx="50%" cy="68%" r="32%">
+      <stop offset="0%"   stop-color="#ff7700" stop-opacity="0.13"/>
+      <stop offset="50%"  stop-color="#cc3300" stop-opacity="0.07"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Edge vignette -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+      <stop offset="0%"   stop-color="transparent"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.55"/>
+    </radialGradient>
+
+    <!-- Glow filter for lava cracks -->
+    <filter id="crackGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3.5" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Soft glow for ember particles -->
+    <filter id="emberGlow" x="-150%" y="-150%" width="400%" height="400%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="6" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+
+    <!-- Haze for smoke plumes -->
+    <filter id="hazeBlur" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="18"/>
+    </filter>
+
+    <!-- Rock texture pattern (subtle crosshatch) -->
+    <pattern id="rockTex" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">
+      <line x1="0" y1="20" x2="40" y2="20" stroke="#ffffff" stroke-width="0.3" stroke-opacity="0.03"/>
+      <line x1="20" y1="0" x2="20" y2="40" stroke="#ffffff" stroke-width="0.3" stroke-opacity="0.03"/>
+      <line x1="0" y1="0"  x2="40" y2="40" stroke="#ffffff" stroke-width="0.3" stroke-opacity="0.02"/>
+    </pattern>
+
+  </defs>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 1: Sky base                                        -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <rect width="1920" height="1080" fill="url(#skyGrad)"/>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 2: Far volcanic mountains (distant silhouettes)   -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <g opacity="0.5">
+    <!-- Far-left mountain -->
+    <polygon points="0,1080 0,650 80,590 160,480 240,560 320,390 420,530 500,430 560,1080"
+             fill="#190400"/>
+    <!-- Far-center volcano with caldera notch -->
+    <polygon points="520,1080 620,700 700,600 780,440 830,520 880,330 910,410 960,210 1010,410 1040,330 1090,520 1140,440 1220,600 1300,700 1400,1080"
+             fill="#200600"/>
+    <!-- Far-right mountain -->
+    <polygon points="1360,1080 1420,430 1480,530 1580,390 1660,560 1740,480 1820,590 1900,650 1920,660 1920,1080"
+             fill="#190400"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 3: Atmospheric volcanic glow                       -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <rect width="1920" height="1080" fill="url(#lavaAtmo)"/>
+  <rect width="1920" height="1080" fill="url(#calderaGlow)"/>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 4: Mid-distance rocky ridges                       -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <g opacity="0.75">
+    <!-- Left ridge -->
+    <polygon points="0,1080 0,760 60,700 100,620 160,680 210,580 270,650 340,540 400,620 460,500 520,580 570,1080"
+             fill="#110300"/>
+    <!-- Right ridge -->
+    <polygon points="1350,1080 1400,580 1460,500 1520,620 1580,540 1640,650 1710,580 1760,680 1820,620 1860,700 1920,760 1920,1080"
+             fill="#110300"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 5: Smoke / volcanic haze plumes (blurred)         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <g filter="url(#hazeBlur)" opacity="0.18">
+    <ellipse cx="960"  cy="310" rx="80" ry="200" fill="#ff6600"/>
+    <ellipse cx="880"  cy="380" rx="50" ry="130" fill="#cc3300"/>
+    <ellipse cx="1040" cy="360" rx="55" ry="150" fill="#cc3300"/>
+    <ellipse cx="350"  cy="520" rx="40" ry="100" fill="#aa2200"/>
+    <ellipse cx="1570" cy="520" rx="40" ry="100" fill="#aa2200"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 6: Cave ceiling with stalactites                   -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- Main ceiling mass -->
+  <polygon
+    points="0,0
+            0,210
+            55,165  90,215  140,155  200,200  265,140  330,185  395,125
+            460,190 520,140 585,195  650,130  715,185  780,115  845,175
+            910,105 960,170 1010,105 1075,175 1140,115 1200,185 1265,130
+            1330,195 1395,140 1460,185 1520,125 1580,185 1640,140 1710,200
+            1770,155 1830,215 1880,165 1920,210
+            1920,0"
+    fill="#0c0200"/>
+
+  <!-- Stalactite tips (sharper, darker) -->
+  <g fill="#080100">
+    <polygon points="90,215   78,310   102,310"/>
+    <polygon points="265,140  250,260  280,260"/>
+    <polygon points="460,190  445,295  475,295"/>
+    <polygon points="650,130  634,250  666,250"/>
+    <polygon points="845,175  829,285  861,285"/>
+    <polygon points="960,170  945,280  975,280"/>
+    <polygon points="1075,175 1059,285 1091,285"/>
+    <polygon points="1265,130 1249,245 1281,245"/>
+    <polygon points="1460,185 1444,290 1476,290"/>
+    <polygon points="1640,140 1624,255 1656,255"/>
+    <polygon points="1830,215 1815,310 1845,310"/>
+  </g>
+
+  <!-- Ceiling rock texture overlay -->
+  <polygon
+    points="0,0
+            0,210
+            55,165  90,215  140,155  200,200  265,140  330,185  395,125
+            460,190 520,140 585,195  650,130  715,185  780,115  845,175
+            910,105 960,170 1010,105 1075,175 1140,115 1200,185 1265,130
+            1330,195 1395,140 1460,185 1520,125 1580,185 1640,140 1710,200
+            1770,155 1830,215 1880,165 1920,210
+            1920,0"
+    fill="url(#rockTex)"/>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 7: Left cave wall                                  -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- Main wall -->
+  <polygon
+    points="0,0
+            0,1080
+            310,1080 330,1000 280,940  320,870  265,800  325,730
+            280,660  350,590  300,520  375,450  320,375  400,300
+            345,220  425,150  365,75   440,15   400,0"
+    fill="#0d0200"/>
+  <!-- Wall detail / second layer -->
+  <polygon
+    points="0,0
+            0,1080
+            185,1080 205,980  160,910  200,840  155,770  205,700
+            165,630  225,565  180,495  250,425  205,355  275,285
+            225,210  300,140  250,65   315,0"
+    fill="#0f0300" opacity="0.55"/>
+  <!-- Wall rock texture -->
+  <polygon
+    points="0,0
+            0,1080
+            310,1080 330,1000 280,940  320,870  265,800  325,730
+            280,660  350,590  300,520  375,450  320,375  400,300
+            345,220  425,150  365,75   440,15   400,0"
+    fill="url(#rockTex)"/>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 8: Right cave wall                                 -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- Main wall -->
+  <polygon
+    points="1920,0
+            1920,1080
+            1610,1080 1590,1000 1640,940  1600,870  1655,800  1595,730
+            1640,660  1570,590  1620,520  1545,450  1600,375  1520,300
+            1575,220  1495,150  1555,75   1480,15   1520,0"
+    fill="#0d0200"/>
+  <!-- Wall detail -->
+  <polygon
+    points="1920,0
+            1920,1080
+            1735,1080 1715,980  1760,910  1720,840  1765,770  1715,700
+            1755,630  1695,565  1740,495  1670,425  1715,355  1645,285
+            1695,210  1620,140  1670,65   1605,0"
+    fill="#0f0300" opacity="0.55"/>
+  <!-- Wall rock texture -->
+  <polygon
+    points="1920,0
+            1920,1080
+            1610,1080 1590,1000 1640,940  1600,870  1655,800  1595,730
+            1640,660  1570,590  1620,520  1545,450  1600,375  1520,300
+            1575,220  1495,150  1555,75   1480,15   1520,0"
+    fill="url(#rockTex)"/>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 9: Lava cracks (left wall)                         -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <g filter="url(#crackGlow)">
+    <!-- Primary vertical crack, left wall -->
+    <path d="M 220,55  L 205,130 L 230,200 L 200,280 L 225,370
+             L 205,455 L 235,545 L 210,640 L 238,740 L 215,850 L 230,960 L 215,1060"
+          stroke="#ff5500" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.9"/>
+    <path d="M 220,55  L 205,130 L 230,200 L 200,280 L 225,370
+             L 205,455 L 235,545 L 210,640 L 238,740 L 215,850 L 230,960 L 215,1060"
+          stroke="#ffaa44" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.6"/>
+    <!-- Branch cracks from primary -->
+    <path d="M 225,370  L 268,395 L 292,382" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M 210,640  L 165,668 L 148,655" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M 238,740  L 275,762"            stroke="#ff5500" stroke-width="1.2" fill="none" opacity="0.7"/>
+    <path d="M 215,850  L 180,870 L 162,862"  stroke="#cc3300" stroke-width="1.2" fill="none" opacity="0.7"/>
+    <!-- Secondary crack, left wall -->
+    <path d="M 95,230  L 108,310 L 88,400 L 112,500 L 92,605 L 118,710 L 95,830"
+          stroke="#cc3300" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.75"/>
+    <path d="M 95,230  L 108,310 L 88,400 L 112,500 L 92,605 L 118,710 L 95,830"
+          stroke="#ff8844" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.4"/>
+    <!-- Tertiary crack, lower-left -->
+    <path d="M 330,620 L 315,700 L 338,790 L 320,890 L 340,1000"
+          stroke="#ff4400" stroke-width="1.8" fill="none" opacity="0.8"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 10: Lava cracks (right wall)                       -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <g filter="url(#crackGlow)">
+    <!-- Primary vertical crack, right wall -->
+    <path d="M 1700,55  L 1715,130 L 1690,200 L 1720,280 L 1695,370
+             L 1715,455 L 1685,545 L 1710,640 L 1682,740 L 1705,850 L 1690,960 L 1705,1060"
+          stroke="#ff5500" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.9"/>
+    <path d="M 1700,55  L 1715,130 L 1690,200 L 1720,280 L 1695,370
+             L 1715,455 L 1685,545 L 1710,640 L 1682,740 L 1705,850 L 1690,960 L 1705,1060"
+          stroke="#ffaa44" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.6"/>
+    <!-- Branch cracks -->
+    <path d="M 1695,370  L 1652,395 L 1628,382" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M 1710,640  L 1755,668 L 1772,655" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8"/>
+    <path d="M 1682,740  L 1645,762"            stroke="#ff5500" stroke-width="1.2" fill="none" opacity="0.7"/>
+    <path d="M 1705,850  L 1740,870 L 1758,862"  stroke="#cc3300" stroke-width="1.2" fill="none" opacity="0.7"/>
+    <!-- Secondary crack, right wall -->
+    <path d="M 1825,230  L 1812,310 L 1832,400 L 1808,500 L 1828,605 L 1802,710 L 1825,830"
+          stroke="#cc3300" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.75"/>
+    <path d="M 1825,230  L 1812,310 L 1832,400 L 1808,500 L 1828,605 L 1802,710 L 1825,830"
+          stroke="#ff8844" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.4"/>
+    <!-- Tertiary crack, lower-right -->
+    <path d="M 1590,620 L 1605,700 L 1582,790 L 1600,890 L 1580,1000"
+          stroke="#ff4400" stroke-width="1.8" fill="none" opacity="0.8"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 11: Lava cracks (ceiling)                          -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <g filter="url(#crackGlow)" opacity="0.8">
+    <path d="M 330,0 L 345,55  L 320,90  L 342,130 L 360,85  L 375,115"
+          stroke="#ff4400" stroke-width="1.4" fill="none"/>
+    <path d="M 680,0 L 668,65  L 688,105 L 665,140 L 682,170"
+          stroke="#dd3300" stroke-width="1.4" fill="none"/>
+    <path d="M 960,0 L 975,58  L 952,95  L 970,135 L 950,165 L 968,195"
+          stroke="#ff4400" stroke-width="1.6" fill="none"/>
+    <path d="M 1240,0 L 1252,65 L 1232,108 L 1255,145 L 1238,175"
+          stroke="#dd3300" stroke-width="1.4" fill="none"/>
+    <path d="M 1590,0 L 1575,58 L 1598,95  L 1580,135 L 1598,170"
+          stroke="#ff4400" stroke-width="1.4" fill="none"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 12: Glowing lava pools in rock crevices            -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- Left wall pools -->
+  <g>
+    <ellipse cx="168" cy="558" rx="28" ry="9" fill="#ff5500" opacity="0.45"/>
+    <ellipse cx="168" cy="558" rx="16" ry="5" fill="#ffaa22" opacity="0.55"/>
+    <ellipse cx="200" cy="788" rx="22" ry="7" fill="#ff4400" opacity="0.38"/>
+    <ellipse cx="200" cy="788" rx="13" ry="4" fill="#ff8800" opacity="0.50"/>
+    <ellipse cx="105" cy="672" rx="18" ry="6" fill="#ff4000" opacity="0.32"/>
+    <ellipse cx="105" cy="672" rx="10" ry="3" fill="#ff7700" opacity="0.42"/>
+  </g>
+  <!-- Right wall pools -->
+  <g>
+    <ellipse cx="1752" cy="558" rx="28" ry="9" fill="#ff5500" opacity="0.45"/>
+    <ellipse cx="1752" cy="558" rx="16" ry="5" fill="#ffaa22" opacity="0.55"/>
+    <ellipse cx="1720" cy="788" rx="22" ry="7" fill="#ff4400" opacity="0.38"/>
+    <ellipse cx="1720" cy="788" rx="13" ry="4" fill="#ff8800" opacity="0.50"/>
+    <ellipse cx="1815" cy="672" rx="18" ry="6" fill="#ff4000" opacity="0.32"/>
+    <ellipse cx="1815" cy="672" rx="10" ry="3" fill="#ff7700" opacity="0.42"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 13: Floating ember particles                        -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <g filter="url(#emberGlow)">
+    <!-- Upper zone embers -->
+    <circle cx="480"  cy="320" r="2.2" fill="#ffdd44" opacity="0.65"/>
+    <circle cx="540"  cy="290" r="1.6" fill="#ff9900" opacity="0.50"/>
+    <circle cx="510"  cy="360" r="1.2" fill="#ffcc00" opacity="0.40"/>
+    <circle cx="670"  cy="260" r="2.0" fill="#ffdd44" opacity="0.60"/>
+    <circle cx="695"  cy="300" r="1.5" fill="#ff8800" opacity="0.48"/>
+    <circle cx="760"  cy="230" r="1.8" fill="#ffcc44" opacity="0.55"/>
+    <circle cx="850"  cy="205" r="2.4" fill="#ffee55" opacity="0.65"/>
+    <circle cx="870"  cy="245" r="1.4" fill="#ff9900" opacity="0.48"/>
+    <circle cx="920"  cy="185" r="1.8" fill="#ffcc44" opacity="0.55"/>
+    <circle cx="960"  cy="220" r="2.6" fill="#ffee66" opacity="0.68"/>
+    <circle cx="1000" cy="185" r="1.8" fill="#ffcc44" opacity="0.55"/>
+    <circle cx="1050" cy="245" r="1.4" fill="#ff9900" opacity="0.48"/>
+    <circle cx="1070" cy="205" r="2.4" fill="#ffee55" opacity="0.65"/>
+    <circle cx="1160" cy="230" r="1.8" fill="#ffcc44" opacity="0.55"/>
+    <circle cx="1225" cy="300" r="1.5" fill="#ff8800" opacity="0.48"/>
+    <circle cx="1250" cy="260" r="2.0" fill="#ffdd44" opacity="0.60"/>
+    <circle cx="1380" cy="360" r="1.2" fill="#ffcc00" opacity="0.40"/>
+    <circle cx="1380" cy="290" r="1.6" fill="#ff9900" opacity="0.50"/>
+    <circle cx="1440" cy="320" r="2.2" fill="#ffdd44" opacity="0.65"/>
+    <!-- Mid zone embers -->
+    <circle cx="520"  cy="480" r="1.5" fill="#ff8800" opacity="0.35"/>
+    <circle cx="620"  cy="430" r="1.8" fill="#ffcc44" opacity="0.40"/>
+    <circle cx="740"  cy="510" r="1.2" fill="#ff7700" opacity="0.32"/>
+    <circle cx="870"  cy="390" r="2.0" fill="#ffaa00" opacity="0.42"/>
+    <circle cx="1000" cy="460" r="1.5" fill="#ff9900" opacity="0.38"/>
+    <circle cx="1130" cy="410" r="1.8" fill="#ffbb00" opacity="0.40"/>
+    <circle cx="1300" cy="500" r="1.2" fill="#ff7700" opacity="0.32"/>
+    <circle cx="1400" cy="430" r="1.5" fill="#ff8800" opacity="0.35"/>
+    <!-- Sparse low embers -->
+    <circle cx="580"  cy="640" r="1.2" fill="#ff6600" opacity="0.28"/>
+    <circle cx="790"  cy="600" r="1.0" fill="#ff7700" opacity="0.25"/>
+    <circle cx="1020" cy="660" r="1.5" fill="#ff6600" opacity="0.28"/>
+    <circle cx="1340" cy="620" r="1.0" fill="#ff7700" opacity="0.25"/>
+    <!-- Caldera zone (bright) -->
+    <circle cx="920"  cy="310" r="2.5" fill="#ffffff" opacity="0.35"/>
+    <circle cx="960"  cy="275" r="3.0" fill="#ffffff" opacity="0.40"/>
+    <circle cx="1000" cy="310" r="2.5" fill="#ffffff" opacity="0.35"/>
+    <circle cx="940"  cy="340" r="1.8" fill="#ffee99" opacity="0.45"/>
+    <circle cx="980"  cy="340" r="1.8" fill="#ffee99" opacity="0.45"/>
+  </g>
+
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <!-- LAYER 14: Final edge vignette                            -->
+  <!-- ═══════════════════════════════════════════════════════ -->
+  <rect width="1920" height="1080" fill="url(#vignette)"/>
+
+  <!-- Very subtle warm tint to unify everything -->
+  <rect width="1920" height="1080" fill="#1a0300" opacity="0.06"/>
+
+</svg>

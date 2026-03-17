@@ -1,7 +1,7 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
 body {
-  background: var(--bg-dark);
+  background: var(--bg-dark) url('../images/background.svg') center center / cover no-repeat;
   font-family: var(--font-main);
   overflow: hidden;
   height: 100vh;
