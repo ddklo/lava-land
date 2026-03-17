@@ -1,4 +1,18 @@
 // ─── DRAWING ────────────────────────────────────────────────────
+// Pure rendering functions — no state mutation, no particle spawning.
+
+function drawEmoji(ctx, emoji, x, y, size) {
+  ctx.font = size + 'px serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.shadowColor = 'rgba(0,0,0,0.7)';
+  ctx.shadowBlur = 6;
+  ctx.fillText(emoji, x, y);
+  ctx.shadowColor = 'transparent';
+  ctx.shadowBlur = 0;
+  ctx.fillText(emoji, x, y);
+}
+
 function drawLava(offsetY, height) {
   const ctx = G.ctx;
   const drawH = height || CANVAS_H;
@@ -134,7 +148,7 @@ function drawPlatform(p, reveal) {
   ctx.translate(ox, oy);
 
   const x = p.x, w = p.w, h = p.h;
-  const depth = 7;
+  const depth = PLAT_DEPTH;
 
   if (p.fake && reveal) {
     // Fake platform — translucent danger block
@@ -287,9 +301,7 @@ function drawPlayer() {
   const ctx = G.ctx;
   if (G.gameState === 'falling') return;
 
-  // Offset to center emoji on platform front face
-  // G.player.y = plat.y - 16; platform face center = plat.y + (PLAT_H - 7) / 2
-  const drawOffsetY = (PLAT_H - 7) / 2 + 16;
+  const drawOffsetY = (PLAT_H - PLAT_DEPTH) / 2 + PLAYER_Y_OFFSET;
 
   let px = G.player.x;
   let py = G.player.y - G.camera.y;
@@ -306,21 +318,19 @@ function drawPlayer() {
     const t = G.jumpAnim.t;
     px = G.jumpAnim.startX + (G.jumpAnim.endX - G.jumpAnim.startX) * t;
     const linearY = G.jumpAnim.startY + (G.jumpAnim.endY - G.jumpAnim.startY) * t;
-    const arcH = -70 * Math.sin(t * Math.PI);
+    const arcH = JUMP_ARC_HEIGHT * Math.sin(t * Math.PI);
     py = linearY + arcH - G.camera.y;
 
     // Shadow stays at ground level (interpolated between platforms)
-    shadowY = (G.jumpAnim.startY + (G.jumpAnim.endY - G.jumpAnim.startY) * t) - G.camera.y + 16;
+    shadowY = (G.jumpAnim.startY + (G.jumpAnim.endY - G.jumpAnim.startY) * t) - G.camera.y + PLAYER_Y_OFFSET;
 
     // Squash/stretch: stretch vertically at peak, squash on takeoff/landing
     const airPhase = Math.sin(t * Math.PI);
-    scaleX = 1 - 0.12 * airPhase;
-    scaleY = 1 + 0.18 * airPhase;
+    scaleX = 1 - SQUASH_X * airPhase;
+    scaleY = 1 + STRETCH_Y * airPhase;
   } else {
-    shadowY = py + 16 + bob;
+    shadowY = py + PLAYER_Y_OFFSET + bob;
   }
-
-  const charData = CHARACTERS.find(c => c.id === G.heroChoice);
 
   // Ground shadow on platform surface
   const shadowScale = G.jumpAnim.active ? 0.4 + 0.6 * (1 - Math.sin(G.jumpAnim.t * Math.PI)) : 1;
@@ -334,16 +344,7 @@ function drawPlayer() {
   ctx.globalAlpha = 1;
   ctx.translate(px, py + drawOffsetY + bob);
   ctx.scale(scaleX, scaleY);
-  ctx.font = '48px serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  // Dark outline pass for contrast against lava
-  ctx.shadowColor = 'rgba(0,0,0,0.7)';
-  ctx.shadowBlur = 6;
-  ctx.fillText(charData.emoji, 0, 0);
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.fillText(charData.emoji, 0, 0);
+  drawEmoji(ctx, G.heroChar.emoji, 0, 0, EMOJI_SIZE);
   ctx.restore();
 }
 
@@ -354,10 +355,9 @@ function drawRescueCharacter() {
   const goalPlat = lastRow[G.safePath[G.safePath.length - 1]];
   if (!goalPlat) return;
   const gx = goalPlat.x + goalPlat.w / 2;
-  const gy = goalPlat.y + (PLAT_H - 7) / 2 - G.camera.y;
+  const gy = goalPlat.y + (PLAT_H - PLAT_DEPTH) / 2 - G.camera.y;
   if (gy < -50 || gy > CANVAS_H + 50) return;
 
-  const charData = CHARACTERS.find(c => c.id === G.rescueChoice);
   const floatY = Math.sin(G.lavaTime * 3) * 5;
 
   ctx.fillStyle = 'rgba(255,100,100,0.3)';
@@ -366,15 +366,7 @@ function drawRescueCharacter() {
   ctx.fill();
 
   ctx.globalAlpha = 1;
-  ctx.font = '48px serif';
-  ctx.textAlign = 'center';
-  ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0,0,0,0.7)';
-  ctx.shadowBlur = 6;
-  ctx.fillText(charData.emoji, gx, gy + floatY);
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  ctx.fillText(charData.emoji, gx, gy + floatY);
+  drawEmoji(ctx, G.rescueChar.emoji, gx, gy + floatY, EMOJI_SIZE);
 
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 14px sans-serif';
@@ -411,79 +403,9 @@ function drawParticles() {
   ctx.globalAlpha = 1;
 }
 
-function spawnPlatformExplosion(plat) {
-  const cx = plat.x + plat.w / 2;
-  const cy = plat.y + plat.h / 2;
-  for (let i = 0; i < 18; i++) {
-    const angle = (i / 18) * Math.PI * 2 + Math.random() * 0.3;
-    const speed = 2 + Math.random() * 4;
-    G.particles.push({
-      x: plat.x + Math.random() * plat.w,
-      y: plat.y + Math.random() * plat.h,
-      vx: Math.cos(angle) * speed,
-      vy: Math.sin(angle) * speed - 1.5,
-      size: 3 + Math.random() * 5,
-      color: ['#886655', '#775544', '#aa8866', '#665544', '#998877'][Math.floor(Math.random() * 5)],
-      life: 0.7 + Math.random() * 0.4,
-      gravity: 0.12,
-    });
-  }
-}
-
-function spawnJumpDust(plat) {
-  const cx = plat.x + plat.w / 2;
-  const topY = plat.y;
-  for (let i = 0; i < 6; i++) {
-    G.particles.push({
-      x: cx + (Math.random() - 0.5) * 24,
-      y: topY + Math.random() * 3,
-      vx: (Math.random() - 0.5) * 2,
-      vy: -Math.random() * 1.2 - 0.3,
-      size: 2 + Math.random() * 3,
-      color: ['#998877', '#887766', '#aa9988'][Math.floor(Math.random() * 3)],
-      life: 0.5 + Math.random() * 0.3,
-      gravity: 0.02,
-      round: true,
-    });
-  }
-}
-
-function spawnLandDust(plat) {
-  const cx = plat.x + plat.w / 2;
-  const topY = plat.y;
-  for (let i = 0; i < 10; i++) {
-    const angle = (i / 10) * Math.PI * 2;
-    G.particles.push({
-      x: cx + (Math.random() - 0.5) * 16,
-      y: topY + Math.random() * 2,
-      vx: Math.cos(angle) * (1.2 + Math.random() * 1.5),
-      vy: -Math.random() * 0.8 - 0.2,
-      size: 2 + Math.random() * 4,
-      color: ['#bbaa99', '#998877', '#ccbbaa'][Math.floor(Math.random() * 3)],
-      life: 0.45 + Math.random() * 0.35,
-      gravity: 0.03,
-      round: true,
-    });
-  }
-}
-
-function spawnCrumbleParticles(plat) {
-  for (let i = 0; i < 12; i++) {
-    G.particles.push({
-      x: plat.x + Math.random() * plat.w,
-      y: plat.y + Math.random() * plat.h,
-      vx: (Math.random() - 0.5) * 3,
-      vy: Math.random() * 2 - 1,
-      size: 2 + Math.random() * 3,
-      color: ['#886655', '#775544', '#aa8866'][Math.floor(Math.random() * 3)],
-      life: 1,
-    });
-  }
-}
-
 function updateTrailMarks(dt) {
   for (let i = G.trailMarks.length - 1; i >= 0; i--) {
-    G.trailMarks[i].life -= dt * 0.12;
+    G.trailMarks[i].life -= dt * TRAIL_FADE_RATE;
     if (G.trailMarks[i].life <= 0) G.trailMarks.splice(i, 1);
   }
 }
@@ -526,17 +448,4 @@ function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return m > 0 ? `${m}:${s.toString().padStart(2, '0')}` : `${s}s`;
-}
-
-function spawnLavaSplash(x, y) {
-  for (let i = 0; i < 20; i++) {
-    G.particles.push({
-      x: x, y: y,
-      vx: (Math.random() - 0.5) * 6,
-      vy: -Math.random() * 5 - 2,
-      size: 2 + Math.random() * 4,
-      color: ['#ff4400', '#ff6600', '#ffaa00', '#ff2200'][Math.floor(Math.random() * 4)],
-      life: 1,
-    });
-  }
 }

@@ -1,4 +1,12 @@
 // ─── GAME LOGIC ─────────────────────────────────────────────────
+function destroyDeparturePlatform() {
+  const departurePlat = G.player.onPlatform;
+  if (departurePlat) {
+    spawnPlatformExplosion(departurePlat);
+    departurePlat.destroyed = true;
+  }
+}
+
 function tryJump(direction) {
   if (G.jumpAnim.active) return;
   if (G.gameState !== 'playing') return;
@@ -8,6 +16,7 @@ function tryJump(direction) {
 
   if (direction === 'left' || direction === 'right') {
     // Stay in same row, move to adjacent platform
+    if (currentRow >= G.platforms.length) return;
     const row = G.platforms[currentRow];
     let targetCol = currentCol;
     if (direction === 'left') targetCol = Math.max(0, currentCol - 1);
@@ -17,20 +26,14 @@ function tryJump(direction) {
     const targetPlat = row[targetCol];
     G.jumpCount++;
     playHopSound();
-
-    // Departure: explode and destroy current platform
-    const departurePlat = G.player.onPlatform;
-    if (departurePlat) {
-      spawnPlatformExplosion(departurePlat);
-      departurePlat.destroyed = true;
-    }
+    destroyDeparturePlatform();
 
     G.jumpAnim = {
       active: true,
       startX: G.player.x,
       startY: G.player.y,
       endX: targetPlat.x + targetPlat.w / 2,
-      endY: targetPlat.y - 16,
+      endY: targetPlat.y - PLAYER_Y_OFFSET,
       t: 0,
       targetRow: currentRow,
       targetCol: targetCol,
@@ -61,20 +64,14 @@ function tryJump(direction) {
   const targetPlat = nextRowPlats[nearest];
   G.jumpCount++;
   playJumpSound();
-
-  // Departure: explode and destroy current platform
-  const departurePlat = G.player.onPlatform;
-  if (departurePlat) {
-    spawnPlatformExplosion(departurePlat);
-    departurePlat.destroyed = true;
-  }
+  destroyDeparturePlatform();
 
   G.jumpAnim = {
     active: true,
     startX: G.player.x,
     startY: G.player.y,
     endX: targetPlat.x + targetPlat.w / 2,
-    endY: targetPlat.y - 16,
+    endY: targetPlat.y - PLAYER_Y_OFFSET,
     t: 0,
     targetRow: targetRow,
     targetCol: nearest,
@@ -97,20 +94,20 @@ function landOnPlatform(plat, row, col) {
   } else {
     playLandSound();
     G.player.x = plat.x + plat.w / 2;
-    G.player.y = plat.y - 16;
+    G.player.y = plat.y - PLAYER_Y_OFFSET;
     G.player.row = row;
     G.player.col = col;
     G.player.onPlatform = plat;
 
     // Landing impact effects
     spawnLandDust(plat);
-    plat.bobOffset = 5;
-    plat.bobVel = 60;
+    plat.bobOffset = LAND_BOB_OFFSET;
+    plat.bobVel = LAND_BOB_VEL;
 
     // Trail mark
     G.trailMarks.push({
       x: plat.x + plat.w / 2,
-      y: plat.y + (PLAT_H - 7) / 2,
+      y: plat.y + (PLAT_H - PLAT_DEPTH) / 2,
       life: 1.0,
     });
 

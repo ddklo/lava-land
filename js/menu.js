@@ -22,6 +22,11 @@ function setupMenu() {
       G.heroChoice = ch.id;
       heroGrid.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
       hCard.classList.add('selected');
+      // If rescue matches hero, clear rescue selection
+      if (G.rescueChoice === ch.id) {
+        G.rescueChoice = null;
+        rescueGrid.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+      }
       updateStartBtn();
     });
     heroGrid.appendChild(hCard);
@@ -30,6 +35,8 @@ function setupMenu() {
     rCard.className = 'char-card';
     rCard.innerHTML = `<div class="emoji">${ch.emoji}</div><div class="name">${ch.name}</div>`;
     rCard.addEventListener('click', () => {
+      // Skip if same as hero
+      if (ch.id === G.heroChoice) return;
       G.rescueChoice = ch.id;
       rescueGrid.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
       rCard.classList.add('selected');
@@ -106,7 +113,15 @@ function setupMenu() {
 }
 
 function startGame() {
+  // Debounce: disable START button immediately
+  const startBtn = document.getElementById('start-btn');
+  startBtn.disabled = true;
+
   initAudio();
+
+  // Cache character data
+  G.heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
+  G.rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
 
   // Apply grid size setting
   const sizeConfig = GRID_SIZES[G.selectedSize];

@@ -61,9 +61,9 @@ function updatePlatformBob(dt) {
     for (const plat of row) {
       if (plat.bobOffset === 0 && plat.bobVel === 0) continue;
       // Damped spring: F = -kx - bv
-      plat.bobVel += (-280 * plat.bobOffset - 14 * plat.bobVel) * dt;
+      plat.bobVel += (-SPRING_STIFFNESS * plat.bobOffset - SPRING_DAMPING * plat.bobVel) * dt;
       plat.bobOffset += plat.bobVel * dt;
-      if (Math.abs(plat.bobOffset) < 0.15 && Math.abs(plat.bobVel) < 0.5) {
+      if (Math.abs(plat.bobOffset) < SPRING_REST_THRESHOLD && Math.abs(plat.bobVel) < SPRING_VEL_THRESHOLD) {
         plat.bobOffset = 0;
         plat.bobVel = 0;
       }
@@ -172,17 +172,23 @@ const MemorizeScene = {
 // ═══════════════════════════════════════════════════════════════
 const PlayingScene = {
   _lastRow: -1,
+  _lastCol: -1,
+  _lastTimerStr: '',
+  _lastJumps: -1,
 
   onEnter() {
     G.gameState = 'playing';
     G.playTimer = 0;
     this._lastRow = -1;
+    this._lastCol = -1;
+    this._lastTimerStr = '';
+    this._lastJumps = -1;
     playActionMusic();
 
     // First trail mark on starting platform
     if (G.player.onPlatform) {
       const p = G.player.onPlatform;
-      G.trailMarks.push({ x: p.x + p.w / 2, y: p.y + (PLAT_H - 7) / 2, life: 1.0 });
+      G.trailMarks.push({ x: p.x + p.w / 2, y: p.y + (PLAT_H - PLAT_DEPTH) / 2, life: 1.0 });
     }
     document.getElementById('hud-text').innerHTML = G.isTouchDevice
       ? '<div class="timer-hint">Tap platform to move &nbsp;|&nbsp; Swipe to jump</div>'
@@ -202,7 +208,7 @@ const PlayingScene = {
 
     // Jump animation
     if (G.jumpAnim.active) {
-      G.jumpAnim.t += dt * 3;
+      G.jumpAnim.t += dt * JUMP_SPEED;
       if (G.jumpAnim.t >= 1) {
         G.jumpAnim.t = 1;
         G.jumpAnim.active = false;
@@ -211,21 +217,31 @@ const PlayingScene = {
     }
 
     // Camera tracking
-    const targetCamY = G.player.y - CANVAS_H * 0.35;
-    G.camera.y += (targetCamY - G.camera.y) * 0.08;
+    const targetCamY = G.player.y - CANVAS_H * CAMERA_PLAYER_OFFSET;
+    G.camera.y += (targetCamY - G.camera.y) * CAMERA_SMOOTHING;
     G.camera.y = Math.max(0, G.camera.y);
 
     // Shake decay
     if (G.shakeTimer > 0) G.shakeTimer -= 1;
 
-    // HUD — update stats
-    document.getElementById('hud-text').innerHTML =
-      `<div class="stat-row">` +
-      `<span class="stat-item"><span class="stat-label">ROW</span>${G.player.row + 1}/${G.platforms.length}</span>` +
-      `<span class="stat-item"><span class="stat-label">COL</span>${G.player.col + 1}/${G.platforms[0].length}</span>` +
-      `<span class="stat-item"><span class="stat-label">TIME</span>${formatTime(G.playTimer)}</span>` +
-      `<span class="stat-item"><span class="stat-label">JUMPS</span>${G.jumpCount}</span>` +
-      `</div>`;
+    // HUD — only update DOM when values change
+    const curRow = G.player.row;
+    const curCol = G.player.col;
+    const curTimer = formatTime(G.playTimer);
+    const curJumps = G.jumpCount;
+    if (curRow !== this._lastRow || curCol !== this._lastCol || curTimer !== this._lastTimerStr || curJumps !== this._lastJumps) {
+      this._lastRow = curRow;
+      this._lastCol = curCol;
+      this._lastTimerStr = curTimer;
+      this._lastJumps = curJumps;
+      document.getElementById('hud-text').innerHTML =
+        `<div class="stat-row">` +
+        `<span class="stat-item"><span class="stat-label">ROW</span>${curRow + 1}/${G.platforms.length}</span>` +
+        `<span class="stat-item"><span class="stat-label">COL</span>${curCol + 1}/${G.platforms[0].length}</span>` +
+        `<span class="stat-item"><span class="stat-label">TIME</span>${curTimer}</span>` +
+        `<span class="stat-item"><span class="stat-label">JUMPS</span>${curJumps}</span>` +
+        `</div>`;
+    }
   },
   render() {
     const ctx = G.ctx;
@@ -268,13 +284,11 @@ const FallingScene = {
         speakLose();
       }
       // Show lose screen
-      const heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
-      const rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
-      document.getElementById('lose-emoji').textContent = heroChar.emoji + ' \uD83D\uDD25';
+      document.getElementById('lose-emoji').textContent = G.heroChar.emoji + ' \uD83D\uDD25';
       const messages = [
-        `${heroChar.name} fell into the lava!`,
-        `${heroChar.name} couldn't save ${rescueChar.name}!`,
-        `The lava got ${heroChar.name}!`,
+        `${G.heroChar.name} fell into the lava!`,
+        `${G.heroChar.name} couldn't save ${G.rescueChar.name}!`,
+        `The lava got ${G.heroChar.name}!`,
       ];
       document.getElementById('lose-msg').textContent = messages[Math.floor(Math.random() * messages.length)];
       document.getElementById('lose-screen').style.display = 'block';
@@ -307,16 +321,8 @@ const FallingScene = {
     drawParticles();
 
     // Falling player emoji
-    const charData = CHARACTERS.find(c => c.id === G.heroChoice);
     ctx.globalAlpha = 1;
-    ctx.font = '48px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.7)';
-    ctx.shadowBlur = 6;
-    ctx.fillText(charData.emoji, G.player.x, G.fallY - G.camera.y);
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
+    drawEmoji(ctx, G.heroChar.emoji, G.player.x, G.fallY - G.camera.y, EMOJI_SIZE);
 
     ctx.restore();
   }
@@ -344,12 +350,10 @@ const WonScene = {
     stopMusic();
     playWinSound();
 
-    const rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
-    const heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
     document.getElementById('win-emojis').textContent =
-      `${heroChar.emoji} \u{1F91D} ${rescueChar.emoji}`;
+      `${G.heroChar.emoji} \u{1F91D} ${G.rescueChar.emoji}`;
     document.getElementById('win-msg').textContent =
-      `${heroChar.name} saved ${rescueChar.name}!`;
+      `${G.heroChar.name} saved ${G.rescueChar.name}!`;
   },
   onExit() {
     clearTimers();
@@ -408,36 +412,25 @@ const WonScene = {
     drawParticles();
 
     // Celebrating characters walking across screen
-    const heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
-    const rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
     const t = G.winTimer;
     const walkY = CANVAS_H * 0.55;
     const bounce1 = Math.abs(Math.sin(t * 5)) * 25;
     const bounce2 = Math.abs(Math.sin(t * 5 + 1.2)) * 25;
 
     ctx.globalAlpha = 1;
-    ctx.font = '52px serif';
-    ctx.textAlign = 'center';
-    ctx.textBaseline = 'middle';
-    ctx.shadowColor = 'rgba(0,0,0,0.7)';
-    ctx.shadowBlur = 6;
-
     // Hero leading
-    ctx.fillText(heroChar.emoji, this._walkX, walkY - bounce1);
+    drawEmoji(ctx, G.heroChar.emoji, this._walkX, walkY - bounce1, 52);
     // Rescued friend following
-    ctx.fillText(rescueChar.emoji, this._walkX - 60, walkY - bounce2);
+    drawEmoji(ctx, G.rescueChar.emoji, this._walkX - 60, walkY - bounce2, 52);
 
     // Stars/sparkles trail
-    ctx.font = '20px serif';
     for (let i = 1; i <= 3; i++) {
       const sx = this._walkX - 60 - i * 30;
       const sy = walkY - 10 + Math.sin(t * 8 + i * 2) * 8;
       ctx.globalAlpha = Math.max(0, 0.7 - i * 0.2);
-      ctx.fillText('\u2728', sx, sy);
+      drawEmoji(ctx, '\u2728', sx, sy, 20);
     }
 
-    ctx.shadowColor = 'transparent';
-    ctx.shadowBlur = 0;
     ctx.globalAlpha = 1;
 
     ctx.restore();

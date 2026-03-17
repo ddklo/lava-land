@@ -18,6 +18,8 @@ const G = {
   // Selections
   heroChoice: null,
   rescueChoice: null,
+  heroChar: null,
+  rescueChar: null,
   selectedSize: 'medium',
   selectedMemTime: 'medium',
 

@@ -1,4 +1,4 @@
-# Lava Leap - Project Guide
+# Lava Land - Project Guide
 
 ## What This Is
 
@@ -9,10 +9,14 @@ A browser-based memory-platformer game. Player memorizes safe platforms on a gri
 See [docs/architecture.md](docs/architecture.md) for the full architecture document including:
 - File structure and dependency graph
 - Core patterns: fixed timestep loop, scene manager, update/render split, managed timers
+- Named constants for physics tuning
 - Shared state model (the `G` object)
 - Game state machine diagram
 - Complete function map
-- Remaining issues and future recommendations
+- Test coverage summary
+- Remaining issues
+
+See [docs/rules.md](docs/rules.md) for complete game rules documentation.
 
 ## Quick Reference
 
@@ -20,22 +24,25 @@ See [docs/architecture.md](docs/architecture.md) for the full architecture docum
 
 ```
 index.html          HTML + 14 script tags (entry point)
-css/style.css       All styles
-js/config.js        Constants (CANVAS_W, CHARACTERS, etc.)
+css/style.css       All styles (responsive, mobile-friendly)
+js/config.js        Constants, physics tuning (CANVAS_W, CHARACTERS, JUMP_ARC_HEIGHT, etc.)
 js/state.js         Shared mutable state object: const G = {}
 js/timers.js        Managed timer system (addTimer, updateTimers, clearTimers)
-js/audio.js         Procedural music + sound effects (Web Audio API)
+js/audio.js         Procedural music + sound effects (Web Audio API, with error guards)
 js/platforms.js     Grid generation + safe-path algorithm
 js/player.js        resetPlayer()
-js/drawing.js       Canvas rendering (read-only) + updateParticles()
-js/effects.js       Win celebration spawners (fireworks, confetti)
+js/drawing.js       Canvas rendering (read-only) + particle/trail update/render
+js/effects.js       All particle spawners (dust, explosions, lava, fireworks, confetti)
 js/scenes.js        SceneManager + 5 scene objects (Menu/Memorize/Playing/Falling/Won)
 js/logic.js         Core game rules (tryJump, landOnPlatform)
-js/input.js         Keyboard event listeners
+js/input.js         Keyboard + touch event listeners
 js/loop.js          Fixed-timestep game loop (TICK=1/60)
-js/menu.js          Menu UI setup + startGame()
+js/menu.js          Menu/settings UI setup + startGame()
 js/init.js          Bootstrap (only file that runs at parse time)
+tests/test.html     Browser-based test runner
+tests/tests.js      Test suite
 docs/architecture.md  Full architecture documentation
+docs/rules.md       Game rules documentation
 ```
 
 ### Script Load Order
@@ -46,10 +53,12 @@ docs/architecture.md  Full architecture documentation
 
 - **Fixed timestep loop**: Physics update at 60 Hz via accumulator in loop.js. Rendering once per RAF.
 - **Scene manager**: Pushdown automaton in scenes.js. Each game state (menu, memorize, playing, falling, won) is a scene with `onEnter`/`onExit`/`update(dt)`/`render()`. Transitions via `SceneManager.replace()`.
-- **Update/render split**: All state mutation in `update()`, all drawing in `render()` (read-only). `drawParticles()` and `drawLava()` never mutate state.
+- **Update/render split**: All state mutation in `update()`, all drawing in `render()` (read-only).
 - **Managed timers**: Game logic delays use `addTimer(seconds, callback)` instead of setTimeout. Timers tick inside the fixed-timestep loop and are cleared on scene exit.
+- **Named constants**: All physics tuning and magic numbers in config.js (JUMP_ARC_HEIGHT, SPRING_STIFFNESS, etc.).
+- **Audio guards**: All audio functions check `hasAudio()` after `initAudio()`. Game runs silently if Web Audio unavailable.
 - **State**: All mutable globals live in `const G = {}` (state.js). Constants are plain `const` globals in config.js.
-- **Drawing**: Functions use `const ctx = G.ctx;` as a local alias at the top.
+- **File responsibilities**: drawing.js = rendering only. effects.js = all particle spawning. scenes.js = state machine. logic.js = game rules.
 - **No modules**: Plain `<script>` tags. All functions and constants are global. Load order matters.
 
 ### Game States (Scenes)
@@ -57,32 +66,38 @@ docs/architecture.md  Full architecture documentation
 ```
 MenuScene -> MemorizeScene -> PlayingScene -> WonScene
                   ^                |
-                  |          (fake platform)
+                  |          (fake/destroyed)
                   |                v
-                  +--------- FallingScene
+                  +--------- FallingScene (lose screen)
 ```
 
 ### Running
 
 Open `index.html` in a browser. No server needed.
 
-### Testing Checklist
+### Testing
 
-- Menu: select hero, rescue character, difficulty, grid size
+Open `tests/test.html` in a browser. Tests cover: config, state, platform generation, player reset, timer system, scene manager, jump logic, landing/win/lose conditions, spring physics, particles, trail marks, formatTime, and audio safety.
+
+### Manual Testing Checklist
+
+- Menu: select hero, rescue character, open settings, change difficulty/grid/memorize time
 - Memorize phase: zoomed-out view with countdown timer
 - Playing: arrow keys to hop left/right, up/space to jump forward
-- Fall on fake platform: shake + splash + reset to memorize
-- Win: fireworks, speech synthesis, play-again flow
-- All 3 difficulties (easy/medium/hard) and all 3 grid sizes (small/medium/large)
-- Play Again mid-fireworks: should cleanly return to menu (no stale timers)
+- Mobile: swipe left/right to hop, tap/swipe up to jump forward
+- Platforms explode when you leave them; trail marks show your path
+- Fall on fake platform: crumble + shake + lose screen with retry/menu options
+- Win: fireworks, character celebration walk, speech synthesis, play-again flow
+- All 3 difficulties, all 3 grid sizes, all memorize times
+- Win requires landing on rescue character's exact column on last row
 
 ## Documentation Maintenance
 
 **When modifying code, always update the relevant docs:**
 
-- **Adding/removing/renaming files** -> Update file structure and script load order in both this file and `docs/architecture.md`
+- **Adding/removing/renaming files** -> Update file structure in both this file and `docs/architecture.md`
 - **Adding/removing functions** -> Update the function map in `docs/architecture.md`
 - **Changing state fields in G** -> Update the state categories table in `docs/architecture.md`
-- **Changing scene transitions** -> Update the game state machine diagram in `docs/architecture.md`
-- **Adding new architectural patterns** -> Document them in the "Core Architecture Patterns" section of `docs/architecture.md`
-- **Resolving or introducing issues** -> Update the "Remaining Architectural Issues" section in `docs/architecture.md`
+- **Changing scene transitions** -> Update the game state machine diagram
+- **Adding new constants** -> Document in config.js section of `docs/architecture.md`
+- **Adding tests** -> Update test coverage section in `docs/architecture.md`

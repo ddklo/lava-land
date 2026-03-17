@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Lava Land - Test Suite</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body { font-family: monospace; background: #1a1a2e; color: #eee; padding: 20px; }
+    h1 { color: #ff6600; margin-bottom: 16px; }
+    .suite { margin-bottom: 20px; }
+    .suite-name { color: #ffaa44; font-size: 16px; margin-bottom: 6px; font-weight: bold; }
+    .pass { color: #44ff88; }
+    .fail { color: #ff4444; }
+    .test { padding: 2px 0; padding-left: 16px; }
+    #summary { margin-top: 20px; padding: 12px; border-radius: 8px; font-size: 18px; font-weight: bold; }
+    #summary.all-pass { background: rgba(68,255,136,0.15); color: #44ff88; border: 1px solid #44ff88; }
+    #summary.has-fail { background: rgba(255,68,68,0.15); color: #ff4444; border: 1px solid #ff4444; }
+  </style>
+</head>
+<body>
+  <h1>LAVA LAND Test Suite</h1>
+
+  <!-- Hidden canvas required by game code -->
+  <canvas id="gameCanvas" style="display:none;"></canvas>
+  <div id="ui-overlay" style="display:none;">
+    <div id="menu-screen" style="display:none;"></div>
+    <div id="settings-screen" style="display:none;"></div>
+    <div id="lose-screen" style="display:none;">
+      <div id="lose-emoji"></div>
+      <div id="lose-msg"></div>
+    </div>
+    <div id="win-screen" style="display:none;">
+      <div id="win-emojis"></div>
+      <div id="win-msg"></div>
+    </div>
+  </div>
+  <div id="game-hud" style="display:none;"><div id="hud-text"></div></div>
+  <div id="bg-header" style="display:none;">
+    <div id="bg-title"></div>
+    <div id="bg-author"></div>
+  </div>
+  <div id="menu-title" style="display:none;"></div>
+  <div id="hero-grid" style="display:none;"></div>
+  <div id="rescue-grid" style="display:none;"></div>
+  <div id="start-btn" style="display:none;"></div>
+  <div id="settings-summary" style="display:none;"></div>
+  <div id="settings-btn" style="display:none;"></div>
+  <div id="settings-back-btn" style="display:none;"></div>
+  <div id="diff-row" style="display:none;"></div>
+  <div id="size-row" style="display:none;"></div>
+  <div id="memtime-row" style="display:none;"></div>
+  <div id="try-again-btn" style="display:none;"></div>
+  <div id="lose-menu-btn" style="display:none;"></div>
+  <div id="play-again-btn" style="display:none;"></div>
+  <div id="instructions-keyboard" style="display:none;"></div>
+  <div id="instructions-touch" style="display:none;"></div>
+
+  <div id="results"></div>
+  <div id="summary"></div>
+
+  <!-- Load game scripts in order -->
+  <script src="../js/config.js"></script>
+  <script src="../js/state.js"></script>
+  <script src="../js/timers.js"></script>
+  <script src="../js/audio.js"></script>
+  <script src="../js/platforms.js"></script>
+  <script src="../js/player.js"></script>
+  <script src="../js/drawing.js"></script>
+  <script src="../js/effects.js"></script>
+  <script src="../js/scenes.js"></script>
+  <script src="../js/logic.js"></script>
+  <script src="../js/input.js"></script>
+  <script src="../js/loop.js"></script>
+  <script src="../js/menu.js"></script>
+
+  <!-- Test runner -->
+  <script src="tests.js"></script>
+</body>
+</html>

@@ -17,6 +17,7 @@ function generatePlatforms() {
         w: platW,
         h: PLAT_H,
         fake: false,
+        destroyed: false,
         crumbling: false,
         crumbleTimer: 0,
         bobOffset: 0,

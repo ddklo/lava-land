@@ -1,8 +1,8 @@
-# Lava Leap - Architecture Document
+# Lava Land - Architecture Document
 
 ## Overview
 
-Lava Leap is a browser-based memory-platformer. The player memorizes a grid of platforms (some real, some fake), then navigates from top to bottom jumping between platforms over animated lava to rescue a chosen character. Built with vanilla JavaScript, HTML5 Canvas, and Web Audio API -- no build tools, no frameworks.
+Lava Land is a browser-based memory-platformer. The player memorizes a grid of platforms (some real, some fake), then navigates across them jumping over animated lava to rescue a chosen character. Built with vanilla JavaScript, HTML5 Canvas, and Web Audio API -- no build tools, no frameworks, works on `file://`.
 
 ---
 
@@ -12,24 +12,29 @@ Lava Leap is a browser-based memory-platformer. The player memorizes a grid of p
 ellie-game-v1/
   index.html              HTML markup + <link> + 14 <script> tags
   css/
-    style.css             All CSS (~221 lines)
+    style.css             All CSS (responsive, mobile-friendly)
   js/
-    config.js             Constants, CHARACTERS, lookup tables
+    config.js             Constants, physics tuning, CHARACTERS, lookup tables
     state.js              Shared mutable state object (G)
     timers.js             Managed timer system (replaces setTimeout in game logic)
-    audio.js              Procedural music generators + sound effects
-    platforms.js           Grid generation + safe-path algorithm
-    player.js              resetPlayer()
-    drawing.js             Canvas draw functions (render-only) + update helpers
-    effects.js             Win celebration particle spawners
-    scenes.js              SceneManager + 5 scene objects (pushdown automaton)
-    logic.js               Jump + landing game rules
-    input.js               Keyboard event listeners
-    loop.js                Fixed-timestep game loop
-    menu.js                Menu UI setup + startGame
-    init.js                Bootstrap (canvas setup, starts loop)
+    audio.js              Procedural music generators + sound effects (with error guards)
+    platforms.js          Grid generation + safe-path algorithm
+    player.js             resetPlayer()
+    drawing.js            Canvas draw functions (render-only) + particle update/render
+    effects.js            All particle spawners (dust, explosions, lava, fireworks, confetti)
+    scenes.js             SceneManager + 5 scene objects (pushdown automaton)
+    logic.js              Jump + landing game rules
+    input.js              Keyboard + touch event listeners
+    loop.js               Fixed-timestep game loop
+    menu.js               Menu/settings UI setup + startGame
+    init.js               Bootstrap (canvas setup, starts loop)
+  tests/
+    test.html             Test runner HTML (opens in browser)
+    tests.js              Test suite (config, state, platforms, logic, scenes, timers)
   docs/
-    architecture.md        This file
+    architecture.md       This file
+    rules.md              Game rules documentation
+  CLAUDE.md               Project quick reference
 ```
 
 ### Script Load Order
@@ -81,21 +86,42 @@ All state mutation happens in `update(dt)`. All drawing happens in `render()` as
 
 - `updateParticles(dt)` -- advances particle physics (drawing.js)
 - `updateCrumbleTimers(dt)` -- advances platform crumble state (scenes.js)
+- `updatePlatformBob(dt)` -- damped spring animation (scenes.js)
+- `updateTrailMarks(dt)` -- trail mark fade (drawing.js)
 - `drawParticles()` -- renders particles without mutation (drawing.js)
-- `drawLava()` -- reads `G.lavaTime` but never writes it (scenes update lavaTime)
+- `drawLava()` -- reads `G.lavaTime` but never writes it
 
 ### 4. Managed Timers (timers.js)
 
-Game logic timers (crumble delays, fall-to-memorize transitions, firework scheduling) are managed inside the fixed-timestep update loop instead of using `setTimeout`/`setInterval`. This makes them:
+Game logic timers (crumble delays, fall-to-lose transitions, firework scheduling) are managed inside the fixed-timestep update loop instead of using `setTimeout`/`setInterval`. This makes them:
 - **Pausable** -- timers only tick when `update()` runs
 - **Cancellable** -- `clearTimers()` on scene exit prevents stale callbacks
 - **Deterministic** -- tied to game time, not wall-clock time
 
 ```javascript
 addTimer(delay, callback)  // schedule callback after delay seconds
-updateTimers(dt)           // tick all timers (called per scene update)
+updateTimers(dt)           // tick all timers, fire expired ones
 clearTimers()              // cancel all pending timers
 ```
+
+### 5. Named Constants (config.js)
+
+All physics tuning values, dimensions, and magic numbers are defined as named constants:
+
+| Constant | Value | Purpose |
+|----------|-------|---------|
+| `JUMP_ARC_HEIGHT` | -70 | Parabolic jump height |
+| `JUMP_SPEED` | 3 | Jump animation speed multiplier |
+| `SPRING_STIFFNESS` | 280 | Platform bob spring constant |
+| `SPRING_DAMPING` | 14 | Platform bob damping |
+| `CAMERA_SMOOTHING` | 0.08 | Camera follow smoothing factor |
+| `TRAIL_FADE_RATE` | 0.12 | Trail mark fade speed |
+| `PLAT_DEPTH` | 7 | 3D platform depth face height |
+| `EMOJI_SIZE` | 48 | Character emoji font size |
+
+### 6. Audio Error Handling (audio.js)
+
+All audio functions are guarded with `hasAudio()` checks after `initAudio()`. The `initAudio()` function wraps `AudioContext` creation in a try-catch, so the game runs silently on browsers that don't support Web Audio.
 
 ---
 
@@ -107,87 +133,47 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 
 | Category | Fields | Mutated by |
 |----------|--------|------------|
-| Settings | `gridCols`, `gridRows`, `difficulty`, `selectedSize` | menu.js |
+| Settings | `gridCols`, `gridRows`, `difficulty`, `selectedSize`, `selectedMemTime` | menu.js |
 | Audio | `audioCtx`, `musicGain`, `currentMusic`, `musicTimerId` | audio.js |
 | Canvas | `canvas`, `ctx` | init.js (write-once) |
-| Selections | `heroChoice`, `rescueChoice` | menu.js |
+| Selections | `heroChoice`, `rescueChoice`, `heroChar`, `rescueChar` | menu.js (startGame caches lookups) |
 | Game mode | `gameState` | scenes (set in onEnter) |
 | Entities | `platforms`, `player`, `safePath` | platforms.js, player.js, logic.js |
 | Camera | `camera` | player.js, PlayingScene |
-| Effects | `particles`, `lavaTime`, `shakeTimer`, `fallY` | scenes, drawing.js (updateParticles) |
+| Effects | `particles`, `lavaTime`, `shakeTimer`, `fallY`, `trailMarks` | scenes, drawing.js |
 | Animation | `jumpAnim` | logic.js, PlayingScene |
-| Win | `winTimer` | WonScene |
+| Win/Play | `winTimer`, `playTimer` | WonScene, PlayingScene |
 | Timers | `timers` | timers.js |
 | Input | `keys`, `isTouchDevice` | input.js |
 | Loop | `lastTime`, `accumulator` | loop.js |
-
-### Constants (config.js)
-
-| Name | Value | Used by |
-|------|-------|---------|
-| `CANVAS_W` | 800 | drawing, scenes, effects, init |
-| `CANVAS_H` | 700 | drawing, scenes, platforms, init |
-| `PLATFORM_REAL_COLOR` | `#665544` | drawing |
-| `PLATFORM_REAL_TOP` | `#887766` | drawing |
-| `MEMORIZE_TIME` | 10 | menu |
-| `PLAT_H` | 48 | platforms |
-| `GRID_SIZES` | {small, medium, large} | menu |
-| `DIFFICULTY_FAKE_CHANCE` | {easy, medium, hard} | platforms |
-| `CHARACTERS` | 8 character defs | drawing, scenes, logic, menu |
-
----
-
-## Dependency Graph
-
-```
-config.js ──────────────────────────────────────────────┐
-state.js ───────────────────────────────────────────────┐│
-timers.js ◄──── state                                   ││
-audio.js ◄──── state                                    ││
-platforms.js ◄──── config, state                        ││
-player.js ◄──── state                                   ││
-drawing.js ◄──── config, state                          ││
-effects.js ◄──── config, state                          ││
-scenes.js ◄──── config, state, timers, audio,           ││
-                platforms, player, drawing, effects      ││
-logic.js ◄──── state, audio, drawing, scenes            ││
-input.js ◄──── state, logic                             ││
-loop.js ◄──── state, scenes                             ││
-menu.js ◄──── config, state, audio, platforms,          ││
-              player, scenes                            ││
-init.js ◄──── config, state, input, menu, scenes, loop  ┘│
-                                                         ┘
-```
-
-`scenes.js` is now the most connected node (8 dependencies), which is expected since each scene orchestrates update + render for its game state.
 
 ---
 
 ## Game State Machine
 
 ```
-          ┌────────────┐
-          │  MenuScene  │◄─────────────────┐
-          └─────┬──────┘                   │
-                │ startGame()              │ play-again click
-                ▼                          │
-          ┌──────────────┐                 │
-     ┌───►│MemorizeScene │        ┌────────┴─────┐
-     │    └──────┬───────┘        │   WonScene    │
-     │           │ timer expires  └────────▲─────┘
-     │           ▼                         │
-     │    ┌──────────────┐                 │
-     │    │ PlayingScene  │────────────────┘
-     │    └──────┬───────┘   last row reached
-     │           │ land on fake platform
-     │           ▼
-     │    ┌──────────────┐
-     └────┤ FallingScene  │
-          └──────────────┘
-           (1.2s managed timer -> MemorizeScene)
+          +------------+
+          |  MenuScene  |<-----------------+
+          +-----+------+                   |
+                | startGame()              | play-again / back-to-menu
+                v                          |
+          +--------------+                 |
+     +--->|MemorizeScene  |        +-------+-------+
+     |    +------+-------+        |   WonScene     |
+     |           | timer expires  +-------^--------+
+     |           v                        |
+     |    +--------------+                |
+     |    | PlayingScene  |---------------+
+     |    +------+-------+   last row + rescue col
+     |           | land on fake / destroyed
+     |           v
+     |    +--------------+
+     +----| FallingScene  |
+          +--------------+
+           (lose screen -> retry or menu)
 ```
 
-All transitions go through `SceneManager.replace()`. Each scene's `onExit()` calls `clearTimers()` to prevent stale callbacks.
+All transitions go through `SceneManager.replace()`. Each scene's `onExit()` calls `clearTimers()`.
 
 ---
 
@@ -198,18 +184,19 @@ All transitions go through `SceneManager.replace()`. Each scene's `onExit()` cal
 - `updateTimers(dt)` - Tick all timers, fire expired ones
 - `clearTimers()` - Cancel all pending timers
 
-### audio.js (11 functions)
-- `initAudio()` - Lazy-create AudioContext
+### audio.js (17 functions)
+- `initAudio()` - Lazy-create AudioContext (with try-catch)
+- `hasAudio()` - Guard: returns true if AudioContext is available
 - `stopMusic()` - Fade out + disconnect current music
-- `playMemorizeMusic()` - Procedural tense chord loop
-- `playActionMusic()` - Procedural driving bass + drums
-- `playJumpSound()` - Forward jump SFX
-- `playHopSound()` - Sideways hop SFX
-- `playLandSound()` - Landing SFX
-- `playCrumbleSound()` - Fake platform crumble SFX
-- `playFallSound()` - Fall + lava splash SFX
+- `playMemorizeMusic()` - Procedural tense chord loop + ticking clock
+- `playActionMusic()` - Procedural 80s synth-funk 4-bar loops
+- `playJumpSound()` / `playHopSound()` - Jump SFX
+- `playLandSound()` / `playCrumbleSound()` / `playFallSound()` - Impact SFX
 - `playWinSound()` - 10-second procedural victory fanfare
-- `speakCongrats()` - Speech synthesis "You did a great job!"
+- `playLoseSound()` - Sad descending trombone
+- `getEnglishVoice()` - Cached English voice lookup for speech synthesis
+- `speakText(text, rate, pitch)` - Shared speech helper with English voice selection
+- `speakCongrats()` / `speakLose()` - Speech synthesis (via speakText)
 
 ### platforms.js (1 function)
 - `generatePlatforms()` - Create grid, build safe path, mark fakes
@@ -217,37 +204,37 @@ All transitions go through `SceneManager.replace()`. Each scene's `onExit()` cal
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
 
-### drawing.js (11 functions)
-- `updateParticles(dt)` - Advance particle physics (called from scene update)
-- `drawLava(offsetY, height)` - 6-layer animated lava background (read-only)
-- `drawPlatform(p, reveal)` - Single platform as 3D stone block with depth face, brick texture, and highlights
-- `drawPlayer()` - Player emoji with jump arc animation, squash/stretch, and dynamic shadow
-- `drawRescueCharacter()` - Floating rescue target with "Help!" text
-- `drawParticles()` - Render all particles (read-only, no physics)
-- `spawnJumpDust(plat)` - Spawn dust puff when jumping off a platform
-- `spawnLandDust(plat)` - Spawn radial dust cloud on landing impact
-- `spawnCrumbleParticles(plat)` - Spawn debris when fake platform crumbles
-- `spawnLavaSplash(x, y)` - Spawn lava particles on fall
+### drawing.js (9 functions)
+- `drawEmoji(ctx, emoji, x, y, size)` - Shared emoji renderer with shadow pass
+- `drawLava(offsetY, height)` - 6-layer animated lava background
+- `drawPlatform(p, reveal)` - 3D stone block with brick texture
+- `drawPlayer()` - Player emoji with squash/stretch and shadow
+- `drawRescueCharacter()` - Floating rescue target with "Help!"
+- `updateParticles(dt)` / `drawParticles()` - Particle physics and rendering
+- `updateTrailMarks(dt)` / `drawTrailMarks()` - Trail breadcrumb system
+- `formatTime(seconds)` - Timer display formatter
 
-### effects.js (2 functions)
+### effects.js (6 functions)
+- `spawnPlatformExplosion(plat)` - 18 stone debris particles on departure
+- `spawnLandDust(plat)` - Radial dust cloud on landing
+- `spawnCrumbleParticles(plat)` - Debris when fake platform breaks
+- `spawnLavaSplash(x, y)` - Lava particles on fall
 - `spawnFirework(x, y)` - Burst of 30 radial particles
 - `spawnConfetti()` - 40 falling confetti particles
 
 ### scenes.js (SceneManager + 5 scenes + 4 helpers)
-- `SceneManager` - Pushdown automaton: push/pop/replace + update/render delegation
-- `MenuScene` - Draws lava background, shows menu HTML overlay
-- `MemorizeScene` - Zoom-out view, countdown timer, transitions to PlayingScene
-- `PlayingScene` - Normal gameplay: jump animation, camera, platform bob, HUD updates
-- `FallingScene` - Fall animation, shake, managed timer to MemorizeScene
-- `WonScene` - Firework sequence, speech, show win screen
-- `renderPlatforms(reveal)` - Helper: draw all platforms
-- `applyShake(ctx)` - Helper: apply shake transform
-- `updatePlatformBob(dt)` - Helper: damped spring animation for platform bounce on jump/land
-- `updateCrumbleTimers(dt)` - Helper: advance platform crumble state
+- `SceneManager` - push/pop/replace + update/render delegation
+- `MenuScene` - Lava background, shows menu HTML overlay
+- `MemorizeScene` - Zoom-out view, countdown, transitions to PlayingScene
+- `PlayingScene` - Gameplay: jump animation, camera, platform bob, trail, HUD
+- `FallingScene` - Fall animation, shake, lose screen after 1.8s
+- `WonScene` - Firework sequence, character celebration walk, win screen
+- `renderPlatforms(reveal)` / `applyShake(ctx)` / `updatePlatformBob(dt)` / `updateCrumbleTimers(dt)`
 
-### logic.js (2 functions)
-- `tryJump(direction)` - Handle left/right/forward jump input
-- `landOnPlatform(plat, row, col)` - Process landing; triggers scene transitions
+### logic.js (3 functions)
+- `destroyDeparturePlatform()` - Explode and mark current platform as destroyed
+- `tryJump(direction)` - Handle left/right/forward jump; uses destroyDeparturePlatform
+- `landOnPlatform(plat, row, col)` - Process landing; check win/fake/destroyed
 
 ### input.js (2 functions)
 - `findTappedPlatform(canvasX, canvasY)` - Hit-test canvas coordinates against adjacent platforms for touch input
@@ -255,21 +242,22 @@ All transitions go through `SceneManager.replace()`. Each scene's `onExit()` cal
 
 ### loop.js (1 function + 1 constant)
 - `TICK` - Fixed timestep interval (1/60 seconds)
-- `gameLoop(timestamp)` - Fixed-timestep RAF loop: accumulate, update, render
+- `gameLoop(timestamp)` - RAF loop
 
-### menu.js (3 functions)
+### menu.js (4 functions)
 - `setupMenu()` - Build character cards, wire selectors + buttons
-- `updateStartBtn()` - Enable/disable start button based on selections
-- `startGame()` - Apply settings, generate level, SceneManager.replace(MemorizeScene)
+- `updateStartBtn()` - Enable/disable start button
+- `updateSettingsSummary()` - Update settings display text
+- `startGame()` - Apply settings, generate level, start game
 
-### init.js (no functions - imperative bootstrap)
-- Set up canvas, call `setupInput()`, `setupMenu()`, push `MenuScene`, start `gameLoop`
+### init.js (imperative bootstrap)
+- Set up canvas, set title/author text, call `setupInput()`, `setupMenu()`, push `MenuScene`, start `gameLoop`
 
 ---
 
-## Remaining Architectural Issues
+## Testing
 
-Issues resolved by the improvements above are marked with ~~strikethrough~~.
+The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test.html` in a browser to run all tests. No build tools or Node.js required.
 
 ### Resolved
 
@@ -279,34 +267,66 @@ Issues resolved by the improvements above are marked with ~~strikethrough~~.
 - ~~State transitions scattered~~ -- All transitions go through `SceneManager.replace()`. Each scene owns its own update/render.
 - ~~HUD thrashing~~ -- Scenes only update HUD text when the displayed value changes.
 - ~~Dead code (winFireworks)~~ -- Removed from state.js.
+- ~~No mobile input~~ -- Touch input added: swipe for directional movement, tap-on-platform for targeted jumps.
 
-### Still Open
-
-1. **God object (G)** - All state in one flat mutable bag. Could be split into namespaced sub-objects.
-2. **Particle spawners split** - `spawnJumpDust`/`spawnLandDust`/`spawnCrumbleParticles`/`spawnLavaSplash` in drawing.js; `spawnFirework`/`spawnConfetti` in effects.js.
-3. **No object pool for particles** - Particles use push/splice. Could use pre-allocated pool.
-4. ~~**No mobile input**~~ - Touch input added: swipe for directional movement, tap-on-platform for targeted jumps.
-5. **DOM manipulation in scenes** - Scenes directly show/hide HTML elements. Could use a UI manager.
-6. **Dead data** - `CHARACTERS[*].color` defined but never read.
-7. **Audio setTimeout** - Music loop scheduling in audio.js still uses `setTimeout`. This is acceptable since music timing is independent of game logic, but could be improved.
+### Test Coverage
+- Config constants validation
+- Grid sizes and difficulty configuration
+- State initialization
+- Platform generation (correct dimensions, safe path validity, fake marking)
+- Platform initialization (all properties including `destroyed` are explicit)
+- Player reset (position, platform reference)
+- Timer system (add, fire, clear, concurrent timers)
+- Scene manager (push, pop, replace, delegation)
+- Jump logic (forward, sideways, guards for wrong state/animation)
+- Sideways jump boundaries (left at col 0, right at max col, out-of-bounds row)
+- Single-column grid (sideways impossible, forward works)
+- Forward jump uses PLAYER_Y_OFFSET constant
+- Landing logic (safe, fake, destroyed platforms)
+- Win condition (correct column required, tested on small/medium/large grids)
+- Platform bob spring physics (settles to rest)
+- Particle lifecycle (spawn and expire)
+- Trail mark lifecycle (fade and cleanup)
+- formatTime utility
+- Audio safety (graceful degradation when AudioContext unavailable)
+- Speech synthesis (English voice lookup, speakText safety)
+- Character caching (`G.heroChar`, `G.rescueChar`)
+- `destroyDeparturePlatform()` helper (with and without platform)
+- `drawEmoji()` helper (renders without error, resets shadow state)
+- PlayingScene HUD caching properties
 
 ---
 
-## Future Improvement Recommendations
+## Still Open
 
-Ranked by impact-to-effort ratio.
+1. **God object (G)** - All state in one flat mutable bag. Could be split into namespaced sub-objects.
+2. **No object pool for particles** - Particles use push/splice. Could use pre-allocated pool.
+3. **DOM manipulation in scenes** - Scenes directly show/hide HTML elements. Could use a UI manager.
+4. **Dead data** - `CHARACTERS[*].color` defined but never read.
+5. **Audio setTimeout** - Music loop scheduling in audio.js still uses `setTimeout`. Acceptable since music timing is independent of game logic.
 
-### 1. Object Pool for Particles (Medium Impact, Low Effort)
-Replace `particles.push({...})` / `particles.splice(i, 1)` with a pre-allocated pool. Avoids GC pressure during fireworks.
+## Future Improvements
 
-### 2. Structured State Namespaces (Medium Impact, Low Effort)
+### 1. Structured State Namespaces (Medium Impact, Low Effort)
 Split `G` into `G.audio`, `G.input`, `G.game`, `G.ui` sub-objects.
 
-### 3. Move Particle Spawners to effects.js (Low Impact, Low Effort)
+### 2. Move Particle Spawners to effects.js (Low Impact, Low Effort)
 Consolidate all particle spawning in one file.
 
-### 4. ES Modules (Low Impact, Medium Effort)
+### 3. ES Modules (Low Impact, Medium Effort)
 Convert to `<script type="module">` with import/export. Requires HTTP server.
 
-### 5. ~~Touch/Mobile Input~~ (Implemented)
-Touch input now supports swipe gestures and tap-on-platform navigation.
+## Resolved
+
+- ~~Hardcoded magic number~~ in forward jump — now uses `PLAYER_Y_OFFSET`
+- ~~Missing `destroyed` property~~ in platform init — now explicitly set to `false`
+- ~~HUD updates every frame~~ — PlayingScene now caches row/col/timer/jumps and only updates DOM on change
+- ~~Unused `spawnJumpDust()`~~ — removed (replaced by `spawnPlatformExplosion`)
+- ~~Unnecessary `startPlat.fake = false`~~ — removed (safe path never marked fake)
+- ~~Duplicated emoji rendering~~ — extracted `drawEmoji()` helper
+- ~~Duplicated departure destruction~~ — extracted `destroyDeparturePlatform()`
+- ~~Repeated `CHARACTERS.find()` lookups~~ — cached as `G.heroChar`/`G.rescueChar` in `startGame()`
+- ~~Hero === rescue allowed~~ — prevented in menu selection handlers
+- ~~START button not debounced~~ — disabled immediately in `startGame()`
+- ~~Missing bounds check~~ in sideways jump — added row bounds guard
+- ~~Speech synthesis wrong voice~~ — now explicitly requests English voice via `getEnglishVoice()`

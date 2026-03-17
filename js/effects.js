@@ -1,4 +1,69 @@
-// ─── WIN CELEBRATION ────────────────────────────────────────────
+// ─── PARTICLE EFFECTS ──────────────────────────────────────────
+// All particle spawners live here. Drawing.js handles rendering only.
+
+function spawnPlatformExplosion(plat) {
+  for (let i = 0; i < 18; i++) {
+    const angle = (i / 18) * Math.PI * 2 + Math.random() * 0.3;
+    const speed = 2 + Math.random() * 4;
+    G.particles.push({
+      x: plat.x + Math.random() * plat.w,
+      y: plat.y + Math.random() * plat.h,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1.5,
+      size: 3 + Math.random() * 5,
+      color: ['#886655', '#775544', '#aa8866', '#665544', '#998877'][Math.floor(Math.random() * 5)],
+      life: 0.7 + Math.random() * 0.4,
+      gravity: 0.12,
+    });
+  }
+}
+
+function spawnLandDust(plat) {
+  const cx = plat.x + plat.w / 2;
+  const topY = plat.y;
+  for (let i = 0; i < 10; i++) {
+    const angle = (i / 10) * Math.PI * 2;
+    G.particles.push({
+      x: cx + (Math.random() - 0.5) * 16,
+      y: topY + Math.random() * 2,
+      vx: Math.cos(angle) * (1.2 + Math.random() * 1.5),
+      vy: -Math.random() * 0.8 - 0.2,
+      size: 2 + Math.random() * 4,
+      color: ['#bbaa99', '#998877', '#ccbbaa'][Math.floor(Math.random() * 3)],
+      life: 0.45 + Math.random() * 0.35,
+      gravity: 0.03,
+      round: true,
+    });
+  }
+}
+
+function spawnCrumbleParticles(plat) {
+  for (let i = 0; i < 12; i++) {
+    G.particles.push({
+      x: plat.x + Math.random() * plat.w,
+      y: plat.y + Math.random() * plat.h,
+      vx: (Math.random() - 0.5) * 3,
+      vy: Math.random() * 2 - 1,
+      size: 2 + Math.random() * 3,
+      color: ['#886655', '#775544', '#aa8866'][Math.floor(Math.random() * 3)],
+      life: 1,
+    });
+  }
+}
+
+function spawnLavaSplash(x, y) {
+  for (let i = 0; i < 20; i++) {
+    G.particles.push({
+      x: x, y: y,
+      vx: (Math.random() - 0.5) * 6,
+      vy: -Math.random() * 5 - 2,
+      size: 2 + Math.random() * 4,
+      color: ['#ff4400', '#ff6600', '#ffaa00', '#ff2200'][Math.floor(Math.random() * 4)],
+      life: 1,
+    });
+  }
+}
+
 function spawnFirework(x, y) {
   const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff', '#44ffff', '#ffaa00', '#ff66aa'];
   const color = colors[Math.floor(Math.random() * colors.length)];
