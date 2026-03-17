@@ -2,7 +2,7 @@
 
 ## What This Is
 
-A browser-based memory-platformer game. Player memorizes safe platforms on a grid, then jumps across lava to rescue a character. Built with vanilla JS, HTML5 Canvas, and Web Audio API. No build tools, no frameworks -- opens directly via `file://`.
+A browser-based memory-platformer game. Player memorizes safe platforms on a grid, then jumps across lava to rescue a character. Built with vanilla JS, HTML5 Canvas, and Web Audio API. No build tools, no frameworks — opens directly via `file://`.
 
 ## Architecture
 
@@ -26,13 +26,15 @@ See [docs/rules.md](docs/rules.md) for complete game rules documentation.
 index.html          HTML + 14 script tags (entry point)
 css/theme.css       CSS custom properties (colors, fonts) — design tokens
 css/style.css       All styles (responsive, mobile-friendly), references theme.css
+images/             Static assets
+  background.svg    Volcanic cave background (referenced by css/style.css)
 js/config.js        Constants, physics tuning, LEVELS array, getLevelConfig(), scoring constants
 js/state.js         Shared mutable state object: const G = {}
 js/timers.js        Managed timer system (addTimer, updateTimers, clearTimers)
 js/audio.js         Procedural music + sound effects (Web Audio API, with error guards)
 js/platforms.js     Grid generation + safe-path algorithm
 js/player.js        resetPlayer()
-js/drawing.js       Canvas rendering (read-only) + particle/trail update/render
+js/drawing.js       Canvas rendering (read-only) + particle/trail update/render + formatTime()
 js/effects.js       All particle spawners (dust, explosions, lava, fireworks, confetti)
 js/scenes.js        SceneManager + 5 scene objects (Menu/Memorize/Playing/Falling/Won)
 js/logic.js         Core game rules (tryJump, landOnPlatform) + scoring (calculateScore, calculateStars)
@@ -50,10 +52,13 @@ docs/rules.md       Game rules documentation
 
 `config -> state -> timers -> audio -> platforms -> player -> drawing -> effects -> scenes -> logic -> input -> loop -> menu -> init`
 
+Only `init.js` executes code at parse time. All other files only define functions/objects.
+
 ### Key Patterns
 
 - **Fixed timestep loop**: Physics update at 60 Hz via accumulator in loop.js. Rendering once per RAF.
 - **Scene manager**: Pushdown automaton in scenes.js. Each game state (menu, memorize, playing, falling, won) is a scene with `onEnter`/`onExit`/`update(dt)`/`render()`. Transitions via `SceneManager.replace()`.
+- **`G.gameState` values**: Set in each scene's `onEnter()`. Possible values: `'menu'`, `'memorize'`, `'playing'`, `'falling'`, `'won'`. Read by `drawPlayer()` and input.js.
 - **Update/render split**: All state mutation in `update()`, all drawing in `render()` (read-only).
 - **Managed timers**: Game logic delays use `addTimer(seconds, callback)` instead of setTimeout. Timers tick inside the fixed-timestep loop and are cleared on scene exit.
 - **Named constants**: All physics tuning and magic numbers in config.js (JUMP_ARC_HEIGHT, SPRING_STIFFNESS, etc.).
@@ -64,7 +69,7 @@ docs/rules.md       Game rules documentation
 
 ### Game Modes
 
-- **Adventure Mode** (default): 15 hand-tuned levels + infinite scaling. Score breakdown with stars on win. "Next Level" button advances.
+- **Adventure Mode** (default): 15 hand-tuned levels + infinite scaling from level 16+. Score breakdown with stars on win. "Next Level" button advances.
 - **Custom Mode**: Manual difficulty/grid/memorize settings. No levels or scoring. Original behavior.
 
 ### Game States (Scenes)
@@ -97,13 +102,28 @@ Open `tests/test.html` in a browser. Tests cover: config, state, platform genera
 - All 3 difficulties, all 3 grid sizes, all memorize times
 - Win requires landing on rescue character's exact column on last row
 
+## Where to Add New Code
+
+| Task | File |
+|------|------|
+| New game constant or physics value | `js/config.js` |
+| New particle effect | `js/effects.js` (spawner) + `js/drawing.js` (renderer if needed) |
+| New game rule or scoring change | `js/logic.js` |
+| New scene / game state | `js/scenes.js` |
+| New UI element or button | `js/menu.js` |
+| New audio sound | `js/audio.js` |
+| New keyboard/touch control | `js/input.js` |
+| New visual rendering | `js/drawing.js` |
+| New state field | `js/state.js` (add to `G`) |
+| New test | `tests/tests.js` |
+
 ## Documentation Maintenance
 
 **When modifying code, always update the relevant docs:**
 
-- **Adding/removing/renaming files** -> Update file structure in both this file and `docs/architecture.md`
-- **Adding/removing functions** -> Update the function map in `docs/architecture.md`
-- **Changing state fields in G** -> Update the state categories table in `docs/architecture.md`
-- **Changing scene transitions** -> Update the game state machine diagram
-- **Adding new constants** -> Document in config.js section of `docs/architecture.md`
-- **Adding tests** -> Update test coverage section in `docs/architecture.md`
+- **Adding/removing/renaming files** → Update file structure in both this file and `docs/architecture.md`
+- **Adding/removing functions** → Update the function map in `docs/architecture.md`
+- **Changing state fields in G** → Update the state categories table in `docs/architecture.md`
+- **Changing scene transitions** → Update the game state machine diagram in both files
+- **Adding new constants** → Document in the constants table in `docs/architecture.md`
+- **Adding tests** → Update test coverage section in `docs/architecture.md`

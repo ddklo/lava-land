@@ -9,11 +9,13 @@ Lava Land is a browser-based memory-platformer. The player memorizes a grid of p
 ## File Structure
 
 ```
-ellie-game-v1/
+lava-land/
   index.html              HTML markup + <link> + 14 <script> tags
   css/
     theme.css             CSS custom properties (colors, fonts) — the design token file
     style.css             All CSS (responsive, mobile-friendly), uses theme.css variables
+  images/
+    background.svg        Volcanic cave background (referenced by style.css)
   js/
     config.js             Constants, physics tuning, CHARACTERS, LEVELS, getLevelConfig(), scoring constants
     state.js              Shared mutable state object (G)
