@@ -184,8 +184,9 @@ const PlayingScene = {
       const p = G.player.onPlatform;
       G.trailMarks.push({ x: p.x + p.w / 2, y: p.y + (PLAT_H - 7) / 2, life: 1.0 });
     }
-    document.getElementById('hud-text').innerHTML =
-      '<div style="color:#ffcc88;">&larr; &rarr; move sideways &nbsp; | &nbsp; &uarr; / Space jump forward</div>';
+    document.getElementById('hud-text').innerHTML = G.isTouchDevice
+      ? '<div style="color:#ffcc88;">Tap platform to move &nbsp; | &nbsp; Swipe to jump</div>'
+      : '<div style="color:#ffcc88;">&larr; &rarr; move sideways &nbsp; | &nbsp; &darr; / Space jump forward</div>';
   },
   onExit() {
     clearTimers();
