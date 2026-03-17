@@ -118,6 +118,17 @@ const MemorizeScene = {
     this._lastSecs = -1;
     document.getElementById('game-hud').style.display = 'block';
     document.getElementById('lose-screen').style.display = 'none';
+
+    // Populate HUD left panel
+    const hudLeft = document.getElementById('hud-left');
+    if (G.gameMode === 'adventure' && G.levelConfig) {
+      hudLeft.innerHTML =
+        `<div class="hud-level-line">Level ${G.level}: ${G.levelConfig.name}</div>` +
+        `<div class="hud-total-score">Score ${G.totalScore}</div>`;
+    } else {
+      hudLeft.innerHTML = '';
+    }
+
     playMemorizeMusic();
   },
   onExit() {
@@ -184,6 +195,16 @@ const PlayingScene = {
     this._lastTimerStr = '';
     this._lastJumps = -1;
     playActionMusic();
+
+    // Populate HUD left panel
+    const hudLeft = document.getElementById('hud-left');
+    if (G.gameMode === 'adventure' && G.levelConfig) {
+      hudLeft.innerHTML =
+        `<div class="hud-level-line">Level ${G.level}: ${G.levelConfig.name}</div>` +
+        `<div class="hud-total-score">Score ${G.totalScore}</div>`;
+    } else {
+      hudLeft.innerHTML = '';
+    }
 
     // First trail mark on starting platform
     if (G.player.onPlatform) {
@@ -283,6 +304,14 @@ const FallingScene = {
         this._spoken = true;
         speakLose();
       }
+      // Show level info on lose screen (adventure mode)
+      const loseLevelInfo = document.getElementById('lose-level-info');
+      if (G.gameMode === 'adventure' && G.levelConfig) {
+        loseLevelInfo.textContent = `Level ${G.level}: ${G.levelConfig.name}`;
+        loseLevelInfo.style.display = '';
+      } else {
+        loseLevelInfo.style.display = 'none';
+      }
       // Show lose screen
       document.getElementById('lose-emoji').textContent = G.heroChar.emoji + ' \uD83D\uDD25';
       const messages = [
@@ -354,9 +383,50 @@ const WonScene = {
       `${G.heroChar.emoji} \u{1F91D} ${G.rescueChar.emoji}`;
     document.getElementById('win-msg').textContent =
       `${G.heroChar.name} saved ${G.rescueChar.name}!`;
+
+    // Score & level display
+    const winLevelInfo = document.getElementById('win-level-info');
+    const winScoreSection = document.getElementById('win-score-section');
+    const nextLevelBtn = document.getElementById('next-level-btn');
+
+    if (G.gameMode === 'adventure' && G.levelConfig) {
+      const breakdown = calculateScore(G.level, G.playTimer, G.jumpCount, G.gridRows, G.levelConfig.memTime);
+      const stars = calculateStars(breakdown.totalScore, G.level);
+      G.levelScore = breakdown.totalScore;
+      G.levelStars = stars;
+      G.levelScoreBreakdown = breakdown;
+      G.totalScore += breakdown.totalScore;
+
+      winLevelInfo.textContent = `Level ${G.level}: ${G.levelConfig.name}`;
+      winLevelInfo.style.display = '';
+
+      const starStr = '\u2B50'.repeat(stars) + '\u2606'.repeat(3 - stars);
+      let scoreHtml = `<div class="score-stars">${starStr}</div>`;
+      scoreHtml += `<div class="score-row"><span>Time bonus</span><span>${breakdown.timeScore}</span></div>`;
+      scoreHtml += `<div class="score-row"><span>Jump efficiency</span><span>${breakdown.jumpScore}</span></div>`;
+      scoreHtml += `<div class="score-row"><span>Level bonus</span><span>${breakdown.levelBonus}</span></div>`;
+      if (breakdown.perfectBonus > 0) {
+        scoreHtml += `<div class="score-row bonus"><span>Perfect path!</span><span>+${breakdown.perfectBonus}</span></div>`;
+      }
+      if (breakdown.speedBonus > 0) {
+        scoreHtml += `<div class="score-row bonus"><span>Speed bonus!</span><span>+${breakdown.speedBonus}</span></div>`;
+      }
+      scoreHtml += `<div class="score-total"><span>Level Score</span><span>${breakdown.totalScore}</span></div>`;
+      scoreHtml += `<div class="score-cumulative">Total Score: ${G.totalScore}</div>`;
+      winScoreSection.innerHTML = scoreHtml;
+      winScoreSection.style.display = '';
+
+      nextLevelBtn.style.display = '';
+    } else {
+      winLevelInfo.style.display = 'none';
+      winScoreSection.style.display = 'none';
+      nextLevelBtn.style.display = 'none';
+    }
   },
   onExit() {
     clearTimers();
+    document.getElementById('win-screen').style.display = 'none';
+    document.getElementById('game-hud').style.display = 'none';
   },
   update(dt) {
     G.lavaTime += dt;

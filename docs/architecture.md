@@ -12,9 +12,10 @@ Lava Land is a browser-based memory-platformer. The player memorizes a grid of p
 ellie-game-v1/
   index.html              HTML markup + <link> + 14 <script> tags
   css/
-    style.css             All CSS (responsive, mobile-friendly)
+    theme.css             CSS custom properties (colors, fonts) — the design token file
+    style.css             All CSS (responsive, mobile-friendly), uses theme.css variables
   js/
-    config.js             Constants, physics tuning, CHARACTERS, lookup tables
+    config.js             Constants, physics tuning, CHARACTERS, LEVELS, getLevelConfig(), scoring constants
     state.js              Shared mutable state object (G)
     timers.js             Managed timer system (replaces setTimeout in game logic)
     audio.js              Procedural music generators + sound effects (with error guards)
@@ -118,6 +119,13 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `TRAIL_FADE_RATE` | 0.12 | Trail mark fade speed |
 | `PLAT_DEPTH` | 7 | 3D platform depth face height |
 | `EMOJI_SIZE` | 48 | Character emoji font size |
+| `SCORE_TIME_BASE` | 5000 | Base time score |
+| `SCORE_TIME_PENALTY` | 50 | Points lost per second |
+| `SCORE_JUMP_BASE` | 3000 | Base jump efficiency score |
+| `SCORE_JUMP_PENALTY` | 100 | Points lost per excess jump |
+| `SCORE_LEVEL_MULT` | 200 | Points per level number |
+| `SCORE_PERFECT_BONUS` | 1000 | Bonus for zero excess jumps |
+| `SCORE_SPEED_BONUS` | 500 | Bonus for fast completion |
 
 ### 6. Audio Error Handling (audio.js)
 
@@ -134,6 +142,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Category | Fields | Mutated by |
 |----------|--------|------------|
 | Settings | `gridCols`, `gridRows`, `difficulty`, `selectedSize`, `selectedMemTime` | menu.js |
+| Mode/Level | `gameMode`, `level`, `levelConfig`, `levelScore`, `totalScore`, `levelStars`, `levelScoreBreakdown` | menu.js, WonScene |
 | Audio | `audioCtx`, `musicGain`, `currentMusic`, `musicTimerId` | audio.js |
 | Canvas | `canvas`, `ctx` | init.js (write-once) |
 | Selections | `heroChoice`, `rescueChoice`, `heroChar`, `rescueChar` | menu.js (startGame caches lookups) |
@@ -153,25 +162,28 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 
 ```
           +------------+
-          |  MenuScene  |<-----------------+
-          +-----+------+                   |
-                | startGame()              | play-again / back-to-menu
-                v                          |
-          +--------------+                 |
-     +--->|MemorizeScene  |        +-------+-------+
-     |    +------+-------+        |   WonScene     |
-     |           | timer expires  +-------^--------+
-     |           v                        |
-     |    +--------------+                |
-     |    | PlayingScene  |---------------+
-     |    +------+-------+   last row + rescue col
-     |           | land on fake / destroyed
-     |           v
-     |    +--------------+
-     +----| FallingScene  |
-          +--------------+
-           (lose screen -> retry or menu)
+          |  MenuScene  |<-----------------------+
+          +-----+------+                         |
+                | adventure / custom             | back-to-menu
+                v                                |
+          +--------------+            +----------+-----+
+     +--->|MemorizeScene  |           |   WonScene      |
+     |    +------+-------+           | (score + stars)  |
+     |           | timer expires     +--+----------^----+
+     |           v                      |          |
+     |    +--------------+              |next      |
+     |    | PlayingScene  |----win------+level     |
+     |    +------+-------+                        |
+     |           | land on fake / destroyed        |
+     |           v                                 |
+     |    +--------------+                         |
+     +----| FallingScene  |  (retry restarts level)|
+          +--------------+-------------------------+
 ```
+
+**Two game modes:**
+- **Adventure Mode**: levels progress via `startLevel()` / `advanceLevel()`, score accumulates
+- **Custom Mode**: manual settings, no levels/scoring, uses `startGame()`
 
 All transitions go through `SceneManager.replace()`. Each scene's `onExit()` calls `clearTimers()`.
 
@@ -231,7 +243,9 @@ All transitions go through `SceneManager.replace()`. Each scene's `onExit()` cal
 - `WonScene` - Firework sequence, character celebration walk, win screen
 - `renderPlatforms(reveal)` / `applyShake(ctx)` / `updatePlatformBob(dt)` / `updateCrumbleTimers(dt)`
 
-### logic.js (3 functions)
+### logic.js (5 functions)
+- `calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime)` - Compute score breakdown
+- `calculateStars(score, levelNum)` - Compute 1-3 star rating
 - `destroyDeparturePlatform()` - Explode and mark current platform as destroyed
 - `tryJump(direction)` - Handle left/right/forward jump; uses destroyDeparturePlatform
 - `landOnPlatform(plat, row, col)` - Process landing; check win/fake/destroyed
@@ -244,11 +258,14 @@ All transitions go through `SceneManager.replace()`. Each scene's `onExit()` cal
 - `TICK` - Fixed timestep interval (1/60 seconds)
 - `gameLoop(timestamp)` - RAF loop
 
-### menu.js (4 functions)
+### menu.js (7 functions)
 - `setupMenu()` - Build character cards, wire selectors + buttons
-- `updateStartBtn()` - Enable/disable start button
+- `updateStartBtn()` - Enable/disable start and custom buttons
 - `updateSettingsSummary()` - Update settings display text
-- `startGame()` - Apply settings, generate level, start game
+- `returnToMenu()` - Reset level state and return to menu
+- `startLevel()` - Apply level config, generate platforms, start memorize (adventure)
+- `advanceLevel()` - Increment level and call startLevel
+- `startGame()` - Apply manual settings, generate level, start game (custom mode)
 
 ### init.js (imperative bootstrap)
 - Set up canvas, set title/author text, call `setupInput()`, `setupMenu()`, push `MenuScene`, start `gameLoop`
@@ -294,6 +311,12 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - `destroyDeparturePlatform()` helper (with and without platform)
 - `drawEmoji()` helper (renders without error, resets shadow state)
 - PlayingScene HUD caching properties
+- Level config validation (15 entries, ranges, difficulty increases)
+- `getLevelConfig()` table and formula ranges
+- `calculateScore()` basic, perfect, speed, floor at zero
+- `calculateStars()` thresholds (1/2/3 stars)
+- Backward compatibility (custom mode with null levelConfig)
+- New state fields (level, levelConfig, gameMode, scoring fields)
 
 ---
 

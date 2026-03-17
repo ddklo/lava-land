@@ -4,13 +4,10 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
   <title>Lava Land - Save Your Friend!</title>
+  <link rel="stylesheet" href="css/theme.css">
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <div id="bg-header">
-    <div id="bg-title"></div>
-    <div id="bg-author"></div>
-  </div>
   <canvas id="gameCanvas"></canvas>
   <div id="ui-overlay">
     <div id="menu-screen" class="menu-screen">
@@ -21,11 +18,12 @@
       <h3>Choose Who to Save</h3>
       <div class="character-grid" id="rescue-grid"></div>
 
-      <div class="menu-buttons">
-        <button class="btn" id="start-btn" disabled>START GAME</button>
+      <button class="btn btn-adventure" id="start-btn" disabled>ADVENTURE MODE</button>
+      <div class="menu-secondary">
+        <button class="btn btn-custom" id="custom-btn" disabled>CUSTOM MODE</button>
         <button class="btn btn-settings" id="settings-btn">&#9881; SETTINGS</button>
       </div>
-      <div id="settings-summary" class="settings-summary">Easy &middot; Medium grid &middot; 10s memorize</div>
+      <div id="settings-summary" class="settings-summary">Custom: Easy &middot; Medium grid &middot; 10s memorize</div>
       <div class="instructions" id="instructions-keyboard">
         <kbd>&larr;</kbd> <kbd>&rarr;</kbd> Hop left / right (same row)<br>
         <kbd>&darr;</kbd> / <kbd>Space</kbd> Jump forward (next row)<br>
@@ -37,6 +35,7 @@
         Tap empty area or swipe &darr; to jump forward<br>
         Memorize the safe platforms, then jump!
       </div>
+      <div class="menu-credit" id="menu-credit"></div>
     </div>
 
     <div id="settings-screen" class="menu-screen" style="display:none;">
@@ -95,6 +94,7 @@
 
     <div id="lose-screen" class="menu-screen" style="display:none;">
       <h1>OH NO!</h1>
+      <div id="lose-level-info" class="level-info"></div>
       <div class="lose-emoji" id="lose-emoji"></div>
       <h2 id="lose-msg"></h2>
       <button class="btn" id="try-again-btn">TRY AGAIN</button>
@@ -103,14 +103,20 @@
 
     <div id="win-screen" class="menu-screen" style="display:none;">
       <h1>YOU DID IT!</h1>
+      <div id="win-level-info" class="level-info"></div>
       <div class="win-emojis" id="win-emojis"></div>
       <h2 id="win-msg"></h2>
-      <button class="btn" id="play-again-btn">PLAY AGAIN</button>
+      <div id="win-score-section" class="score-section"></div>
+      <div class="win-buttons">
+        <button class="btn" id="next-level-btn" style="display:none;">NEXT LEVEL</button>
+        <button class="btn btn-secondary" id="play-again-btn">BACK TO MENU</button>
+      </div>
     </div>
   </div>
 
   <div id="game-hud" style="display:none;">
-    <div id="hud-title-section">
+    <div id="hud-left"></div>
+    <div id="hud-center">
       <div id="hud-game-title"></div>
       <div id="hud-game-author"></div>
     </div>

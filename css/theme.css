@@ -1,0 +1,82 @@
+/* ─── LAVA LAND THEME ─────────────────────────────────────────────
+   All colors, fonts, and key dimensions in one place.
+   Override these variables to reskin the game.
+   ─────────────────────────────────────────────────────────────── */
+
+:root {
+  /* ── Fonts ──────────────────────────────────────────────────── */
+  --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-mono: monospace;
+
+  /* ── Background / surface ───────────────────────────────────── */
+  --bg-dark: #1a0a0a;
+  --surface: rgba(10, 5, 5, 0.95);
+  --surface-hud: rgba(10, 5, 5, 0.85);
+
+  /* ── Brand / primary (fire orange) ──────────────────────────── */
+  --primary: #ff6600;
+  --primary-light: #ff8800;
+  --primary-dark: #cc3300;
+  --primary-glow: rgba(255, 100, 0, 0.5);
+
+  /* ── Accent / gold tones ────────────────────────────────────── */
+  --accent-gold: #ffcc44;
+  --accent-warm: #ffaa55;
+  --accent-light: #ffcc88;
+  --accent-cream: #ffddaa;
+
+  /* ── Text hierarchy ─────────────────────────────────────────── */
+  --text-bright: #fff;
+  --text-primary: #ffcc88;
+  --text-secondary: #cc8855;
+  --text-muted: #aa8866;
+  --text-dim: #886644;
+  --text-faint: #665544;
+
+  /* ── Borders / subtle lines ─────────────────────────────────── */
+  --border-warm: #553300;
+  --border-glow: rgba(255, 100, 0, 0.28);
+  --border-accent: #ffaa00;
+
+  /* ── Selections / highlights ────────────────────────────────── */
+  --select-bg: rgba(255, 150, 0, 0.3);
+  --select-border: #ffaa00;
+  --select-glow: rgba(255, 150, 0, 0.4);
+  --hover-bg: rgba(255, 100, 0, 0.2);
+  --hover-border: #ff8800;
+  --card-bg: rgba(255, 100, 0, 0.1);
+
+  /* ── Buttons ────────────────────────────────────────────────── */
+  --btn-primary-top: #ff6600;
+  --btn-primary-bottom: #cc3300;
+  --btn-hover-top: #ff8800;
+  --btn-hover-bottom: #dd4400;
+  --btn-secondary-top: #555;
+  --btn-secondary-bottom: #333;
+  --btn-custom-top: #446688;
+  --btn-custom-bottom: #2a4466;
+
+  /* ── Win screen ─────────────────────────────────────────────── */
+  --win-title: #ffdd00;
+  --win-glow: rgba(255, 220, 0, 0.8);
+
+  /* ── Lose screen ────────────────────────────────────────────── */
+  --lose-title: #ff4444;
+  --lose-glow: rgba(255, 50, 0, 0.8);
+  --lose-text: #ff8866;
+
+  /* ── Score ───────────────────────────────────────────────────── */
+  --score-bonus: #ffcc44;
+  --score-row-text: #ccaa88;
+
+  /* ── HUD timer ──────────────────────────────────────────────── */
+  --timer-warn: #ffcc00;
+
+  /* ── Keyboard hints ─────────────────────────────────────────── */
+  --kbd-bg: #332211;
+  --kbd-border: #664422;
+
+  /* ── Canvas ─────────────────────────────────────────────────── */
+  --canvas-border: #ff4400;
+  --canvas-glow: rgba(255, 68, 0, 0.4);
+}

@@ -912,6 +912,138 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // LEVEL CONFIG TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Level Config — LEVELS Array', () => {
+    assertEqual(LEVELS.length, 15, 'LEVELS has 15 entries');
+    for (let i = 0; i < LEVELS.length; i++) {
+      const lvl = LEVELS[i];
+      assert(lvl.cols >= 5 && lvl.cols <= 7, `Level ${i + 1} cols in range (got ${lvl.cols})`);
+      assert(lvl.rows >= 5 && lvl.rows <= 16, `Level ${i + 1} rows in range (got ${lvl.rows})`);
+      assert(lvl.fake >= 0.15 && lvl.fake <= 0.75, `Level ${i + 1} fake in range (got ${lvl.fake})`);
+      assert(lvl.memTime >= 4 && lvl.memTime <= 12, `Level ${i + 1} memTime in range (got ${lvl.memTime})`);
+      assert(typeof lvl.name === 'string' && lvl.name.length > 0, `Level ${i + 1} has a name`);
+    }
+  });
+
+  suite('Level Config — Difficulty Increases', () => {
+    // Fake chance never decreases across the 15 levels
+    for (let i = 1; i < LEVELS.length; i++) {
+      assert(LEVELS[i].fake >= LEVELS[i - 1].fake,
+        `Level ${i + 1} fake >= level ${i} fake`);
+    }
+    // Rows never decrease
+    for (let i = 1; i < LEVELS.length; i++) {
+      assert(LEVELS[i].rows >= LEVELS[i - 1].rows,
+        `Level ${i + 1} rows >= level ${i} rows`);
+    }
+  });
+
+  suite('getLevelConfig — Table Levels', () => {
+    const cfg1 = getLevelConfig(1);
+    assertEqual(cfg1.cols, 5, 'Level 1 cols = 5');
+    assertEqual(cfg1.rows, 5, 'Level 1 rows = 5');
+    assertEqual(cfg1.name, 'The Crossing', 'Level 1 name');
+
+    const cfg15 = getLevelConfig(15);
+    assertEqual(cfg15.cols, 7, 'Level 15 cols = 7');
+    assertEqual(cfg15.rows, 16, 'Level 15 rows = 16');
+    assertEqual(cfg15.name, 'Final Descent', 'Level 15 name');
+  });
+
+  suite('getLevelConfig — Endless Scaling', () => {
+    const cfg16 = getLevelConfig(16);
+    assertEqual(cfg16.cols, 7, 'Level 16 cols = 7');
+    assert(cfg16.rows >= 16 && cfg16.rows <= 20, `Level 16 rows in range (got ${cfg16.rows})`);
+    assert(cfg16.fake > 0.75 && cfg16.fake <= 0.85, `Level 16 fake > 0.75 (got ${cfg16.fake})`);
+    assert(cfg16.memTime >= 3, `Level 16 memTime >= 3 (got ${cfg16.memTime})`);
+    assertEqual(cfg16.name, 'Endless 16', 'Level 16 name');
+
+    const cfg30 = getLevelConfig(30);
+    assert(cfg30.rows <= 20, `Level 30 rows capped at 20 (got ${cfg30.rows})`);
+    assert(cfg30.fake <= 0.85, `Level 30 fake capped at 0.85 (got ${cfg30.fake})`);
+    assert(cfg30.memTime >= 3, `Level 30 memTime >= 3 (got ${cfg30.memTime})`);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // SCORING TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('calculateScore — Basic', () => {
+    // Level 1, 10s, minimum jumps (4 for 5 rows), memTime 12
+    const result = calculateScore(1, 10, 4, 5, 12);
+    assertEqual(result.timeScore, 5000 - 10 * 50, 'Time score = 5000 - 500 = 4500');
+    assertEqual(result.jumpScore, 3000, 'Jump score = 3000 (no excess)');
+    assertEqual(result.levelBonus, 200, 'Level bonus = 1 * 200');
+    assertEqual(result.perfectBonus, 1000, 'Perfect bonus awarded');
+    assertEqual(result.speedBonus, 0, 'No speed bonus (10s >= 12 * 0.5)');
+    assert(result.perfect === true, 'Perfect flag set');
+    assert(result.fast === false, 'Fast flag not set');
+    assertEqual(result.totalScore, 4500 + 3000 + 200 + 1000, 'Total = 8700');
+  });
+
+  suite('calculateScore — Speed Bonus', () => {
+    // Level 5, 2s (< 10 * 0.5 = 5s), 9 jumps for 10 rows
+    const result = calculateScore(5, 2, 9, 10, 10);
+    assert(result.fast === true, 'Fast flag set');
+    assertEqual(result.speedBonus, 500, 'Speed bonus = 500');
+  });
+
+  suite('calculateScore — Excess Jumps', () => {
+    // Level 1, 5s, 10 jumps for 5 rows (min = 4, excess = 6)
+    const result = calculateScore(1, 5, 10, 5, 12);
+    assertEqual(result.jumpScore, 3000 - 6 * 100, 'Jump score = 2400 (6 excess)');
+    assertEqual(result.perfectBonus, 0, 'No perfect bonus');
+    assert(result.perfect === false, 'Perfect flag not set');
+  });
+
+  suite('calculateScore — Floors at Zero', () => {
+    // Very slow, many excess jumps
+    const result = calculateScore(1, 200, 100, 5, 12);
+    assertEqual(result.timeScore, 0, 'Time score floors at 0');
+    assertEqual(result.jumpScore, 0, 'Jump score floors at 0');
+  });
+
+  suite('calculateStars — Thresholds', () => {
+    // Max possible for level 1: 5000 + 3000 + 200 + 1000 + 500 = 9700
+    const maxScore = 5000 + 3000 + 200 + 1000 + 500;
+    const stars3 = calculateStars(Math.ceil(maxScore * 0.8), 1);
+    assertEqual(stars3, 3, '3 stars at 80% of max');
+
+    const stars2 = calculateStars(Math.ceil(maxScore * 0.5), 1);
+    assertEqual(stars2, 2, '2 stars at 50% of max');
+
+    const stars1 = calculateStars(Math.floor(maxScore * 0.3), 1);
+    assertEqual(stars1, 1, '1 star below 50% of max');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // BACKWARD COMPATIBILITY
+  // ═══════════════════════════════════════════════════════════════
+  suite('Backward Compat — Custom Mode No LevelConfig', () => {
+    // When levelConfig is null, platforms should use DIFFICULTY_FAKE_CHANCE
+    const saved = G.levelConfig;
+    G.levelConfig = null;
+    G.gridCols = 6;
+    G.gridRows = 12;
+    G.difficulty = 'easy';
+    generatePlatforms();
+
+    // Should not crash and platforms should exist
+    assertEqual(G.platforms.length, 12, 'Platforms generated without levelConfig');
+    G.levelConfig = saved;
+  });
+
+  suite('State — New Level Fields', () => {
+    assert('level' in G, 'G has level field');
+    assert('levelConfig' in G, 'G has levelConfig field');
+    assert('gameMode' in G, 'G has gameMode field');
+    assert('levelScore' in G, 'G has levelScore field');
+    assert('totalScore' in G, 'G has totalScore field');
+    assert('levelStars' in G, 'G has levelStars field');
+    assert('levelScoreBreakdown' in G, 'G has levelScoreBreakdown field');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
   // RENDER RESULTS
   // ═══════════════════════════════════════════════════════════════
   const container = document.getElementById('results');

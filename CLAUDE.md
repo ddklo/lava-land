@@ -24,8 +24,9 @@ See [docs/rules.md](docs/rules.md) for complete game rules documentation.
 
 ```
 index.html          HTML + 14 script tags (entry point)
-css/style.css       All styles (responsive, mobile-friendly)
-js/config.js        Constants, physics tuning (CANVAS_W, CHARACTERS, JUMP_ARC_HEIGHT, etc.)
+css/theme.css       CSS custom properties (colors, fonts) — design tokens
+css/style.css       All styles (responsive, mobile-friendly), references theme.css
+js/config.js        Constants, physics tuning, LEVELS array, getLevelConfig(), scoring constants
 js/state.js         Shared mutable state object: const G = {}
 js/timers.js        Managed timer system (addTimer, updateTimers, clearTimers)
 js/audio.js         Procedural music + sound effects (Web Audio API, with error guards)
@@ -34,10 +35,10 @@ js/player.js        resetPlayer()
 js/drawing.js       Canvas rendering (read-only) + particle/trail update/render
 js/effects.js       All particle spawners (dust, explosions, lava, fireworks, confetti)
 js/scenes.js        SceneManager + 5 scene objects (Menu/Memorize/Playing/Falling/Won)
-js/logic.js         Core game rules (tryJump, landOnPlatform)
+js/logic.js         Core game rules (tryJump, landOnPlatform) + scoring (calculateScore, calculateStars)
 js/input.js         Keyboard + touch event listeners
 js/loop.js          Fixed-timestep game loop (TICK=1/60)
-js/menu.js          Menu/settings UI setup + startGame()
+js/menu.js          Menu/settings UI + startGame/startLevel/advanceLevel/returnToMenu
 js/init.js          Bootstrap (only file that runs at parse time)
 tests/test.html     Browser-based test runner
 tests/tests.js      Test suite
@@ -61,14 +62,19 @@ docs/rules.md       Game rules documentation
 - **File responsibilities**: drawing.js = rendering only. effects.js = all particle spawning. scenes.js = state machine. logic.js = game rules.
 - **No modules**: Plain `<script>` tags. All functions and constants are global. Load order matters.
 
+### Game Modes
+
+- **Adventure Mode** (default): 15 hand-tuned levels + infinite scaling. Score breakdown with stars on win. "Next Level" button advances.
+- **Custom Mode**: Manual difficulty/grid/memorize settings. No levels or scoring. Original behavior.
+
 ### Game States (Scenes)
 
 ```
-MenuScene -> MemorizeScene -> PlayingScene -> WonScene
-                  ^                |
-                  |          (fake/destroyed)
-                  |                v
-                  +--------- FallingScene (lose screen)
+MenuScene -> MemorizeScene -> PlayingScene -> WonScene (score + next level)
+                  ^                |                |
+                  |          (fake/destroyed)    (next level loops back)
+                  |                v                |
+                  +--------- FallingScene ---------(retry restarts same level)
 ```
 
 ### Running

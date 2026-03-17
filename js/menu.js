@@ -1,13 +1,47 @@
 // ─── MENU ───────────────────────────────────────────────────────
 function updateStartBtn() {
-  document.getElementById('start-btn').disabled = !(G.heroChoice && G.rescueChoice);
+  const ready = !!(G.heroChoice && G.rescueChoice);
+  document.getElementById('start-btn').disabled = !ready;
+  document.getElementById('custom-btn').disabled = !ready;
 }
 
 function updateSettingsSummary() {
   const diffLabel = G.difficulty.charAt(0).toUpperCase() + G.difficulty.slice(1);
   const sizeLabel = G.selectedSize.charAt(0).toUpperCase() + G.selectedSize.slice(1);
   const memSecs = MEMORIZE_TIMES[G.selectedMemTime];
-  document.getElementById('settings-summary').textContent = diffLabel + ' \u00B7 ' + sizeLabel + ' grid \u00B7 ' + memSecs + 's memorize';
+  document.getElementById('settings-summary').textContent = 'Custom: ' + diffLabel + ' \u00B7 ' + sizeLabel + ' grid \u00B7 ' + memSecs + 's memorize';
+}
+
+function returnToMenu() {
+  G.heroChoice = null;
+  G.rescueChoice = null;
+  G.levelConfig = null;
+  G.level = 1;
+  G.totalScore = 0;
+  document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+  updateStartBtn();
+  SceneManager.replace(MenuScene);
+}
+
+function startLevel() {
+  const cfg = getLevelConfig(G.level);
+  G.levelConfig = cfg;
+  G.gridCols = cfg.cols;
+  G.gridRows = cfg.rows;
+  G.memorizeTimer = cfg.memTime;
+
+  generatePlatforms();
+  resetPlayer();
+  G.particles = [];
+  G.trailMarks = [];
+  G.jumpCount = 0;
+
+  SceneManager.replace(MemorizeScene);
+}
+
+function advanceLevel() {
+  G.level++;
+  startLevel();
 }
 
 function setupMenu() {
@@ -85,45 +119,58 @@ function setupMenu() {
     updateSettingsSummary();
   });
 
-  // Start button
-  document.getElementById('start-btn').addEventListener('click', startGame);
-
-  // Play again button (win screen) — back to menu
-  document.getElementById('play-again-btn').addEventListener('click', () => {
-    G.heroChoice = null;
-    G.rescueChoice = null;
-    document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
-    updateStartBtn();
-    SceneManager.replace(MenuScene);
+  // Adventure mode button (primary)
+  document.getElementById('start-btn').addEventListener('click', () => {
+    document.getElementById('start-btn').disabled = true;
+    document.getElementById('custom-btn').disabled = true;
+    initAudio();
+    G.heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
+    G.rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
+    G.gameMode = 'adventure';
+    G.level = 1;
+    G.totalScore = 0;
+    startLevel();
   });
 
-  // Try again button (lose screen) — restart same game
-  document.getElementById('try-again-btn').addEventListener('click', () => {
+  // Custom mode button
+  document.getElementById('custom-btn').addEventListener('click', () => {
+    document.getElementById('start-btn').disabled = true;
+    document.getElementById('custom-btn').disabled = true;
+    initAudio();
+    G.heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
+    G.rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
+    G.gameMode = 'custom';
+    G.levelConfig = null;
     startGame();
+  });
+
+  // Next level button (win screen — adventure mode)
+  document.getElementById('next-level-btn').addEventListener('click', () => {
+    advanceLevel();
+  });
+
+  // Play again / back to menu button (win screen)
+  document.getElementById('play-again-btn').addEventListener('click', () => {
+    returnToMenu();
+  });
+
+  // Try again button (lose screen)
+  document.getElementById('try-again-btn').addEventListener('click', () => {
+    if (G.gameMode === 'adventure') {
+      startLevel();
+    } else {
+      startGame();
+    }
   });
 
   // Back to menu button (lose screen)
   document.getElementById('lose-menu-btn').addEventListener('click', () => {
-    G.heroChoice = null;
-    G.rescueChoice = null;
-    document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
-    updateStartBtn();
-    SceneManager.replace(MenuScene);
+    returnToMenu();
   });
 }
 
 function startGame() {
-  // Debounce: disable START button immediately
-  const startBtn = document.getElementById('start-btn');
-  startBtn.disabled = true;
-
-  initAudio();
-
-  // Cache character data
-  G.heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
-  G.rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
-
-  // Apply grid size setting
+  // Custom mode — use manual settings
   const sizeConfig = GRID_SIZES[G.selectedSize];
   G.gridCols = sizeConfig.cols;
   G.gridRows = sizeConfig.rows;

@@ -23,6 +23,15 @@ const G = {
   selectedSize: 'medium',
   selectedMemTime: 'medium',
 
+  // Mode & level progression
+  gameMode: 'adventure',
+  level: 1,
+  levelConfig: null,
+  levelScore: 0,
+  totalScore: 0,
+  levelStars: 0,
+  levelScoreBreakdown: null,
+
   // Game state
   gameState: 'menu',
   platforms: [],

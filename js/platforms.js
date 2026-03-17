@@ -55,8 +55,8 @@ function generatePlatforms() {
     G.safePath[row] = prev > 0 ? prev - 1 : prev + 1;
   }
 
-  // Mark non-path as fake based on difficulty
-  const fakeChance = DIFFICULTY_FAKE_CHANCE[G.difficulty];
+  // Mark non-path as fake based on difficulty (adventure mode uses levelConfig)
+  const fakeChance = G.levelConfig ? G.levelConfig.fake : DIFFICULTY_FAKE_CHANCE[G.difficulty];
   for (let row = 0; row < G.gridRows; row++) {
     for (let i = 0; i < G.platforms[row].length; i++) {
       if (i === G.safePath[row]) continue; // never make path platform fake
