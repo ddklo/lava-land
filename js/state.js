@@ -42,6 +42,7 @@ const G = {
 
   // Input
   keys: {},
+  isTouchDevice: false,
 
   // Loop
   lastTime: 0,

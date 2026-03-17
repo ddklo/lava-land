@@ -118,7 +118,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Animation | `jumpAnim` | logic.js, PlayingScene |
 | Win | `winTimer` | WonScene |
 | Timers | `timers` | timers.js |
-| Input | `keys` | input.js |
+| Input | `keys`, `isTouchDevice` | input.js |
 | Loop | `lastTime`, `accumulator` | loop.js |
 
 ### Constants (config.js)
@@ -249,8 +249,9 @@ All transitions go through `SceneManager.replace()`. Each scene's `onExit()` cal
 - `tryJump(direction)` - Handle left/right/forward jump input
 - `landOnPlatform(plat, row, col)` - Process landing; triggers scene transitions
 
-### input.js (1 function)
-- `setupInput()` - Register keydown/keyup listeners
+### input.js (2 functions)
+- `findTappedPlatform(canvasX, canvasY)` - Hit-test canvas coordinates against adjacent platforms for touch input
+- `setupInput()` - Register keyboard + touch event listeners
 
 ### loop.js (1 function + 1 constant)
 - `TICK` - Fixed timestep interval (1/60 seconds)
@@ -284,7 +285,7 @@ Issues resolved by the improvements above are marked with ~~strikethrough~~.
 1. **God object (G)** - All state in one flat mutable bag. Could be split into namespaced sub-objects.
 2. **Particle spawners split** - `spawnJumpDust`/`spawnLandDust`/`spawnCrumbleParticles`/`spawnLavaSplash` in drawing.js; `spawnFirework`/`spawnConfetti` in effects.js.
 3. **No object pool for particles** - Particles use push/splice. Could use pre-allocated pool.
-4. **No mobile input** - Keyboard-only despite viewport meta tag.
+4. ~~**No mobile input**~~ - Touch input added: swipe for directional movement, tap-on-platform for targeted jumps.
 5. **DOM manipulation in scenes** - Scenes directly show/hide HTML elements. Could use a UI manager.
 6. **Dead data** - `CHARACTERS[*].color` defined but never read.
 7. **Audio setTimeout** - Music loop scheduling in audio.js still uses `setTimeout`. This is acceptable since music timing is independent of game logic, but could be improved.
@@ -307,5 +308,5 @@ Consolidate all particle spawning in one file.
 ### 4. ES Modules (Low Impact, Medium Effort)
 Convert to `<script type="module">` with import/export. Requires HTTP server.
 
-### 5. Touch/Mobile Input (Low Impact, Medium Effort)
-Add touch event handlers for mobile play.
+### 5. ~~Touch/Mobile Input~~ (Implemented)
+Touch input now supports swipe gestures and tap-on-platform navigation.
