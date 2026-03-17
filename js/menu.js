@@ -35,6 +35,7 @@ function startLevel() {
   G.particles = [];
   G.trailMarks = [];
   G.jumpCount = 0;
+  G.memTimeSaved = 0;
 
   SceneManager.replace(MemorizeScene);
 }
@@ -181,6 +182,7 @@ function startGame() {
   G.particles = [];
   G.trailMarks = [];
   G.jumpCount = 0;
+  G.memTimeSaved = 0;
 
   SceneManager.replace(MemorizeScene);
 }

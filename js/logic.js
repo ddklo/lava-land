@@ -1,5 +1,5 @@
 // ─── SCORING ────────────────────────────────────────────────────
-function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime) {
+function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTimeSaved) {
   const minJumps = totalRows - 1;
   const excessJumps = Math.max(0, jumpCount - minJumps);
   const perfect = excessJumps === 0;
@@ -10,16 +10,17 @@ function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime) {
   const levelBonus = levelNum * SCORE_LEVEL_MULT;
   const perfectBonus = perfect ? SCORE_PERFECT_BONUS : 0;
   const speedBonus = fast ? SCORE_SPEED_BONUS : 0;
-  const totalScore = timeScore + jumpScore + levelBonus + perfectBonus + speedBonus;
+  const earlyMemBonus = Math.round((memTimeSaved || 0) * SCORE_EARLY_MEM_MULT);
+  const totalScore = timeScore + jumpScore + levelBonus + perfectBonus + speedBonus + earlyMemBonus;
 
-  return { timeScore, jumpScore, levelBonus, perfectBonus, speedBonus, totalScore, perfect, fast };
+  return { timeScore, jumpScore, levelBonus, perfectBonus, speedBonus, earlyMemBonus, totalScore, perfect, fast };
 }
 
 function calculateStars(score, levelNum) {
   const cfg = getLevelConfig(levelNum);
   const minJumps = cfg.rows - 1;
-  // Max possible: perfect path, zero time, all bonuses
-  const maxScore = SCORE_TIME_BASE + SCORE_JUMP_BASE + levelNum * SCORE_LEVEL_MULT + SCORE_PERFECT_BONUS + SCORE_SPEED_BONUS;
+  // Max possible: perfect path, zero time, all bonuses + full early mem bonus
+  const maxScore = SCORE_TIME_BASE + SCORE_JUMP_BASE + levelNum * SCORE_LEVEL_MULT + SCORE_PERFECT_BONUS + SCORE_SPEED_BONUS + cfg.memTime * SCORE_EARLY_MEM_MULT;
   if (score >= maxScore * STAR_THREE_THRESHOLD) return 3;
   if (score >= maxScore * STAR_TWO_THRESHOLD) return 2;
   return 1;
@@ -114,6 +115,8 @@ function landOnPlatform(plat, row, col) {
     return;
   }
   if (plat.fake) {
+    G.player.x = plat.x + plat.w / 2;
+    G.player.y = plat.y - PLAYER_Y_OFFSET;
     plat.crumbling = true;
     spawnCrumbleParticles(plat);
     playCrumbleSound();
@@ -141,6 +144,8 @@ function landOnPlatform(plat, row, col) {
     // Win only when landing on the rescue character's platform
     const rescueCol = G.safePath[G.safePath.length - 1];
     if (row === G.platforms.length - 1 && col === rescueCol) {
+      spawnPlatformExplosion(plat);
+      plat.destroyed = true;
       SceneManager.replace(WonScene);
     }
   }

@@ -29,7 +29,10 @@ function setupInput() {
       if (e.code === 'ArrowDown' || e.code === 'Space') tryJump('forward');
       e.preventDefault();
     }
-    if (G.gameState === 'memorize') e.preventDefault();
+    if (G.gameState === 'memorize') {
+      startPlayingEarly();
+      e.preventDefault();
+    }
   });
 
   document.addEventListener('keyup', (e) => { G.keys[e.code] = false; });
@@ -61,6 +64,11 @@ function setupInput() {
     if (!found) return;
     touchId = null;
 
+    if (G.gameState === 'memorize') {
+      startPlayingEarly();
+      e.preventDefault();
+      return;
+    }
     if (G.gameState !== 'playing') return;
 
     const dx = found.clientX - touchStartX;

@@ -123,7 +123,7 @@ const MemorizeScene = {
     const hudLeft = document.getElementById('hud-left');
     if (G.gameMode === 'adventure' && G.levelConfig) {
       hudLeft.innerHTML =
-        `<div class="hud-level-line">Level ${G.level}: ${G.levelConfig.name}</div>` +
+        `<div class="hud-level-line">Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}</div>` +
         `<div class="hud-total-score">Score ${G.totalScore}</div>`;
     } else {
       hudLeft.innerHTML = '';
@@ -143,9 +143,12 @@ const MemorizeScene = {
     const secs = Math.ceil(G.memorizeTimer);
     if (secs !== this._lastSecs) {
       this._lastSecs = secs;
+      const hint = G.isTouchDevice
+        ? 'Tap to start early for bonus points!'
+        : 'Press any key to start early for bonus points!';
       document.getElementById('hud-text').innerHTML =
         `<div class="timer-warn">MEMORIZE! ${secs}s</div>` +
-        `<div class="timer-hint">Remember which platforms are safe!</div>`;
+        `<div class="timer-hint">${hint}</div>`;
     }
     if (G.memorizeTimer <= 0) {
       SceneManager.replace(PlayingScene);
@@ -158,10 +161,11 @@ const MemorizeScene = {
 
     // Zoom-out transform to show entire level
     let levelTotalH = CANVAS_H;
+    let scale = 1;
     if (G.platforms.length > 0) {
       const lastPlat = G.platforms[G.platforms.length - 1][0];
       levelTotalH = lastPlat.y + lastPlat.h + 60;
-      const scale = Math.min(1, CANVAS_H / levelTotalH);
+      scale = Math.min(1, CANVAS_H / levelTotalH);
       const offsetX = (CANVAS_W - CANVAS_W * scale) / 2;
       const offsetY = (CANVAS_H - levelTotalH * scale) / 2;
       ctx.translate(offsetX, Math.max(0, offsetY));
@@ -169,14 +173,33 @@ const MemorizeScene = {
     }
 
     drawLava(0, levelTotalH);
+
+    // Draw goal column highlight so rescue position is obvious
+    if (G.platforms.length > 0 && G.safePath.length > 0) {
+      const goalCol = G.safePath[G.safePath.length - 1];
+      const goalPlat = G.platforms[G.platforms.length - 1][goalCol];
+      if (goalPlat) {
+        const pulse = 0.35 + 0.2 * Math.abs(Math.sin(G.lavaTime * 3));
+        ctx.fillStyle = `rgba(255, 220, 80, ${pulse})`;
+        ctx.fillRect(goalPlat.x - 4, 0, goalPlat.w + 8, levelTotalH);
+      }
+    }
+
     renderPlatforms(true);
-    drawRescueCharacter();
+    drawRescueCharacter(true);
     drawParticles();
     drawPlayer();
 
     ctx.restore();
   }
 };
+
+function startPlayingEarly() {
+  if (G.gameState !== 'memorize') return;
+  G.memTimeSaved = Math.max(0, G.memorizeTimer);
+  G.memorizeTimer = 0;
+  SceneManager.replace(PlayingScene);
+}
 
 // ═══════════════════════════════════════════════════════════════
 // PLAYING SCENE
@@ -200,7 +223,7 @@ const PlayingScene = {
     const hudLeft = document.getElementById('hud-left');
     if (G.gameMode === 'adventure' && G.levelConfig) {
       hudLeft.innerHTML =
-        `<div class="hud-level-line">Level ${G.level}: ${G.levelConfig.name}</div>` +
+        `<div class="hud-level-line">Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}</div>` +
         `<div class="hud-total-score">Score ${G.totalScore}</div>`;
     } else {
       hudLeft.innerHTML = '';
@@ -257,10 +280,10 @@ const PlayingScene = {
       this._lastJumps = curJumps;
       document.getElementById('hud-text').innerHTML =
         `<div class="stat-row">` +
-        `<span class="stat-item"><span class="stat-label">ROW</span>${curRow + 1}/${G.platforms.length}</span>` +
-        `<span class="stat-item"><span class="stat-label">COL</span>${curCol + 1}/${G.platforms[0].length}</span>` +
-        `<span class="stat-item"><span class="stat-label">TIME</span>${curTimer}</span>` +
-        `<span class="stat-item"><span class="stat-label">JUMPS</span>${curJumps}</span>` +
+        `<span class="stat-item">${curRow + 1}/${G.platforms.length}<span class="stat-label">ROW</span></span>` +
+        `<span class="stat-item">${curCol + 1}/${G.platforms[0].length}<span class="stat-label">COL</span></span>` +
+        `<span class="stat-item">${curTimer}<span class="stat-label">TIME</span></span>` +
+        `<span class="stat-item">${curJumps}<span class="stat-label">JUMPS</span></span>` +
         `</div>`;
     }
   },
@@ -307,7 +330,7 @@ const FallingScene = {
       // Show level info on lose screen (adventure mode)
       const loseLevelInfo = document.getElementById('lose-level-info');
       if (G.gameMode === 'adventure' && G.levelConfig) {
-        loseLevelInfo.textContent = `Level ${G.level}: ${G.levelConfig.name}`;
+        loseLevelInfo.textContent = `Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}`;
         loseLevelInfo.style.display = '';
       } else {
         loseLevelInfo.style.display = 'none';
@@ -334,7 +357,7 @@ const FallingScene = {
     updateTimers(dt);
     updateCrumbleTimers(dt);
     updateTrailMarks(dt);
-    G.fallY += 5;
+    G.fallY += 1.2;
     if (G.shakeTimer > 0) G.shakeTimer -= 1;
   },
   render() {
@@ -349,9 +372,11 @@ const FallingScene = {
     drawRescueCharacter();
     drawParticles();
 
-    // Falling player emoji
+    // Falling player emoji — shrinks as it drops into lava
+    const fallDist = Math.max(0, G.fallY - G.player.y);
+    const shrink = Math.max(0, 1 - fallDist / 80);
     ctx.globalAlpha = 1;
-    drawEmoji(ctx, G.heroChar.emoji, G.player.x, G.fallY - G.camera.y, EMOJI_SIZE);
+    drawEmoji(ctx, G.heroChar.emoji, G.player.x, G.fallY - G.camera.y, EMOJI_SIZE * shrink);
 
     ctx.restore();
   }
@@ -365,7 +390,11 @@ const WonScene = {
   _fwTimer: 0,
   _spoken: false,
   _showScreenTimer: -1,
-  _walkX: 0,
+  _flyX1: 0, _flyY1: 0,
+  _flyX2: 0, _flyY2: 0,
+  _flyVX1: 0, _flyVY1: 0,
+  _flyVX2: 0, _flyVY2: 0,
+  _angle1: 0, _angle2: 0,
 
   onEnter() {
     G.gameState = 'won';
@@ -374,7 +403,26 @@ const WonScene = {
     this._fwTimer = 0;
     this._spoken = false;
     this._showScreenTimer = -1;
-    this._walkX = -80;
+
+    // Start fly-away from goal platform position
+    let startX = CANVAS_W / 2, startY = CANVAS_H * 0.55;
+    if (G.platforms.length > 0 && G.safePath.length > 0) {
+      const goalPlat = G.platforms[G.platforms.length - 1][G.safePath[G.safePath.length - 1]];
+      if (goalPlat) {
+        startX = goalPlat.x + goalPlat.w / 2;
+        startY = goalPlat.y - G.camera.y - 20;
+      }
+    }
+    this._flyX1 = startX + 20;
+    this._flyY1 = startY;
+    this._flyX2 = startX - 20;
+    this._flyY2 = startY;
+    this._flyVX1 = 55 + Math.random() * 25;
+    this._flyVY1 = -260;
+    this._flyVX2 = -(55 + Math.random() * 25);
+    this._flyVY2 = -230;
+    this._angle1 = 0;
+    this._angle2 = 0;
 
     stopMusic();
     playWinSound();
@@ -390,14 +438,14 @@ const WonScene = {
     const nextLevelBtn = document.getElementById('next-level-btn');
 
     if (G.gameMode === 'adventure' && G.levelConfig) {
-      const breakdown = calculateScore(G.level, G.playTimer, G.jumpCount, G.gridRows, G.levelConfig.memTime);
+      const breakdown = calculateScore(G.level, G.playTimer, G.jumpCount, G.gridRows, G.levelConfig.memTime, G.memTimeSaved);
       const stars = calculateStars(breakdown.totalScore, G.level);
       G.levelScore = breakdown.totalScore;
       G.levelStars = stars;
       G.levelScoreBreakdown = breakdown;
       G.totalScore += breakdown.totalScore;
 
-      winLevelInfo.textContent = `Level ${G.level}: ${G.levelConfig.name}`;
+      winLevelInfo.textContent = `Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}`;
       winLevelInfo.style.display = '';
 
       const starStr = '\u2B50'.repeat(stars) + '\u2606'.repeat(3 - stars);
@@ -410,6 +458,9 @@ const WonScene = {
       }
       if (breakdown.speedBonus > 0) {
         scoreHtml += `<div class="score-row bonus"><span>Speed bonus!</span><span>+${breakdown.speedBonus}</span></div>`;
+      }
+      if (breakdown.earlyMemBonus > 0) {
+        scoreHtml += `<div class="score-row bonus"><span>Early start bonus!</span><span>+${breakdown.earlyMemBonus}</span></div>`;
       }
       scoreHtml += `<div class="score-total"><span>Level Score</span><span>${breakdown.totalScore}</span></div>`;
       scoreHtml += `<div class="score-cumulative">Total Score: ${G.totalScore}</div>`;
@@ -434,15 +485,21 @@ const WonScene = {
     updateTimers(dt);
     G.winTimer += dt;
 
-    // Characters walk across the screen
-    this._walkX += dt * 80;
-    if (this._walkX > CANVAS_W + 80) this._walkX = -80;
+    // Characters fly up and off screen
+    this._flyVY1 -= 120 * dt;
+    this._flyVY2 -= 120 * dt;
+    this._flyX1 += this._flyVX1 * dt;
+    this._flyY1 += this._flyVY1 * dt;
+    this._flyX2 += this._flyVX2 * dt;
+    this._flyY2 += this._flyVY2 * dt;
+    this._angle1 += dt * 3.5;
+    this._angle2 -= dt * 2.8;
 
     // Fireworks sequence
-    if (this._fwCount < 25) {
+    if (this._fwCount < 10) {
       this._fwTimer += dt;
-      if (this._fwTimer >= 0.32) {
-        this._fwTimer -= 0.32;
+      if (this._fwTimer >= 0.25) {
+        this._fwTimer -= 0.25;
         const burst = 1 + Math.floor(Math.random() * 2);
         for (let b = 0; b < burst; b++) {
           spawnFirework(
@@ -453,12 +510,12 @@ const WonScene = {
         spawnConfetti();
         this._fwCount++;
 
-        if (this._fwCount === 6 && !this._spoken) {
+        if (this._fwCount === 3 && !this._spoken) {
           this._spoken = true;
           speakCongrats();
         }
-        if (this._fwCount >= 25) {
-          this._showScreenTimer = 1.2;
+        if (this._fwCount >= 10) {
+          this._showScreenTimer = 0.6;
         }
       }
     }
@@ -481,28 +538,27 @@ const WonScene = {
     renderPlatforms(false);
     drawParticles();
 
-    // Celebrating characters walking across screen
-    const t = G.winTimer;
-    const walkY = CANVAS_H * 0.55;
-    const bounce1 = Math.abs(Math.sin(t * 5)) * 25;
-    const bounce2 = Math.abs(Math.sin(t * 5 + 1.2)) * 25;
+    // Characters fly up and off screen
+    const drawFlyChar = (emoji, x, y, angle, vx, vy) => {
+      // Sparkle trail in the wake
+      const speed = Math.sqrt(vx * vx + vy * vy);
+      const nx = -vx / speed, ny = -vy / speed;
+      for (let i = 1; i <= 4; i++) {
+        ctx.globalAlpha = 0.6 - i * 0.13;
+        drawEmoji(ctx, '\u2728', x + nx * i * 18, y + ny * i * 18, 18 - i * 3);
+      }
+      ctx.globalAlpha = 1;
+      ctx.save();
+      ctx.translate(x, y);
+      ctx.rotate(angle);
+      drawEmoji(ctx, emoji, 0, 0, 52);
+      ctx.restore();
+    };
+
+    drawFlyChar(G.heroChar.emoji,   this._flyX1, this._flyY1, this._angle1, this._flyVX1, this._flyVY1);
+    drawFlyChar(G.rescueChar.emoji, this._flyX2, this._flyY2, this._angle2, this._flyVX2, this._flyVY2);
 
     ctx.globalAlpha = 1;
-    // Hero leading
-    drawEmoji(ctx, G.heroChar.emoji, this._walkX, walkY - bounce1, 52);
-    // Rescued friend following
-    drawEmoji(ctx, G.rescueChar.emoji, this._walkX - 60, walkY - bounce2, 52);
-
-    // Stars/sparkles trail
-    for (let i = 1; i <= 3; i++) {
-      const sx = this._walkX - 60 - i * 30;
-      const sy = walkY - 10 + Math.sin(t * 8 + i * 2) * 8;
-      ctx.globalAlpha = Math.max(0, 0.7 - i * 0.2);
-      drawEmoji(ctx, '\u2728', sx, sy, 20);
-    }
-
-    ctx.globalAlpha = 1;
-
     ctx.restore();
   }
 };

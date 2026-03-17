@@ -78,24 +78,35 @@ function spawnFirework(x, y) {
       color: color,
       life: 1 + Math.random() * 0.5,
       gravity: 0.05,
-      round: true,
+      confetti: true,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 10,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 2 + Math.random() * 3,
+      aspect: 0.4 + Math.random() * 0.3,
     });
   }
 }
 
 function spawnConfetti() {
-  const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff', '#ffaa00'];
-  for (let i = 0; i < 40; i++) {
+  const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff', '#ffaa00',
+                  '#ff6699', '#66ccff', '#ffcc00', '#cc44ff'];
+  for (let i = 0; i < 50; i++) {
     G.particles.push({
       x: Math.random() * CANVAS_W,
-      y: G.camera.y - 20,
-      vx: (Math.random() - 0.5) * 3,
-      vy: Math.random() * 2 + 1,
-      size: 3 + Math.random() * 4,
+      y: G.camera.y - 20 - Math.random() * 30,
+      vx: (Math.random() - 0.5) * 4,
+      vy: Math.random() * 1.5 + 0.5,
+      size: 3 + Math.random() * 3,
       color: colors[Math.floor(Math.random() * colors.length)],
-      life: 1.5 + Math.random(),
-      gravity: 0.02,
-      round: Math.random() > 0.5,
+      life: 2.5 + Math.random() * 1.5,
+      gravity: 0.015,
+      confetti: true,
+      rotation: Math.random() * Math.PI * 2,
+      rotSpeed: (Math.random() - 0.5) * 8,
+      wobble: Math.random() * Math.PI * 2,
+      wobbleSpeed: 2 + Math.random() * 3,
+      aspect: 0.4 + Math.random() * 0.3,
     });
   }
 }

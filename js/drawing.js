@@ -348,7 +348,7 @@ function drawPlayer() {
   ctx.restore();
 }
 
-function drawRescueCharacter() {
+function drawRescueCharacter(noClip) {
   const ctx = G.ctx;
   if (G.platforms.length === 0) return;
   const lastRow = G.platforms[G.platforms.length - 1];
@@ -356,7 +356,7 @@ function drawRescueCharacter() {
   if (!goalPlat) return;
   const gx = goalPlat.x + goalPlat.w / 2;
   const gy = goalPlat.y + (PLAT_H - PLAT_DEPTH) / 2 - G.camera.y;
-  if (gy < -50 || gy > CANVAS_H + 50) return;
+  if (!noClip && (gy < -50 || gy > CANVAS_H + 50)) return;
 
   const floatY = Math.sin(G.lavaTime * 3) * 5;
 
@@ -377,6 +377,12 @@ function drawRescueCharacter() {
 function updateParticles(dt) {
   for (let i = G.particles.length - 1; i >= 0; i--) {
     const p = G.particles[i];
+    if (p.confetti) {
+      p.rotation += p.rotSpeed * dt;
+      p.wobble += p.wobbleSpeed * dt;
+      p.vx += Math.sin(p.wobble) * 0.15;
+      p.vx *= 0.98;
+    }
     p.x += p.vx;
     p.y += p.vy;
     p.vy += (p.gravity !== undefined ? p.gravity : 0.15);
@@ -392,7 +398,15 @@ function drawParticles() {
     const p = G.particles[i];
     ctx.globalAlpha = Math.max(0, p.life);
     ctx.fillStyle = p.color;
-    if (p.round) {
+    if (p.confetti) {
+      const sx = p.y - G.camera.y;
+      const scaleX = Math.cos(p.rotation);
+      ctx.save();
+      ctx.translate(p.x, sx);
+      ctx.scale(scaleX, 1);
+      ctx.fillRect(-p.size / 2, -p.size * p.aspect / 2, p.size, p.size * p.aspect);
+      ctx.restore();
+    } else if (p.round) {
       ctx.beginPath();
       ctx.arc(p.x, p.y - G.camera.y, p.size, 0, Math.PI * 2);
       ctx.fill();

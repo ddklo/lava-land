@@ -48,6 +48,7 @@ const G = {
   winTimer: 0,
   playTimer: 0,
   jumpCount: 0,
+  memTimeSaved: 0,
 
   // Managed timers (replaces setTimeout/setInterval in game logic)
   timers: [],

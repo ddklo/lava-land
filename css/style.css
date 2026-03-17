@@ -228,104 +228,125 @@ canvas {
 
 #game-hud {
   position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 14px;
-  background: var(--surface-hud);
+  top: 0; left: 0; right: 0;
+  height: 70px;
+  background: linear-gradient(180deg, var(--hud-bg-top), var(--hud-bg-bottom));
   border-bottom: 1px solid var(--border-glow);
   pointer-events: none;
   z-index: 5;
 }
 
-/* Left: level info (adventure) or empty (custom) */
+/* Left: pinned to left edge */
 #hud-left {
-  text-align: left;
-  flex: 1 1 0;
-  min-width: 0;
+  position: absolute;
+  left: 16px;
+  top: 0; height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 #hud-left .hud-level-line {
-  font-size: 15px;
+  font-size: 17px;
   font-weight: bold;
-  color: var(--primary);
-  text-shadow: 0 0 10px var(--primary-glow);
+  color: var(--accent-warm);
+  text-shadow: 0 0 8px var(--hud-level-glow);
   white-space: nowrap;
+  letter-spacing: 0.5px;
 }
 
 #hud-left .hud-total-score {
-  font-size: 14px;
+  font-size: 15px;
   font-weight: bold;
   color: var(--accent-gold);
   margin-top: 2px;
 }
 
-/* Center: game title + author */
+/* Center: pinned to horizontal center */
 #hud-center {
-  text-align: center;
-  flex: 0 0 auto;
-  padding: 0 16px;
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  top: 0; height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
 }
 
 #hud-game-title {
-  font-size: 22px;
+  font-size: 32px;
   font-weight: bold;
   color: var(--primary);
-  text-shadow: 0 0 12px var(--primary-glow);
-  letter-spacing: 2px;
-  line-height: 1.15;
+  text-shadow: 0 0 16px var(--primary-glow);
+  letter-spacing: 3px;
+  line-height: 1.1;
+  white-space: nowrap;
+  text-align: center;
 }
 
 #hud-game-author {
-  font-size: 11px;
+  font-size: 14px;
   color: var(--accent-cream);
-  opacity: 0.65;
-  margin-top: 1px;
+  opacity: 0.7;
+  margin-top: 2px;
+  letter-spacing: 0.5px;
+  text-align: center;
 }
 
-/* Right: stats */
+/* Right: pinned to right edge */
 #hud-stats {
-  text-align: right;
-  flex: 1 1 0;
-  min-width: 0;
+  position: absolute;
+  right: 16px;
+  top: 0; height: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-end;
 }
 
 #hud-stats .stat-row {
   display: flex;
-  gap: 16px;
+  gap: 14px;
   justify-content: flex-end;
   align-items: center;
+  text-align: right;
 }
 
 #hud-stats .stat-item {
-  color: var(--text-primary);
-  font-size: 16px;
+  display: inline-block;
+  color: var(--accent-light);
+  font-size: 17px;
   font-weight: bold;
+  line-height: 1.2;
+  vertical-align: middle;
 }
 
 #hud-stats .stat-label {
-  color: var(--text-muted);
-  font-size: 10px;
-  font-weight: normal;
-  display: block;
+  color: var(--text-dim);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
   line-height: 1;
-  margin-bottom: 2px;
+  margin-top: 2px;
 }
 
 #hud-stats .timer-warn {
   color: var(--timer-warn);
-  font-size: 24px;
+  font-size: 28px;
   font-weight: bold;
+  line-height: 1;
+  text-align: right;
   animation: pulse 0.5s infinite alternate;
 }
 
 #hud-stats .timer-hint {
-  color: var(--text-primary);
-  font-size: 11px;
-  margin-top: 2px;
+  color: var(--text-muted);
+  font-size: 13px;
+  line-height: 1.2;
+  text-align: right;
 }
 
 @keyframes pulse {
@@ -527,15 +548,18 @@ canvas {
 
   .instructions { font-size: 12px; margin-top: 12px; }
 
-  #game-hud { padding: 4px 8px; }
-  #hud-left .hud-level-line { font-size: 11px; }
-  #hud-left .hud-total-score { font-size: 10px; }
-  #hud-game-title { font-size: 16px; }
-  #hud-game-author { font-size: 9px; }
+  #game-hud { height: 56px; }
+  #hud-left { height: 56px; left: 8px; }
+  #hud-center { height: 56px; }
+  #hud-stats { height: 56px; right: 8px; }
+  #hud-left .hud-level-line { font-size: 13px; }
+  #hud-left .hud-total-score { font-size: 12px; }
+  #hud-game-title { font-size: 22px; letter-spacing: 2px; }
+  #hud-game-author { font-size: 11px; }
   #hud-stats .stat-item { font-size: 13px; }
   #hud-stats .stat-label { font-size: 9px; }
   #hud-stats .stat-row { gap: 8px; }
-  #hud-stats .timer-warn { font-size: 18px; }
+  #hud-stats .timer-warn { font-size: 20px; }
 
   #win-screen h1 { font-size: 36px; }
   .win-emojis { font-size: 32px; }

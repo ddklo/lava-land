@@ -100,18 +100,21 @@ const SCORE_JUMP_PENALTY = 100;
 const SCORE_LEVEL_MULT = 200;
 const SCORE_PERFECT_BONUS = 1000;
 const SCORE_SPEED_BONUS = 500;
+const SCORE_EARLY_MEM_MULT = 80; // points per second of memorize time saved
 const SPEED_BONUS_THRESHOLD = 0.5;
 const STAR_TWO_THRESHOLD = 0.5;
 const STAR_THREE_THRESHOLD = 0.8;
 
 // Characters
 const CHARACTERS = [
-  { id: 'knight', emoji: '\u{1F9D1}\u200D\u{1F9B0}', name: 'Knight', color: '#4488ff' },
+  { id: 'tortoise', emoji: '\u{1F422}', name: 'Tortoise', color: '#66aa44' },
   { id: 'wizard', emoji: '\u{1F9D9}', name: 'Wizard', color: '#aa44ff' },
-  { id: 'archer', emoji: '\u{1F9DD}', name: 'Elf', color: '#44cc44' },
+  { id: 'koala', emoji: '\u{1F428}', name: 'Koala', color: '#aaaaaa' },
   { id: 'ninja',  emoji: '\u{1F977}', name: 'Ninja', color: '#888888' },
   { id: 'princess', emoji: '\u{1F478}', name: 'Princess', color: '#ff66aa' },
   { id: 'prince', emoji: '\u{1F934}', name: 'Prince', color: '#6688ff' },
   { id: 'cat', emoji: '\u{1F431}', name: 'Cat', color: '#ffaa44' },
   { id: 'dog', emoji: '\u{1F436}', name: 'Dog', color: '#cc8844' },
+  { id: 'witch', emoji: '\u{1F9D9}\u200D\u2640\uFE0F', name: 'Witch', color: '#8844aa' },
+  { id: 'dolphin', emoji: '\u{1F42C}', name: 'Dolphin', color: '#4499dd' },
 ];
