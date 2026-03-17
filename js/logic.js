@@ -15,6 +15,7 @@ function tryJump(direction) {
     if (targetCol === currentCol) return;
 
     const targetPlat = row[targetCol];
+    G.jumpCount++;
     playHopSound();
 
     // Departure: explode and destroy current platform
@@ -58,6 +59,7 @@ function tryJump(direction) {
   }
 
   const targetPlat = nextRowPlats[nearest];
+  G.jumpCount++;
   playJumpSound();
 
   // Departure: explode and destroy current platform

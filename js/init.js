@@ -9,6 +9,8 @@ document.title = GAME_TITLE + ' - Save Your Friend!';
 document.getElementById('menu-title').textContent = GAME_TITLE;
 document.getElementById('bg-title').textContent = GAME_TITLE;
 document.getElementById('bg-author').textContent = GAME_AUTHOR;
+document.getElementById('hud-game-title').textContent = GAME_TITLE;
+document.getElementById('hud-game-author').textContent = GAME_AUTHOR;
 
 setupInput();
 setupMenu();

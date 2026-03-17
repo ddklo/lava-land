@@ -134,7 +134,7 @@ const MemorizeScene = {
       this._lastSecs = secs;
       document.getElementById('hud-text').innerHTML =
         `<div class="timer-warn">MEMORIZE! ${secs}s</div>` +
-        `<div style="color:#ffcc88;font-size:13px;margin-top:4px;">Remember which platforms are safe!</div>`;
+        `<div class="timer-hint">Remember which platforms are safe!</div>`;
     }
     if (G.memorizeTimer <= 0) {
       SceneManager.replace(PlayingScene);
@@ -185,8 +185,8 @@ const PlayingScene = {
       G.trailMarks.push({ x: p.x + p.w / 2, y: p.y + (PLAT_H - 7) / 2, life: 1.0 });
     }
     document.getElementById('hud-text').innerHTML = G.isTouchDevice
-      ? '<div style="color:#ffcc88;">Tap platform to move &nbsp; | &nbsp; Swipe to jump</div>'
-      : '<div style="color:#ffcc88;">&larr; &rarr; move sideways &nbsp; | &nbsp; &darr; / Space jump forward</div>';
+      ? '<div class="timer-hint">Tap platform to move &nbsp;|&nbsp; Swipe to jump</div>'
+      : '<div class="timer-hint">&larr; &rarr; move sideways &nbsp;|&nbsp; &darr; / Space jump forward</div>';
   },
   onExit() {
     clearTimers();
@@ -218,10 +218,14 @@ const PlayingScene = {
     // Shake decay
     if (G.shakeTimer > 0) G.shakeTimer -= 1;
 
-    // HUD — update row, col + timer
+    // HUD — update stats
     document.getElementById('hud-text').innerHTML =
-      `<div style="color:#ffcc88;">Row ${G.player.row + 1}/${G.platforms.length} &nbsp; Col ${G.player.col + 1}/${G.platforms[0].length}</div>` +
-      `<div style="color:#ff9966;font-size:13px;">${formatTime(G.playTimer)}</div>`;
+      `<div class="stat-row">` +
+      `<span class="stat-item"><span class="stat-label">ROW</span>${G.player.row + 1}/${G.platforms.length}</span>` +
+      `<span class="stat-item"><span class="stat-label">COL</span>${G.player.col + 1}/${G.platforms[0].length}</span>` +
+      `<span class="stat-item"><span class="stat-label">TIME</span>${formatTime(G.playTimer)}</span>` +
+      `<span class="stat-item"><span class="stat-label">JUMPS</span>${G.jumpCount}</span>` +
+      `</div>`;
   },
   render() {
     const ctx = G.ctx;
