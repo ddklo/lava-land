@@ -118,6 +118,7 @@ function startGame() {
   G.memorizeTimer = MEMORIZE_TIMES[G.selectedMemTime];
   G.particles = [];
   G.trailMarks = [];
+  G.jumpCount = 0;
 
   SceneManager.replace(MemorizeScene);
 }
