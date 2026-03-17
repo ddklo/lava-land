@@ -8,7 +8,7 @@ function setupInput() {
     if (G.gameState === 'playing') {
       if (e.code === 'ArrowLeft') tryJump('left');
       if (e.code === 'ArrowRight') tryJump('right');
-      if (e.code === 'ArrowUp' || e.code === 'Space') tryJump('forward');
+      if (e.code === 'ArrowDown' || e.code === 'Space') tryJump('forward');
       e.preventDefault();
     }
     if (G.gameState === 'memorize') e.preventDefault();
