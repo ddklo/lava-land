@@ -1,10 +1,20 @@
 // ─── AUDIO ENGINE ───────────────────────────────────────────────
 function initAudio() {
   if (G.audioCtx) return;
-  G.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  try {
+    G.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  } catch (e) {
+    G.audioCtx = null;
+  }
+}
+
+// Guard: returns true if audio is available
+function hasAudio() {
+  return G.audioCtx !== null;
 }
 
 function stopMusic() {
+  if (!hasAudio()) return;
   G.currentMusic = null;
   if (G.musicTimerId) { clearTimeout(G.musicTimerId); G.musicTimerId = null; }
   if (G.musicGain) {
@@ -21,6 +31,7 @@ function stopMusic() {
 // ─── MEMORIZE MUSIC: Loud ticking clock + thriller tension ─────
 function playMemorizeMusic() {
   initAudio();
+  if (!hasAudio()) return;
   stopMusic();
   G.currentMusic = 'memorize';
 
@@ -180,6 +191,7 @@ function playMemorizeMusic() {
 // ─── ACTION MUSIC: 80s synth-funk, Beverly Hills Cop vibe ─────
 function playActionMusic() {
   initAudio();
+  if (!hasAudio()) return;
   stopMusic();
   G.currentMusic = 'action';
 
@@ -383,6 +395,7 @@ function playActionMusic() {
 
 function playJumpSound() {
   initAudio();
+  if (!hasAudio()) return;
   const now = G.audioCtx.currentTime;
   const osc = G.audioCtx.createOscillator();
   osc.type = 'sine';
@@ -398,6 +411,7 @@ function playJumpSound() {
 
 function playLandSound() {
   initAudio();
+  if (!hasAudio()) return;
   const now = G.audioCtx.currentTime;
   const osc = G.audioCtx.createOscillator();
   osc.type = 'triangle';
@@ -413,6 +427,7 @@ function playLandSound() {
 
 function playCrumbleSound() {
   initAudio();
+  if (!hasAudio()) return;
   const now = G.audioCtx.currentTime;
   for (let i = 0; i < 3; i++) {
     const osc = G.audioCtx.createOscillator();
@@ -430,6 +445,7 @@ function playCrumbleSound() {
 
 function playFallSound() {
   initAudio();
+  if (!hasAudio()) return;
   const now = G.audioCtx.currentTime;
   const osc = G.audioCtx.createOscillator();
   osc.type = 'sawtooth';
@@ -459,6 +475,7 @@ function playFallSound() {
 
 function playWinSound() {
   initAudio();
+  if (!hasAudio()) return;
   const now = G.audioCtx.currentTime;
   const winGain = G.audioCtx.createGain();
   winGain.gain.value = 0.18;
@@ -621,18 +638,42 @@ function playWinSound() {
   });
 }
 
+// Find the best English voice available, cached after first lookup
+let _cachedEnVoice = undefined; // undefined = not searched yet, null = not found
+function getEnglishVoice() {
+  if (_cachedEnVoice !== undefined) return _cachedEnVoice;
+  if (!('speechSynthesis' in window)) { _cachedEnVoice = null; return null; }
+  const voices = window.speechSynthesis.getVoices();
+  // Prefer en-US, then any en-* voice
+  _cachedEnVoice = voices.find(v => v.lang === 'en-US')
+    || voices.find(v => v.lang.startsWith('en'))
+    || null;
+  return _cachedEnVoice;
+}
+// Voices load async on some browsers — re-cache when ready
+if ('speechSynthesis' in window) {
+  window.speechSynthesis.onvoiceschanged = () => { _cachedEnVoice = undefined; };
+}
+
+function speakText(text, rate, pitch) {
+  if (!('speechSynthesis' in window)) return;
+  const msg = new SpeechSynthesisUtterance(text);
+  msg.lang = 'en-US';
+  const voice = getEnglishVoice();
+  if (voice) msg.voice = voice;
+  msg.rate = rate;
+  msg.pitch = pitch;
+  msg.volume = 1.0;
+  window.speechSynthesis.speak(msg);
+}
+
 function speakCongrats() {
-  if ('speechSynthesis' in window) {
-    const msg = new SpeechSynthesisUtterance('You did a great job!');
-    msg.rate = 0.9;
-    msg.pitch = 1.1;
-    msg.volume = 1.0;
-    window.speechSynthesis.speak(msg);
-  }
+  speakText('You did a great job!', 0.9, 1.1);
 }
 
 function playLoseSound() {
   initAudio();
+  if (!hasAudio()) return;
   const now = G.audioCtx.currentTime;
   const loseGain = G.audioCtx.createGain();
   loseGain.gain.value = 0.22;
@@ -675,22 +716,17 @@ function playLoseSound() {
 }
 
 function speakLose() {
-  if ('speechSynthesis' in window) {
-    const phrases = [
-      'Oh no! You fell in the lava!',
-      'Oops! Try again!',
-      'Into the lava! Better luck next time!',
-    ];
-    const msg = new SpeechSynthesisUtterance(phrases[Math.floor(Math.random() * phrases.length)]);
-    msg.rate = 0.9;
-    msg.pitch = 0.8;
-    msg.volume = 1.0;
-    window.speechSynthesis.speak(msg);
-  }
+  const phrases = [
+    'Oh no! You fell in the lava!',
+    'Oops! Try again!',
+    'Into the lava! Better luck next time!',
+  ];
+  speakText(phrases[Math.floor(Math.random() * phrases.length)], 0.9, 0.8);
 }
 
 function playHopSound() {
   initAudio();
+  if (!hasAudio()) return;
   const now = G.audioCtx.currentTime;
   const osc = G.audioCtx.createOscillator();
   osc.type = 'sine';
