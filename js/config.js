@@ -13,7 +13,7 @@ const PLAT_H = 48;
 const PLAT_DEPTH = 7;
 
 // Player rendering
-const EMOJI_SIZE = 48;
+const EMOJI_SIZE = 58;
 const PLAYER_Y_OFFSET = 16;
 
 // Physics
@@ -62,21 +62,21 @@ const DIFFICULTY_FAKE_CHANCE = {
 
 // ─── LEVELS ─────────────────────────────────────────────────────
 const LEVELS = [
-  { cols: 5, rows: 5,  fake: 0.15, memTime: 12, name: 'The Crossing' },
-  { cols: 5, rows: 6,  fake: 0.20, memTime: 10, name: 'Stepping Stones' },
-  { cols: 5, rows: 8,  fake: 0.25, memTime: 10, name: 'Lava Creek' },
-  { cols: 6, rows: 8,  fake: 0.25, memTime: 10, name: 'Molten Path' },
-  { cols: 6, rows: 10, fake: 0.30, memTime: 10, name: 'Ember Trail' },
-  { cols: 6, rows: 12, fake: 0.35, memTime: 10, name: 'Fire Walk' },
-  { cols: 6, rows: 12, fake: 0.40, memTime: 8,  name: 'Inferno Bridge' },
-  { cols: 7, rows: 12, fake: 0.40, memTime: 8,  name: 'Scorched Passage' },
-  { cols: 7, rows: 14, fake: 0.45, memTime: 8,  name: 'Magma Maze' },
-  { cols: 7, rows: 14, fake: 0.50, memTime: 7,  name: 'Obsidian Run' },
-  { cols: 7, rows: 16, fake: 0.55, memTime: 7,  name: 'Volcano Heart' },
-  { cols: 7, rows: 16, fake: 0.60, memTime: 6,  name: 'Dragon\'s Lair' },
-  { cols: 7, rows: 16, fake: 0.65, memTime: 5,  name: 'Hellfire Sprint' },
-  { cols: 7, rows: 16, fake: 0.70, memTime: 5,  name: 'Core Meltdown' },
-  { cols: 7, rows: 16, fake: 0.75, memTime: 4,  name: 'Final Descent' },
+  { cols: 5, rows: 5,  fake: 0.25, memTime: 12, name: 'The Crossing' },
+  { cols: 5, rows: 6,  fake: 0.28, memTime: 11, name: 'Stepping Stones' },
+  { cols: 5, rows: 7,  fake: 0.30, memTime: 10, name: 'Lava Creek' },
+  { cols: 5, rows: 8,  fake: 0.33, memTime: 10, name: 'Molten Path' },
+  { cols: 6, rows: 8,  fake: 0.35, memTime: 10, name: 'Ember Trail' },
+  { cols: 6, rows: 10, fake: 0.38, memTime: 9,  name: 'Fire Walk' },
+  { cols: 6, rows: 10, fake: 0.40, memTime: 9,  name: 'Inferno Bridge' },
+  { cols: 6, rows: 12, fake: 0.43, memTime: 8,  name: 'Scorched Passage' },
+  { cols: 7, rows: 12, fake: 0.45, memTime: 8,  name: 'Magma Maze' },
+  { cols: 7, rows: 14, fake: 0.48, memTime: 7,  name: 'Obsidian Run' },
+  { cols: 7, rows: 14, fake: 0.50, memTime: 7,  name: 'Volcano Heart' },
+  { cols: 7, rows: 16, fake: 0.55, memTime: 6,  name: 'Dragon\'s Lair' },
+  { cols: 7, rows: 16, fake: 0.60, memTime: 5,  name: 'Hellfire Sprint' },
+  { cols: 7, rows: 16, fake: 0.65, memTime: 5,  name: 'Core Meltdown' },
+  { cols: 7, rows: 16, fake: 0.70, memTime: 4,  name: 'Final Descent' },
 ];
 
 function getLevelConfig(levelNum) {

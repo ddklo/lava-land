@@ -920,7 +920,7 @@
       const lvl = LEVELS[i];
       assert(lvl.cols >= 5 && lvl.cols <= 7, `Level ${i + 1} cols in range (got ${lvl.cols})`);
       assert(lvl.rows >= 5 && lvl.rows <= 16, `Level ${i + 1} rows in range (got ${lvl.rows})`);
-      assert(lvl.fake >= 0.15 && lvl.fake <= 0.75, `Level ${i + 1} fake in range (got ${lvl.fake})`);
+      assert(lvl.fake >= 0.25 && lvl.fake <= 0.75, `Level ${i + 1} fake in range (got ${lvl.fake})`);
       assert(lvl.memTime >= 4 && lvl.memTime <= 12, `Level ${i + 1} memTime in range (got ${lvl.memTime})`);
       assert(typeof lvl.name === 'string' && lvl.name.length > 0, `Level ${i + 1} has a name`);
     }

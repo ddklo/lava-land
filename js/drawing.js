@@ -5,11 +5,13 @@ function drawEmoji(ctx, emoji, x, y, size) {
   ctx.font = size + 'px serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0,0,0,0.7)';
-  ctx.shadowBlur = 6;
+  ctx.shadowColor = 'rgba(0,0,0,0.85)';
+  ctx.shadowBlur = 8;
   ctx.fillText(emoji, x, y);
   ctx.shadowColor = 'transparent';
   ctx.shadowBlur = 0;
+  // Double draw for stronger/crisper appearance
+  ctx.fillText(emoji, x, y);
   ctx.fillText(emoji, x, y);
 }
 
@@ -54,29 +56,105 @@ function drawLava(offsetY, height) {
     }
   }
 
-  // Layer 3: Bright hotspot veins — slow moving bright cracks
-  for (let i = 0; i < 6; i++) {
-    const baseX = (Math.sin(t * 0.3 + i * 1.7) * 0.5 + 0.5) * CANVAS_W;
-    const baseY = (Math.cos(t * 0.25 + i * 2.1) * 0.5 + 0.5) * drawH;
-    for (let s = 0; s < 30; s++) {
-      const angle = Math.sin(s * 0.4 + t * 0.5 + i) * Math.PI;
-      const dist = s * 4;
-      const vx = baseX + Math.cos(angle + s * 0.3) * dist;
-      const vy = baseY + Math.sin(angle + s * 0.2) * dist * 0.6;
-      if (vx < 0 || vx > CANVAS_W || vy < 0 || vy > drawH) continue;
-      const bright = 1 - s / 30;
-      const r = Math.floor(255);
-      const g = Math.floor(150 + bright * 100);
-      const b = Math.floor(bright * 60);
-      ctx.fillStyle = `rgba(${r},${g},${b},${bright * 0.5})`;
+  // Layer 3: Jagged lava cracks — lava oozes through branching fissures
+  for (let i = 0; i < 8; i++) {
+    const seed = i * 47.3;
+    // Crack origin drifts slowly
+    let cx = (Math.sin(t * 0.15 + seed) * 0.3 + 0.5) * CANVAS_W;
+    let cy = (Math.cos(t * 0.12 + seed * 1.3) * 0.3 + 0.5) * drawH;
+    // Main crack direction drifts over time
+    let dir = Math.sin(t * 0.2 + seed * 2.1) * Math.PI * 0.8;
+    const segments = 25 + Math.floor(Math.sin(seed) * 10);
+
+    ctx.lineWidth = 1;
+    for (let s = 0; s < segments; s++) {
+      // Jagged direction changes
+      dir += (Math.sin(s * 1.7 + seed + t * 0.3) * 0.8 +
+              Math.cos(s * 0.9 + seed * 3) * 0.4);
+      const stepLen = 4 + Math.sin(s * 0.5 + seed) * 2;
+      const nx = cx + Math.cos(dir) * stepLen;
+      const ny = cy + Math.sin(dir) * stepLen;
+      if (nx < -10 || nx > CANVAS_W + 10 || ny < -10 || ny > drawH + 10) break;
+
+      // Pulsing ooze brightness
+      const pulse = 0.5 + Math.sin(t * 1.5 + s * 0.3 + seed) * 0.5;
+      const bright = (1 - s / segments) * pulse;
+      const width = 1.5 + bright * 3;
+
+      // Outer glow (orange)
+      ctx.strokeStyle = `rgba(255,120,20,${bright * 0.4})`;
+      ctx.lineWidth = width + 4;
       ctx.beginPath();
-      ctx.arc(vx, vy, 2 + bright * 3, 0, Math.PI * 2);
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+
+      // Hot core (bright yellow-white)
+      ctx.strokeStyle = `rgba(255,${Math.floor(200 + bright * 55)},${Math.floor(bright * 80)},${bright * 0.7})`;
+      ctx.lineWidth = width;
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.lineTo(nx, ny);
+      ctx.stroke();
+
+      // Branch off occasionally
+      if (s > 3 && s % 5 === 0 && i < 6) {
+        const branchDir = dir + (Math.random() > 0.5 ? 1 : -1) * (0.8 + Math.sin(seed + s) * 0.5);
+        let bx = nx, by = ny;
+        for (let b = 0; b < 8; b++) {
+          const bnx = bx + Math.cos(branchDir + Math.sin(b * 1.2 + seed) * 0.6) * 3.5;
+          const bny = by + Math.sin(branchDir + Math.cos(b * 0.8 + seed) * 0.6) * 3.5;
+          const bb = bright * (1 - b / 8) * 0.6;
+          ctx.strokeStyle = `rgba(255,160,40,${bb * 0.5})`;
+          ctx.lineWidth = 1 + bb * 2;
+          ctx.beginPath();
+          ctx.moveTo(bx, by);
+          ctx.lineTo(bnx, bny);
+          ctx.stroke();
+          bx = bnx;
+          by = bny;
+        }
+      }
+
+      cx = nx;
+      cy = ny;
+    }
+  }
+
+  // Layer 4: Lava spurts — small eruptions from crack points
+  for (let i = 0; i < 5; i++) {
+    const seed = i * 91.3;
+    const cycle = (t * 0.6 + seed) % 4; // 4-second cycle
+    if (cycle > 1.2) continue; // active for 1.2s of each 4s cycle
+    const phase = cycle / 1.2;
+    const sx = (Math.sin(seed * 3.7) * 0.5 + 0.5) * CANVAS_W;
+    const sy = (Math.cos(seed * 2.3) * 0.5 + 0.5) * drawH;
+    const intensity = phase < 0.3 ? phase / 0.3 : (1 - phase) / 0.7;
+
+    // Spurt glow
+    const glowR = 15 + intensity * 20;
+    ctx.fillStyle = `rgba(255,100,0,${intensity * 0.15})`;
+    ctx.beginPath();
+    ctx.arc(sx, sy, glowR, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Rising droplets from spurt
+    for (let d = 0; d < 6; d++) {
+      const dSeed = d * 37.1 + seed;
+      const angle = Math.sin(dSeed) * 0.8 - Math.PI / 2;
+      const dist = phase * (20 + Math.sin(dSeed * 2) * 10);
+      const dx = sx + Math.cos(angle + Math.sin(dSeed * 0.5) * 0.5) * dist * 0.6;
+      const dy = sy + Math.sin(angle) * dist + dist * dist * 0.02; // gravity arc
+      const dAlpha = intensity * (1 - d / 6);
+      ctx.fillStyle = `rgba(255,${Math.floor(180 + d * 10)},${Math.floor(30 + d * 8)},${dAlpha * 0.8})`;
+      ctx.beginPath();
+      ctx.arc(dx, dy, 1.5 + intensity * 2, 0, Math.PI * 2);
       ctx.fill();
     }
   }
 
-  // Layer 4: Glowing embers / sparks rising
-  for (let i = 0; i < 15; i++) {
+  // Layer 5: Glowing embers / sparks rising
+  for (let i = 0; i < 20; i++) {
     const seed = i * 73.7;
     const ex = ((seed * 3.1 + t * 15 * (0.5 + (i % 3) * 0.3)) % CANVAS_W);
     const ey = drawH - ((t * 20 + seed * 2.7) % (drawH + 40)) + 20;
@@ -95,7 +173,7 @@ function drawLava(offsetY, height) {
     ctx.fill();
   }
 
-  // Layer 5: Large slow bubbles
+  // Layer 6: Large slow bubbles
   for (let i = 0; i < 10; i++) {
     const seed = i * 137.5;
     const cycle = (t * 0.4 + seed) % 6;
@@ -125,7 +203,7 @@ function drawLava(offsetY, height) {
     }
   }
 
-  // Layer 6: Heat haze shimmer overlay
+  // Layer 7: Heat haze shimmer overlay
   ctx.fillStyle = 'rgba(255,60,0,0.04)';
   for (let y = 0; y < drawH; y += 12) {
     const wobble = Math.sin(y * 0.05 + t * 2) * 8;
@@ -360,17 +438,17 @@ function drawRescueCharacter(noClip) {
 
   const floatY = Math.sin(G.lavaTime * 3) * 5;
 
-  ctx.fillStyle = 'rgba(255,100,100,0.3)';
+  ctx.fillStyle = 'rgba(255,100,100,0.5)';
   ctx.beginPath();
-  ctx.arc(gx, gy + floatY, 28 + Math.sin(G.lavaTime * 4) * 5, 0, Math.PI * 2);
+  ctx.arc(gx, gy + floatY, 34 + Math.sin(G.lavaTime * 4) * 6, 0, Math.PI * 2);
   ctx.fill();
 
   ctx.globalAlpha = 1;
   drawEmoji(ctx, G.rescueChar.emoji, gx, gy + floatY, EMOJI_SIZE);
 
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 14px sans-serif';
-  ctx.fillText('Help!', gx, gy + floatY - 30);
+  ctx.font = 'bold 16px sans-serif';
+  ctx.fillText('Help!', gx, gy + floatY - 36);
 }
 
 // Update particle physics — called from scene update(), not render

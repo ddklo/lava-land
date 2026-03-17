@@ -215,52 +215,108 @@
   <!-- LAYER 9: Lava cracks (left wall)                         -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <g filter="url(#crackGlow)">
-    <!-- Primary vertical crack, left wall -->
+    <!-- Primary vertical crack, left wall — outer glow -->
     <path d="M 220,55  L 205,130 L 230,200 L 200,280 L 225,370
              L 205,455 L 235,545 L 210,640 L 238,740 L 215,850 L 230,960 L 215,1060"
-          stroke="#ff5500" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.9"/>
+          stroke="#ff5500" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.9">
+      <animate attributeName="stroke-width" values="2.2;3.2;2.2" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;1;0.7;1;0.9" dur="8s" repeatCount="indefinite"/>
+    </path>
+    <!-- Primary crack — hot core -->
     <path d="M 220,55  L 205,130 L 230,200 L 200,280 L 225,370
              L 205,455 L 235,545 L 210,640 L 238,740 L 215,850 L 230,960 L 215,1060"
-          stroke="#ffaa44" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.6"/>
+          stroke="#ffaa44" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.6">
+      <animate attributeName="stroke-width" values="0.9;1.6;0.9" dur="6s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.9;0.4;0.8;0.6" dur="8s" repeatCount="indefinite"/>
+    </path>
     <!-- Branch cracks from primary -->
-    <path d="M 225,370  L 268,395 L 292,382" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8"/>
-    <path d="M 210,640  L 165,668 L 148,655" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8"/>
-    <path d="M 238,740  L 275,762"            stroke="#ff5500" stroke-width="1.2" fill="none" opacity="0.7"/>
-    <path d="M 215,850  L 180,870 L 162,862"  stroke="#cc3300" stroke-width="1.2" fill="none" opacity="0.7"/>
+    <path d="M 225,370  L 268,395 L 292,382" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8">
+      <animate attributeName="stroke-width" values="1.5;2.4;1.5" dur="5s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;1;0.5;0.8" dur="7s" begin="1s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 210,640  L 165,668 L 148,655" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8">
+      <animate attributeName="stroke-width" values="1.5;2.5;1.5" dur="5.5s" begin="2.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;1;0.5;0.8" dur="6.5s" begin="2s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 238,740  L 275,762" stroke="#ff5500" stroke-width="1.2" fill="none" opacity="0.7">
+      <animate attributeName="stroke-width" values="1.2;2.2;1.2" dur="4.5s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.4;0.7" dur="7.5s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 215,850  L 180,870 L 162,862" stroke="#cc3300" stroke-width="1.2" fill="none" opacity="0.7">
+      <animate attributeName="stroke-width" values="1.2;2.0;1.2" dur="5s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0.95;0.5;0.7" dur="6s" begin="1.5s" repeatCount="indefinite"/>
+    </path>
     <!-- Secondary crack, left wall -->
     <path d="M 95,230  L 108,310 L 88,400 L 112,500 L 92,605 L 118,710 L 95,830"
-          stroke="#cc3300" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.75"/>
+          stroke="#cc3300" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.75">
+      <animate attributeName="stroke-width" values="1.6;2.8;1.6" dur="7s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.75;1;0.55;0.75" dur="9s" begin="1s" repeatCount="indefinite"/>
+    </path>
     <path d="M 95,230  L 108,310 L 88,400 L 112,500 L 92,605 L 118,710 L 95,830"
-          stroke="#ff8844" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.4"/>
+          stroke="#ff8844" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.4">
+      <animate attributeName="stroke-width" values="0.7;1.4;0.7" dur="7s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.75;0.3;0.4" dur="9s" begin="1s" repeatCount="indefinite"/>
+    </path>
     <!-- Tertiary crack, lower-left -->
     <path d="M 330,620 L 315,700 L 338,790 L 320,890 L 340,1000"
-          stroke="#ff4400" stroke-width="1.8" fill="none" opacity="0.8"/>
+          stroke="#ff4400" stroke-width="1.8" fill="none" opacity="0.8">
+      <animate attributeName="stroke-width" values="1.8;3.0;1.8" dur="5.5s" begin="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;1;0.55;0.8" dur="8.5s" begin="2s" repeatCount="indefinite"/>
+    </path>
   </g>
 
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- LAYER 10: Lava cracks (right wall)                       -->
   <!-- ═══════════════════════════════════════════════════════ -->
   <g filter="url(#crackGlow)">
-    <!-- Primary vertical crack, right wall -->
+    <!-- Primary vertical crack, right wall — outer glow -->
     <path d="M 1700,55  L 1715,130 L 1690,200 L 1720,280 L 1695,370
              L 1715,455 L 1685,545 L 1710,640 L 1682,740 L 1705,850 L 1690,960 L 1705,1060"
-          stroke="#ff5500" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.9"/>
+          stroke="#ff5500" stroke-width="2.2" fill="none" stroke-linecap="round" opacity="0.9">
+      <animate attributeName="stroke-width" values="2.2;3.2;2.2" dur="6.5s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;1;0.7;1;0.9" dur="8.5s" begin="4s" repeatCount="indefinite"/>
+    </path>
+    <!-- Primary crack — hot core -->
     <path d="M 1700,55  L 1715,130 L 1690,200 L 1720,280 L 1695,370
              L 1715,455 L 1685,545 L 1710,640 L 1682,740 L 1705,850 L 1690,960 L 1705,1060"
-          stroke="#ffaa44" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.6"/>
+          stroke="#ffaa44" stroke-width="0.9" fill="none" stroke-linecap="round" opacity="0.6">
+      <animate attributeName="stroke-width" values="0.9;1.6;0.9" dur="6.5s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.6;0.9;0.4;0.8;0.6" dur="8.5s" begin="4s" repeatCount="indefinite"/>
+    </path>
     <!-- Branch cracks -->
-    <path d="M 1695,370  L 1652,395 L 1628,382" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8"/>
-    <path d="M 1710,640  L 1755,668 L 1772,655" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8"/>
-    <path d="M 1682,740  L 1645,762"            stroke="#ff5500" stroke-width="1.2" fill="none" opacity="0.7"/>
-    <path d="M 1705,850  L 1740,870 L 1758,862"  stroke="#cc3300" stroke-width="1.2" fill="none" opacity="0.7"/>
+    <path d="M 1695,370  L 1652,395 L 1628,382" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8">
+      <animate attributeName="stroke-width" values="1.5;2.4;1.5" dur="5s" begin="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;1;0.5;0.8" dur="7s" begin="3s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 1710,640  L 1755,668 L 1772,655" stroke="#ff4400" stroke-width="1.5" fill="none" opacity="0.8">
+      <animate attributeName="stroke-width" values="1.5;2.5;1.5" dur="5.5s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;1;0.5;0.8" dur="6.5s" begin="5s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 1682,740  L 1645,762" stroke="#ff5500" stroke-width="1.2" fill="none" opacity="0.7">
+      <animate attributeName="stroke-width" values="1.2;2.2;1.2" dur="4.5s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;1;0.4;0.7" dur="7.5s" begin="1s" repeatCount="indefinite"/>
+    </path>
+    <path d="M 1705,850  L 1740,870 L 1758,862" stroke="#cc3300" stroke-width="1.2" fill="none" opacity="0.7">
+      <animate attributeName="stroke-width" values="1.2;2.0;1.2" dur="5s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0.95;0.5;0.7" dur="6s" begin="3.5s" repeatCount="indefinite"/>
+    </path>
     <!-- Secondary crack, right wall -->
     <path d="M 1825,230  L 1812,310 L 1832,400 L 1808,500 L 1828,605 L 1802,710 L 1825,830"
-          stroke="#cc3300" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.75"/>
+          stroke="#cc3300" stroke-width="1.6" fill="none" stroke-linecap="round" opacity="0.75">
+      <animate attributeName="stroke-width" values="1.6;2.8;1.6" dur="7.5s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.75;1;0.55;0.75" dur="9.5s" begin="3s" repeatCount="indefinite"/>
+    </path>
     <path d="M 1825,230  L 1812,310 L 1832,400 L 1808,500 L 1828,605 L 1802,710 L 1825,830"
-          stroke="#ff8844" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.4"/>
+          stroke="#ff8844" stroke-width="0.7" fill="none" stroke-linecap="round" opacity="0.4">
+      <animate attributeName="stroke-width" values="0.7;1.4;0.7" dur="7.5s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.4;0.75;0.3;0.4" dur="9.5s" begin="3s" repeatCount="indefinite"/>
+    </path>
     <!-- Tertiary crack, lower-right -->
     <path d="M 1590,620 L 1605,700 L 1582,790 L 1600,890 L 1580,1000"
-          stroke="#ff4400" stroke-width="1.8" fill="none" opacity="0.8"/>
+          stroke="#ff4400" stroke-width="1.8" fill="none" opacity="0.8">
+      <animate attributeName="stroke-width" values="1.8;3.0;1.8" dur="6s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.8;1;0.55;0.8" dur="8s" begin="4.5s" repeatCount="indefinite"/>
+    </path>
   </g>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -268,15 +324,30 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <g filter="url(#crackGlow)" opacity="0.8">
     <path d="M 330,0 L 345,55  L 320,90  L 342,130 L 360,85  L 375,115"
-          stroke="#ff4400" stroke-width="1.4" fill="none"/>
+          stroke="#ff4400" stroke-width="1.4" fill="none">
+      <animate attributeName="stroke-width" values="1.4;2.6;1.4" dur="5s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;0.9;1" dur="7s" repeatCount="indefinite"/>
+    </path>
     <path d="M 680,0 L 668,65  L 688,105 L 665,140 L 682,170"
-          stroke="#dd3300" stroke-width="1.4" fill="none"/>
+          stroke="#dd3300" stroke-width="1.4" fill="none">
+      <animate attributeName="stroke-width" values="1.4;2.4;1.4" dur="6s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.6;1" dur="8s" begin="1s" repeatCount="indefinite"/>
+    </path>
     <path d="M 960,0 L 975,58  L 952,95  L 970,135 L 950,165 L 968,195"
-          stroke="#ff4400" stroke-width="1.6" fill="none"/>
+          stroke="#ff4400" stroke-width="1.6" fill="none">
+      <animate attributeName="stroke-width" values="1.6;3.0;1.6" dur="5.5s" begin="1s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;0.85;1" dur="7.5s" begin="2s" repeatCount="indefinite"/>
+    </path>
     <path d="M 1240,0 L 1252,65 L 1232,108 L 1255,145 L 1238,175"
-          stroke="#dd3300" stroke-width="1.4" fill="none"/>
+          stroke="#dd3300" stroke-width="1.4" fill="none">
+      <animate attributeName="stroke-width" values="1.4;2.4;1.4" dur="6.5s" begin="3.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.6;1" dur="8.5s" begin="4s" repeatCount="indefinite"/>
+    </path>
     <path d="M 1590,0 L 1575,58 L 1598,95  L 1580,135 L 1598,170"
-          stroke="#ff4400" stroke-width="1.4" fill="none"/>
+          stroke="#ff4400" stroke-width="1.4" fill="none">
+      <animate attributeName="stroke-width" values="1.4;2.6;1.4" dur="5s" begin="4.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="1;0.5;0.9;1" dur="7s" begin="3s" repeatCount="indefinite"/>
+    </path>
   </g>
 
   <!-- ═══════════════════════════════════════════════════════ -->
@@ -284,21 +355,57 @@
   <!-- ═══════════════════════════════════════════════════════ -->
   <!-- Left wall pools -->
   <g>
-    <ellipse cx="168" cy="558" rx="28" ry="9" fill="#ff5500" opacity="0.45"/>
-    <ellipse cx="168" cy="558" rx="16" ry="5" fill="#ffaa22" opacity="0.55"/>
-    <ellipse cx="200" cy="788" rx="22" ry="7" fill="#ff4400" opacity="0.38"/>
-    <ellipse cx="200" cy="788" rx="13" ry="4" fill="#ff8800" opacity="0.50"/>
-    <ellipse cx="105" cy="672" rx="18" ry="6" fill="#ff4000" opacity="0.32"/>
-    <ellipse cx="105" cy="672" rx="10" ry="3" fill="#ff7700" opacity="0.42"/>
+    <ellipse cx="168" cy="558" rx="28" ry="9" fill="#ff5500" opacity="0.45">
+      <animate attributeName="rx" values="28;34;28" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.45;0.65;0.45" dur="4s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="168" cy="558" rx="16" ry="5" fill="#ffaa22" opacity="0.55">
+      <animate attributeName="rx" values="16;20;16" dur="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.55;0.8;0.55" dur="4s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="200" cy="788" rx="22" ry="7" fill="#ff4400" opacity="0.38">
+      <animate attributeName="rx" values="22;28;22" dur="5s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.38;0.58;0.38" dur="5s" begin="1.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="200" cy="788" rx="13" ry="4" fill="#ff8800" opacity="0.50">
+      <animate attributeName="rx" values="13;17;13" dur="5s" begin="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.50;0.75;0.50" dur="5s" begin="1.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="105" cy="672" rx="18" ry="6" fill="#ff4000" opacity="0.32">
+      <animate attributeName="rx" values="18;24;18" dur="6s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.32;0.52;0.32" dur="6s" begin="3s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="105" cy="672" rx="10" ry="3" fill="#ff7700" opacity="0.42">
+      <animate attributeName="rx" values="10;14;10" dur="6s" begin="3s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.42;0.65;0.42" dur="6s" begin="3s" repeatCount="indefinite"/>
+    </ellipse>
   </g>
   <!-- Right wall pools -->
   <g>
-    <ellipse cx="1752" cy="558" rx="28" ry="9" fill="#ff5500" opacity="0.45"/>
-    <ellipse cx="1752" cy="558" rx="16" ry="5" fill="#ffaa22" opacity="0.55"/>
-    <ellipse cx="1720" cy="788" rx="22" ry="7" fill="#ff4400" opacity="0.38"/>
-    <ellipse cx="1720" cy="788" rx="13" ry="4" fill="#ff8800" opacity="0.50"/>
-    <ellipse cx="1815" cy="672" rx="18" ry="6" fill="#ff4000" opacity="0.32"/>
-    <ellipse cx="1815" cy="672" rx="10" ry="3" fill="#ff7700" opacity="0.42"/>
+    <ellipse cx="1752" cy="558" rx="28" ry="9" fill="#ff5500" opacity="0.45">
+      <animate attributeName="rx" values="28;34;28" dur="4.5s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.45;0.65;0.45" dur="4.5s" begin="2s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="1752" cy="558" rx="16" ry="5" fill="#ffaa22" opacity="0.55">
+      <animate attributeName="rx" values="16;20;16" dur="4.5s" begin="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.55;0.8;0.55" dur="4.5s" begin="2s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="1720" cy="788" rx="22" ry="7" fill="#ff4400" opacity="0.38">
+      <animate attributeName="rx" values="22;28;22" dur="5.5s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.38;0.58;0.38" dur="5.5s" begin="0.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="1720" cy="788" rx="13" ry="4" fill="#ff8800" opacity="0.50">
+      <animate attributeName="rx" values="13;17;13" dur="5.5s" begin="0.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.50;0.75;0.50" dur="5.5s" begin="0.5s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="1815" cy="672" rx="18" ry="6" fill="#ff4000" opacity="0.32">
+      <animate attributeName="rx" values="18;24;18" dur="6.5s" begin="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.32;0.52;0.32" dur="6.5s" begin="4s" repeatCount="indefinite"/>
+    </ellipse>
+    <ellipse cx="1815" cy="672" rx="10" ry="3" fill="#ff7700" opacity="0.42">
+      <animate attributeName="rx" values="10;14;10" dur="6.5s" begin="4s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.42;0.65;0.42" dur="6.5s" begin="4s" repeatCount="indefinite"/>
+    </ellipse>
   </g>
 
   <!-- ═══════════════════════════════════════════════════════ -->

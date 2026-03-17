@@ -33,6 +33,11 @@ function setupInput() {
       startPlayingEarly();
       e.preventDefault();
     }
+    if (G.gameState === 'won' && (e.code === 'Enter' || e.code === 'Space')) {
+      if (G.gameMode === 'adventure') advanceLevel();
+      else returnToMenu();
+      e.preventDefault();
+    }
   });
 
   document.addEventListener('keyup', (e) => { G.keys[e.code] = false; });

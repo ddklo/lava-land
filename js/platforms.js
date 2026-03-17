@@ -27,14 +27,17 @@ function generatePlatforms() {
     G.platforms.push(rowPlatforms);
   }
 
-  // Build guaranteed safe path — biased toward sideways movement
+  // Build guaranteed safe path — biased toward sideways movement,
+  // never allows more than 1 consecutive straight-down jump
   G.safePath = new Array(G.gridRows);
   G.safePath[0] = Math.floor(Math.random() * G.gridCols);
+  let stayCount = 0; // consecutive rows staying in same column
 
   for (let row = 1; row < G.gridRows; row++) {
     const prevCol = G.safePath[row - 1];
-    // 70% chance to move sideways, 30% to stay in same column
-    if (Math.random() < 0.7) {
+    // Force sideways if we just went straight down, otherwise 80% chance
+    const forceSide = stayCount >= 1;
+    if (forceSide || Math.random() < 0.8) {
       // Pick -1 or +1 only — no diagonal jumps allowed
       let shift = Math.random() < 0.5 ? 1 : -1;
       G.safePath[row] = Math.max(0, Math.min(G.gridCols - 1, prevCol + shift));
@@ -42,17 +45,31 @@ function generatePlatforms() {
       if (G.safePath[row] === prevCol) {
         G.safePath[row] = Math.max(0, Math.min(G.gridCols - 1, prevCol - shift));
       }
+      stayCount = (G.safePath[row] === prevCol) ? stayCount + 1 : 0;
     } else {
       G.safePath[row] = prevCol;
+      stayCount++;
     }
   }
 
-  // Guarantee at least one horizontal move (safety net)
-  const hasSideMove = G.safePath.some((col, i) => i > 0 && col !== G.safePath[i - 1]);
-  if (!hasSideMove) {
-    const row = 1 + Math.floor(Math.random() * (G.gridRows - 1));
+  // Guarantee at least two horizontal moves for variety
+  let sideMoves = G.safePath.reduce((n, col, i) => n + (i > 0 && col !== G.safePath[i - 1] ? 1 : 0), 0);
+  const minSideMoves = Math.max(2, Math.floor(G.gridRows * 0.4));
+  while (sideMoves < minSideMoves) {
+    // Pick a random row that currently goes straight and force a side move
+    const candidates = [];
+    for (let r = 1; r < G.gridRows; r++) {
+      if (G.safePath[r] === G.safePath[r - 1]) candidates.push(r);
+    }
+    if (candidates.length === 0) break;
+    const row = candidates[Math.floor(Math.random() * candidates.length)];
     const prev = G.safePath[row - 1];
-    G.safePath[row] = prev > 0 ? prev - 1 : prev + 1;
+    const shift = Math.random() < 0.5 ? 1 : -1;
+    const newCol = Math.max(0, Math.min(G.gridCols - 1, prev + shift));
+    if (newCol !== prev) {
+      G.safePath[row] = newCol;
+      sideMoves++;
+    }
   }
 
   // Mark non-path as fake based on difficulty (adventure mode uses levelConfig)
