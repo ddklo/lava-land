@@ -92,7 +92,7 @@ function spawnConfetti() {
   const colors = ['#ff0000', '#00ff00', '#0088ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff', '#ffaa00',
                   '#ff6699', '#66ccff', '#ffcc00', '#cc44ff', '#ff4400', '#44ff88', '#ff88cc', '#88ff44',
                   '#ff3399', '#33ccff', '#ffee00', '#cc00ff', '#00ffcc', '#ff8800'];
-  for (let i = 0; i < 160; i++) {
+  for (let i = 0; i < 80; i++) {
     const color = colors[Math.floor(Math.random() * colors.length)];
     const r = Math.random();
     const isCircle = r < 0.25;

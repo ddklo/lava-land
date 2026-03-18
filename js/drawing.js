@@ -15,11 +15,8 @@ function drawEmoji(ctx, emoji, x, y, size) {
   ctx.fillText(emoji, x, y);
 }
 
-function drawLava(offsetY, height) {
-  const ctx = G.ctx;
-  const drawH = height || CANVAS_H;
-  const t = G.lavaTime;
-
+// Internal: render all lava layers to the given context.
+function _renderLavaLayers(ctx, drawH, t, offsetY) {
   // Layer 1: Deep dark base
   for (let y = 0; y < drawH; y += 3) {
     const r = 60 + Math.sin(y * 0.01 + t * 0.3) * 15;
@@ -29,8 +26,10 @@ function drawLava(offsetY, height) {
   }
 
   // Layer 2: Flowing lava rivers — organic Perlin-like bands
-  for (let y = 0; y < drawH; y += 2) {
-    for (let x = 0; x < CANVAS_W; x += 6) {
+  // Step sizes increased (x: 6→8, y: 2→3) to halve iteration count.
+  // Rect size expanded (7×3 → 9×4) so tiles remain gap-free.
+  for (let y = 0; y < drawH; y += 3) {
+    for (let x = 0; x < CANVAS_W; x += 8) {
       const flow1 = Math.sin(x * 0.008 + y * 0.012 + t * 1.2) *
                      Math.cos(y * 0.006 - t * 0.8 + x * 0.003);
       const flow2 = Math.sin(x * 0.015 - y * 0.009 + t * 0.7) *
@@ -46,12 +45,12 @@ function drawLava(offsetY, height) {
         const b = Math.floor(intensity * 30);
         const a = 0.4 + intensity * 0.6;
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
-        ctx.fillRect(x, y, 7, 3);
+        ctx.fillRect(x, y, 9, 4);
       } else if (combined > -0.1) {
         const edge = (combined + 0.1) / 0.2;
         const r = Math.floor(80 + edge * 60);
         ctx.fillStyle = `rgba(${r},8,0,0.5)`;
-        ctx.fillRect(x, y, 7, 3);
+        ctx.fillRect(x, y, 9, 4);
       }
     }
   }
@@ -209,6 +208,34 @@ function drawLava(offsetY, height) {
     const wobble = Math.sin(y * 0.05 + t * 2) * 8;
     ctx.fillRect(wobble, y, CANVAS_W, 6);
   }
+}
+
+function drawLava(offsetY, height) {
+  const drawH = height || CANVAS_H;
+  const t = G.lavaTime;
+
+  // For the standard viewport height (playing/falling/won/menu scenes), render lava
+  // to an offscreen canvas and only re-draw every 3 frames. The animation runs at
+  // ~20fps instead of 60fps — imperceptible for slow-moving lava — saving ~66% of
+  // the most expensive per-frame work.
+  if (drawH === CANVAS_H) {
+    if (!G.lavaCache) {
+      G.lavaCache = document.createElement('canvas');
+      G.lavaCache.width = CANVAS_W;
+      G.lavaCache.height = CANVAS_H;
+      G.lavaCacheCtx = G.lavaCache.getContext('2d');
+    }
+    G.lavaFrameCount++;
+    if (G.lavaFrameCount % 3 === 0) {
+      G.lavaCacheCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
+      _renderLavaLayers(G.lavaCacheCtx, drawH, t, offsetY);
+    }
+    G.ctx.drawImage(G.lavaCache, 0, 0);
+    return;
+  }
+
+  // Memorize scene or non-standard height: render directly (scaled context).
+  _renderLavaLayers(G.ctx, drawH, t, offsetY);
 }
 
 function drawPlatform(p, reveal) {
@@ -453,7 +480,8 @@ function drawRescueCharacter(noClip) {
 
 // Update particle physics — called from scene update(), not render
 function updateParticles(dt) {
-  for (let i = G.particles.length - 1; i >= 0; i--) {
+  let i = 0;
+  while (i < G.particles.length) {
     const p = G.particles[i];
     if (p.confetti) {
       p.rotation += p.rotSpeed * dt;
@@ -465,7 +493,14 @@ function updateParticles(dt) {
     p.y += p.vy;
     p.vy += (p.gravity !== undefined ? p.gravity : 0.15);
     p.life -= 0.02;
-    if (p.life <= 0) { G.particles.splice(i, 1); }
+    if (p.life <= 0) {
+      // Swap with last element and pop — O(1) removal vs O(n) splice
+      G.particles[i] = G.particles[G.particles.length - 1];
+      G.particles.pop();
+      // Don't increment i: the swapped element at position i needs to be checked
+    } else {
+      i++;
+    }
   }
 }
 
