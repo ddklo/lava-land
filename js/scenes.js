@@ -390,6 +390,7 @@ const WonScene = {
   _fwTimer: 0,
   _spoken: false,
   _showScreenTimer: -1,
+  _confettiTimer: 0,
   _flyX1: 0, _flyY1: 0,
   _flyX2: 0, _flyY2: 0,
   _flyVX1: 0, _flyVY1: 0,
@@ -403,6 +404,7 @@ const WonScene = {
     this._fwTimer = 0;
     this._spoken = false;
     this._showScreenTimer = -1;
+    this._confettiTimer = 0;
 
     // Start fly-away from goal platform position
     let startX = CANVAS_W / 2, startY = CANVAS_H * 0.55;
@@ -495,16 +497,17 @@ const WonScene = {
     this._angle1 += dt * 3.5;
     this._angle2 -= dt * 2.8;
 
-    // Fireworks sequence
-    if (this._fwCount < 10) {
+    // Fireworks sequence — 16 bursts with increasing density
+    if (this._fwCount < 16) {
       this._fwTimer += dt;
-      if (this._fwTimer >= 0.25) {
-        this._fwTimer -= 0.25;
-        const burst = 1 + Math.floor(Math.random() * 2);
+      const interval = this._fwCount < 6 ? 0.18 : 0.22;
+      if (this._fwTimer >= interval) {
+        this._fwTimer -= interval;
+        const burst = 1 + Math.floor(Math.random() * 3);
         for (let b = 0; b < burst; b++) {
           spawnFirework(
-            80 + Math.random() * (CANVAS_W - 160),
-            G.camera.y + 40 + Math.random() * (CANVAS_H - 150)
+            60 + Math.random() * (CANVAS_W - 120),
+            G.camera.y + 30 + Math.random() * (CANVAS_H - 100)
           );
         }
         spawnConfetti();
@@ -514,9 +517,18 @@ const WonScene = {
           this._spoken = true;
           speakCongrats();
         }
-        if (this._fwCount >= 10) {
-          this._showScreenTimer = 0.6;
+        if (this._fwCount >= 16) {
+          this._showScreenTimer = 0.5;
         }
+      }
+    }
+
+    // Continuous confetti shower after fireworks are done
+    if (this._fwCount >= 16) {
+      this._confettiTimer += dt;
+      if (this._confettiTimer >= 0.35) {
+        this._confettiTimer -= 0.35;
+        spawnConfetti();
       }
     }
 

@@ -89,24 +89,31 @@ function spawnFirework(x, y) {
 }
 
 function spawnConfetti() {
-  const colors = ['#ff0000', '#00ff00', '#0000ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff', '#ffaa00',
-                  '#ff6699', '#66ccff', '#ffcc00', '#cc44ff'];
-  for (let i = 0; i < 50; i++) {
+  const colors = ['#ff0000', '#00ff00', '#0088ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff', '#ffaa00',
+                  '#ff6699', '#66ccff', '#ffcc00', '#cc44ff', '#ff4400', '#44ff88', '#ff88cc', '#88ff44',
+                  '#ff3399', '#33ccff', '#ffee00', '#cc00ff', '#00ffcc', '#ff8800'];
+  for (let i = 0; i < 160; i++) {
+    const color = colors[Math.floor(Math.random() * colors.length)];
+    const r = Math.random();
+    const isCircle = r < 0.25;
+    const isStreamer = !isCircle && r < 0.45;
     G.particles.push({
       x: Math.random() * CANVAS_W,
-      y: G.camera.y - 20 - Math.random() * 30,
-      vx: (Math.random() - 0.5) * 4,
-      vy: Math.random() * 1.5 + 0.5,
-      size: 3 + Math.random() * 3,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      life: 2.5 + Math.random() * 1.5,
-      gravity: 0.015,
+      y: G.camera.y - 5 - Math.random() * CANVAS_H * 0.4,
+      vx: (Math.random() - 0.5) * 8,
+      vy: Math.random() * 3 + 0.8,
+      size: isStreamer ? (3 + Math.random() * 2) : (5 + Math.random() * 9),
+      color: color,
+      life: 3.5 + Math.random() * 2,
+      gravity: 0.02,
       confetti: true,
       rotation: Math.random() * Math.PI * 2,
-      rotSpeed: (Math.random() - 0.5) * 8,
+      rotSpeed: (Math.random() - 0.5) * 14,
       wobble: Math.random() * Math.PI * 2,
-      wobbleSpeed: 2 + Math.random() * 3,
-      aspect: 0.4 + Math.random() * 0.3,
+      wobbleSpeed: 2 + Math.random() * 4,
+      aspect: isStreamer ? 0.12 : (isCircle ? 1 : (0.4 + Math.random() * 0.45)),
+      confettiShape: isCircle ? 'circle' : (isStreamer ? 'streamer' : 'rect'),
+      streamerLen: isStreamer ? (14 + Math.random() * 22) : undefined,
     });
   }
 }
