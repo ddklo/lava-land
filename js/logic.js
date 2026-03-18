@@ -115,7 +115,7 @@ function landOnPlatform(plat, row, col) {
   if (plat.destroyed) {
     playFallSound();
     spawnLavaSplash(plat.x + plat.w / 2, plat.y + 40);
-    SceneManager.replace(FallingScene);
+    SceneManager.replace(FallingScene); // instant — already in lava
     return;
   }
   if (plat.fake) {
@@ -124,7 +124,7 @@ function landOnPlatform(plat, row, col) {
     plat.crumbling = true;
     spawnCrumbleParticles(plat);
     playCrumbleSound();
-    addTimer(0.3, () => { SceneManager.replace(FallingScene); });
+    addTimer(0.3, () => { SceneManager.replace(FallingScene); }); // instant — crumble animation handles it
   } else {
     playLandSound();
 
@@ -149,6 +149,24 @@ function landOnPlatform(plat, row, col) {
     spawnLandDust(plat);
     plat.bobOffset = LAND_BOB_OFFSET;
     plat.bobVel = LAND_BOB_VEL;
+    G.shakeTimer = 3; // micro-shake on landing
+
+    // Combo streak
+    G.streak++;
+    if (G.streak >= 3) {
+      G.streakPopups.push({
+        x: plat.x + plat.w / 2,
+        y: plat.y - 20,
+        text: 'x' + G.streak,
+        timer: 1.0,
+      });
+    }
+
+    // Tutorial deactivation
+    if (G.tutorialActive) {
+      G.tutorialActive = false;
+      G.tutorialShown = true;
+    }
 
     // Trail mark
     G.trailMarks.push({

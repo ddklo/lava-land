@@ -18,9 +18,10 @@ function returnToMenu() {
   G.levelConfig = null;
   G.level = 1;
   G.totalScore = 0;
+  G.tutorialShown = false;
   document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
   updateStartBtn();
-  SceneManager.replace(MenuScene);
+  transitionTo(MenuScene);
 }
 
 function startLevel() {
@@ -40,7 +41,7 @@ function startLevel() {
   G.hopsThisRow = 0;
   G.streakBonus = 0;
 
-  SceneManager.replace(MemorizeScene);
+  transitionTo(MemorizeScene);
 }
 
 function advanceLevel() {
@@ -190,5 +191,5 @@ function startGame() {
   G.hopsThisRow = 0;
   G.streakBonus = 0;
 
-  SceneManager.replace(MemorizeScene);
+  transitionTo(MemorizeScene);
 }

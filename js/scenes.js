@@ -91,6 +91,7 @@ const MenuScene = {
     document.getElementById('win-screen').style.display = 'none';
     document.getElementById('lose-screen').style.display = 'none';
     document.getElementById('game-hud').style.display = 'none';
+    document.body.style.backgroundPositionY = '0';
   },
   onExit() {
     document.getElementById('menu-screen').style.display = 'none';
@@ -98,11 +99,13 @@ const MenuScene = {
   },
   update(dt) {
     G.lavaTime += dt;
+    updateTransition(dt);
   },
   render() {
     const ctx = G.ctx;
     ctx.clearRect(0, 0, CANVAS_W, CANVAS_H);
     drawLava(0);
+    drawTransition();
   }
 };
 
@@ -119,12 +122,26 @@ const MemorizeScene = {
     document.getElementById('game-hud').style.display = 'block';
     document.getElementById('lose-screen').style.display = 'none';
 
-    // Populate HUD left panel
+    // Level preview (adventure mode only)
+    if (G.gameMode === 'adventure' && G.levelConfig) {
+      G.levelPreview = { timer: 1.2 };
+    } else {
+      G.levelPreview = null;
+    }
+
+    // Populate HUD left panel with progress dots
     const hudLeft = document.getElementById('hud-left');
     if (G.gameMode === 'adventure' && G.levelConfig) {
+      let dots = '';
+      for (let i = 1; i <= LEVELS.length; i++) {
+        dots += i <= G.level
+          ? '<span class="dot-done">\u25CF</span>'
+          : '\u25CB';
+      }
       hudLeft.innerHTML =
         `<div class="hud-level-line">Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}</div>` +
-        `<div class="hud-total-score">Score ${G.totalScore}</div>`;
+        `<div class="hud-total-score">Score ${G.totalScore}</div>` +
+        `<div class="hud-progress-dots">${dots}</div>`;
     } else {
       hudLeft.innerHTML = '';
     }
@@ -138,6 +155,13 @@ const MemorizeScene = {
     G.lavaTime += dt;
     updateParticles(dt);
     updateTimers(dt);
+    updateTransition(dt);
+
+    // Level preview countdown
+    if (G.levelPreview && G.levelPreview.timer > 0) {
+      G.levelPreview.timer -= dt;
+      return; // pause memorize timer while preview is showing
+    }
 
     G.memorizeTimer -= dt;
     const secs = Math.ceil(G.memorizeTimer);
@@ -191,6 +215,17 @@ const MemorizeScene = {
     drawPlayer();
 
     ctx.restore();
+
+    // Urgency vignette in last 3 seconds
+    if (G.memorizeTimer < 3 && G.memorizeTimer > 0) {
+      const urgency = 1 - (G.memorizeTimer / 3);
+      const pulse = urgency * (0.7 + Math.sin(G.lavaTime * 6) * 0.3);
+      drawUrgencyVignette(pulse);
+    }
+
+    // Level preview card on top of everything
+    drawLevelPreview();
+    drawTransition();
   }
 };
 
@@ -206,7 +241,7 @@ function startPlayingEarly() {
   if (G.gameState !== 'memorize') return;
   G.memTimeSaved = Math.max(0, G.memorizeTimer);
   G.memorizeTimer = 0;
-  SceneManager.replace(PlayingScene);
+  SceneManager.replace(PlayingScene); // instant — same level, no fade needed
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -218,23 +253,39 @@ const PlayingScene = {
   _lastTimerStr: '',
   _lastJumps: -1,
   _lastStreak: -1,
+  _trailFrameCount: 0,
 
   onEnter() {
     G.gameState = 'playing';
     G.playTimer = 0;
+    G.streak = 0;
+    G.streakPopups = [];
     this._lastRow = -1;
     this._lastCol = -1;
     this._lastTimerStr = '';
     this._lastJumps = -1;
     this._lastStreak = -1;
+    this._trailFrameCount = 0;
     playActionMusic();
 
-    // Populate HUD left panel
+    // Tutorial on level 1 adventure mode
+    if (G.gameMode === 'adventure' && G.level === 1 && !G.tutorialShown) {
+      G.tutorialActive = true;
+    }
+
+    // Populate HUD left panel with progress dots
     const hudLeft = document.getElementById('hud-left');
     if (G.gameMode === 'adventure' && G.levelConfig) {
+      let dots = '';
+      for (let i = 1; i <= LEVELS.length; i++) {
+        dots += i <= G.level
+          ? '<span class="dot-done">\u25CF</span>'
+          : '\u25CB';
+      }
       hudLeft.innerHTML =
         `<div class="hud-level-line">Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}</div>` +
-        `<div class="hud-total-score">Score ${G.totalScore}</div>`;
+        `<div class="hud-total-score">Score ${G.totalScore}</div>` +
+        `<div class="hud-progress-dots">${dots}</div>`;
     } else {
       hudLeft.innerHTML = '';
     }
@@ -259,13 +310,28 @@ const PlayingScene = {
     updateCrumbleTimers(dt);
     updatePlatformBob(dt);
     updateTrailMarks(dt);
+    updateStreakPopups(dt);
+    updateTransition(dt);
 
-    // Jump animation
+    // Jump animation + trail particles
     if (G.jumpAnim.active) {
       G.jumpAnim.t += dt * JUMP_SPEED;
+
+      // Spawn jump trail particles every ~3 frames
+      this._trailFrameCount++;
+      if (this._trailFrameCount % 3 === 0) {
+        const t = G.jumpAnim.t;
+        const px = G.jumpAnim.startX + (G.jumpAnim.endX - G.jumpAnim.startX) * t;
+        const linearY = G.jumpAnim.startY + (G.jumpAnim.endY - G.jumpAnim.startY) * t;
+        const arcH = JUMP_ARC_HEIGHT * Math.sin(t * Math.PI);
+        const py = linearY + arcH;
+        spawnJumpTrail(px, py);
+      }
+
       if (G.jumpAnim.t >= 1) {
         G.jumpAnim.t = 1;
         G.jumpAnim.active = false;
+        this._trailFrameCount = 0;
         landOnPlatform(G.jumpAnim.targetPlat, G.jumpAnim.targetRow, G.jumpAnim.targetCol);
       }
     }
@@ -274,6 +340,9 @@ const PlayingScene = {
     const targetCamY = G.player.y - CANVAS_H * CAMERA_PLAYER_OFFSET;
     G.camera.y += (targetCamY - G.camera.y) * CAMERA_SMOOTHING;
     G.camera.y = Math.max(0, G.camera.y);
+
+    // Parallax background scrolling
+    document.body.style.backgroundPositionY = -(G.camera.y * 0.15) + 'px';
 
     // Shake decay
     if (G.shakeTimer > 0) G.shakeTimer -= 1;
@@ -318,9 +387,12 @@ const PlayingScene = {
     drawTrailMarks();
     drawRescueCharacter();
     drawParticles();
+    drawStreakPopups();
     drawPlayer();
+    drawTutorialArrow();
 
     ctx.restore();
+    drawTransition();
   }
 };
 
@@ -334,10 +406,14 @@ const FallingScene = {
     G.gameState = 'falling';
     G.shakeTimer = 15;
     G.fallY = G.player.y;
+    G.streak = 0;
     this._spoken = false;
     playFallSound();
     stopMusic();
     spawnLavaSplash(G.player.x, G.player.y + 40);
+
+    // Check if player was close to winning
+    const wasAlmostWin = G.player.row >= G.platforms.length - 2;
 
     addTimer(1.0, () => {
       playLoseSound();
@@ -357,11 +433,20 @@ const FallingScene = {
       }
       // Show lose screen
       document.getElementById('lose-emoji').textContent = G.heroChar.emoji + ' \uD83D\uDD25';
-      const messages = [
-        `${G.heroChar.name} fell into the lava!`,
-        `${G.heroChar.name} couldn't save ${G.rescueChar.name}!`,
-        `The lava got ${G.heroChar.name}!`,
-      ];
+      let messages;
+      if (wasAlmostWin) {
+        messages = [
+          `So close! ${G.heroChar.name} almost made it!`,
+          `Almost there! Just one more jump!`,
+          `${G.rescueChar.name} was right there! Try again!`,
+        ];
+      } else {
+        messages = [
+          `${G.heroChar.name} fell into the lava!`,
+          `${G.heroChar.name} couldn't save ${G.rescueChar.name}!`,
+          `The lava got ${G.heroChar.name}!`,
+        ];
+      }
       document.getElementById('lose-msg').textContent = messages[Math.floor(Math.random() * messages.length)];
       document.getElementById('lose-screen').style.display = 'block';
       document.getElementById('game-hud').style.display = 'none';
@@ -377,8 +462,12 @@ const FallingScene = {
     updateTimers(dt);
     updateCrumbleTimers(dt);
     updateTrailMarks(dt);
+    updateTransition(dt);
     G.fallY += 1.2;
     if (G.shakeTimer > 0) G.shakeTimer -= 1;
+
+    // Parallax
+    document.body.style.backgroundPositionY = -(G.camera.y * 0.15) + 'px';
   },
   render() {
     const ctx = G.ctx;
@@ -399,6 +488,7 @@ const FallingScene = {
     drawEmoji(ctx, G.heroChar.emoji, G.player.x, G.fallY - G.camera.y, EMOJI_SIZE * shrink);
 
     ctx.restore();
+    drawTransition();
   }
 };
 
@@ -470,7 +560,11 @@ const WonScene = {
       winLevelInfo.textContent = `Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}`;
       winLevelInfo.style.display = '';
 
-      const starStr = '\u2B50'.repeat(stars) + '\u2606'.repeat(3 - stars);
+      const starStr = Array.from({length: 3}, (_, i) => {
+        const char = i < stars ? '\u2B50' : '\u2606';
+        const delay = i * 0.3;
+        return `<span class="star-pop" style="animation-delay:${delay}s">${char}</span>`;
+      }).join('');
       let scoreHtml = `<div class="score-stars">${starStr}</div>`;
       scoreHtml += `<div class="score-row"><span>Time bonus</span><span>${breakdown.timeScore}</span></div>`;
       scoreHtml += `<div class="score-row"><span>Jump efficiency</span><span>${breakdown.jumpScore}</span></div>`;
@@ -519,6 +613,8 @@ const WonScene = {
     this._flyY2 += this._flyVY2 * dt;
     this._angle1 += dt * 3.5;
     this._angle2 -= dt * 2.8;
+
+    updateTransition(dt);
 
     // Fireworks sequence — 16 bursts with increasing density
     if (this._fwCount < 16) {
@@ -595,5 +691,6 @@ const WonScene = {
 
     ctx.globalAlpha = 1;
     ctx.restore();
+    drawTransition();
   }
 };

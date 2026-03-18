@@ -10,7 +10,7 @@
 
   /* ── Background / surface ───────────────────────────────────── */
   --bg-dark: #1a0a0a;
-  --surface: rgba(10, 5, 5, 0.95);
+  --surface: rgba(10, 5, 5, 0.85);
   --surface-hud: rgba(10, 5, 5, 0.85);
 
   /* ── Brand / primary (fire orange) ──────────────────────────── */

@@ -58,6 +58,20 @@ const G = {
   hopsThisRow: 0,  // hops made since last forward landing
   streakBonus: 0,  // accumulated streak bonus points this level
 
+  // Scene transitions
+  transition: { active: false, nextScene: null },
+
+  // Tutorial (level 1 adventure mode)
+  tutorialShown: false,
+  tutorialActive: false,
+
+  // Combo streak
+  streak: 0,
+  streakPopups: [],
+
+  // Level preview
+  levelPreview: null,
+
   // Managed timers (replaces setTimeout/setInterval in game logic)
   timers: [],
 

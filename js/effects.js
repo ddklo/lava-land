@@ -21,8 +21,9 @@ function spawnPlatformExplosion(plat) {
 function spawnLandDust(plat) {
   const cx = plat.x + plat.w / 2;
   const topY = plat.y;
-  for (let i = 0; i < 10; i++) {
-    const angle = (i / 10) * Math.PI * 2;
+  // Stone dust from top
+  for (let i = 0; i < 8; i++) {
+    const angle = (i / 8) * Math.PI * 2;
     G.particles.push({
       x: cx + (Math.random() - 0.5) * 16,
       y: topY + Math.random() * 2,
@@ -32,6 +33,23 @@ function spawnLandDust(plat) {
       color: ['#bbaa99', '#998877', '#ccbbaa'][Math.floor(Math.random() * 3)],
       life: 0.45 + Math.random() * 0.35,
       gravity: 0.03,
+      round: true,
+    });
+  }
+  // Lava splash from platform edges — simulates floating in lava
+  const bottomY = plat.y + PLAT_H;
+  for (let i = 0; i < 6; i++) {
+    const side = i < 3 ? -1 : 1;
+    const edgeX = side < 0 ? plat.x : plat.x + plat.w;
+    G.particles.push({
+      x: edgeX + side * (Math.random() * 4),
+      y: bottomY + Math.random() * 4,
+      vx: side * (1.5 + Math.random() * 2),
+      vy: -(1.5 + Math.random() * 2.5),
+      size: 1.5 + Math.random() * 2,
+      color: ['#ff6600', '#ff8800', '#ffaa00', '#ff4400'][Math.floor(Math.random() * 4)],
+      life: 0.35 + Math.random() * 0.25,
+      gravity: 0.18,
       round: true,
     });
   }
@@ -84,6 +102,23 @@ function spawnFirework(x, y) {
       wobble: Math.random() * Math.PI * 2,
       wobbleSpeed: 2 + Math.random() * 3,
       aspect: 0.4 + Math.random() * 0.3,
+    });
+  }
+}
+
+function spawnJumpTrail(x, y) {
+  const colors = ['#ffdd88', '#ffaa44'];
+  for (let i = 0; i < 2; i++) {
+    G.particles.push({
+      x: x + (Math.random() - 0.5) * 8,
+      y: y + Math.random() * 4,
+      vx: (Math.random() - 0.5) * 0.8,
+      vy: Math.random() * 0.5,
+      size: 2 + Math.random(),
+      color: colors[i],
+      life: 0.3 + Math.random() * 0.15,
+      gravity: 0.02,
+      round: true,
     });
   }
 }

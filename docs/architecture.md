@@ -154,6 +154,10 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Effects | `particles`, `lavaTime`, `shakeTimer`, `fallY`, `trailMarks` | scenes, drawing.js |
 | Animation | `jumpAnim` | logic.js, PlayingScene |
 | Win/Play | `winTimer`, `playTimer` | WonScene, PlayingScene |
+| Transitions | `transition` | drawing.js (updateTransition, transitionTo) |
+| Tutorial | `tutorialShown`, `tutorialActive` | logic.js, PlayingScene |
+| Streak | `streak`, `streakPopups` | logic.js, PlayingScene |
+| Level Preview | `levelPreview` | MemorizeScene |
 | Timers | `timers` | timers.js |
 | Input | `keys`, `isTouchDevice` | input.js |
 | Loop | `lastTime`, `accumulator` | loop.js |
@@ -187,7 +191,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 - **Adventure Mode**: levels progress via `startLevel()` / `advanceLevel()`, score accumulates
 - **Custom Mode**: manual settings, no levels/scoring, uses `startGame()`
 
-All transitions go through `SceneManager.replace()`. Each scene's `onExit()` calls `clearTimers()`.
+Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, next level, return to menu). Instant transitions use `SceneManager.replace()` directly (memorize→playing, playing→falling, playing→won). Each scene's `onExit()` calls `clearTimers()`.
 
 ---
 
@@ -218,32 +222,38 @@ All transitions go through `SceneManager.replace()`. Each scene's `onExit()` cal
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
 
-### drawing.js (9 functions)
+### drawing.js (19 functions)
 - `drawEmoji(ctx, emoji, x, y, size)` - Shared emoji renderer with shadow pass
-- `drawLava(offsetY, height)` - 6-layer animated lava background
-- `drawPlatform(p, reveal)` - 3D stone block with brick texture
+- `drawLava(offsetY, height)` - 7-layer animated lava background
+- `drawPlatform(p, reveal)` - 3D stone block with brick texture + glow (memorize) + heat (lava proximity)
 - `drawPlayer()` - Player emoji with squash/stretch and shadow
-- `drawRescueCharacter()` - Floating rescue target with "Help!"
+- `drawRescueCharacter()` - Floating rescue target with SOS rings, sparkles, and "Help!"
 - `updateParticles(dt)` / `drawParticles()` - Particle physics and rendering
 - `updateTrailMarks(dt)` / `drawTrailMarks()` - Trail breadcrumb system
 - `formatTime(seconds)` - Timer display formatter
+- `updateTransition(dt)` / `drawTransition()` / `transitionTo(scene)` - Scene fade transition system
+- `updateStreakPopups(dt)` / `drawStreakPopups()` - Combo streak counter display
+- `drawUrgencyVignette(intensity)` - Red vignette pulse for memorize countdown
+- `drawLevelPreview()` - Level name/info card overlay
+- `drawTutorialArrow()` - Pulsing arrow pointing at first safe platform
 
-### effects.js (6 functions)
+### effects.js (7 functions)
 - `spawnPlatformExplosion(plat)` - 18 stone debris particles on departure
 - `spawnLandDust(plat)` - Radial dust cloud on landing
 - `spawnCrumbleParticles(plat)` - Debris when fake platform breaks
 - `spawnLavaSplash(x, y)` - Lava particles on fall
+- `spawnJumpTrail(x, y)` - 2 glowing trail particles during jump arc
 - `spawnFirework(x, y)` - Burst of 30 radial particles
 - `spawnConfetti()` - 40 falling confetti particles
 
-### scenes.js (SceneManager + 5 scenes + 4 helpers)
+### scenes.js (SceneManager + 5 scenes + 5 helpers)
 - `SceneManager` - push/pop/replace + update/render delegation
-- `MenuScene` - Lava background, shows menu HTML overlay
-- `MemorizeScene` - Zoom-out view, countdown, transitions to PlayingScene
-- `PlayingScene` - Gameplay: jump animation, camera, platform bob, trail, HUD
-- `FallingScene` - Fall animation, shake, lose screen after 1.8s
-- `WonScene` - Firework sequence, character celebration walk, win screen
-- `renderPlatforms(reveal)` / `applyShake(ctx)` / `updatePlatformBob(dt)` / `updateCrumbleTimers(dt)`
+- `MenuScene` - Lava background, shows menu HTML overlay, resets parallax
+- `MemorizeScene` - Zoom-out view, countdown, level preview card, urgency vignette, progress dots
+- `PlayingScene` - Gameplay: jump animation, camera, platform bob, trail, HUD, jump trail particles, streak popups, tutorial arrow, parallax
+- `FallingScene` - Fall animation, shake, "Almost!" feedback, lose screen after 1.8s, parallax
+- `WonScene` - Firework sequence, character celebration walk, star pop-in animation, win screen
+- `renderPlatforms(reveal)` / `applyShake(ctx)` / `updatePlatformBob(dt)` / `updateCrumbleTimers(dt)` / `startPlayingEarly()`
 
 ### logic.js (5 functions)
 - `calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime)` - Compute score breakdown

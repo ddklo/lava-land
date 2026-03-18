@@ -29,8 +29,8 @@ const SPRING_REST_THRESHOLD = 0.15;
 const SPRING_VEL_THRESHOLD = 0.5;
 
 // Landing impact
-const LAND_BOB_OFFSET = 5;
-const LAND_BOB_VEL = 60;
+const LAND_BOB_OFFSET = 7;
+const LAND_BOB_VEL = 80;
 
 // Jump squash/stretch
 const SQUASH_X = 0.12;
