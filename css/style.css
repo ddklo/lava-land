@@ -575,6 +575,9 @@ canvas {
   #hud-center { display: none; }
 
   #game-hud { height: 56px; }
+
+  /* Push canvas below the HUD so it doesn't cover the play area */
+  canvas { margin-top: 56px; }
   #hud-left { height: 56px; left: 8px; }
   #hud-stats { height: 56px; right: 8px; }
   #hud-left .hud-level-line {
@@ -619,6 +622,7 @@ canvas {
   #hud-center { display: none; }
   #game-hud { height: 44px; }
   #hud-left, #hud-stats { height: 44px; }
+  canvas { margin-top: 44px; }
   #hud-left .hud-level-line { font-size: 12px; }
   #hud-left .hud-total-score { font-size: 11px; }
   #hud-stats .stat-item { font-size: 14px; }
