@@ -54,6 +54,9 @@ const G = {
   playTimer: 0,
   jumpCount: 0,
   memTimeSaved: 0,
+  jumpStreak: 0,   // consecutive clean forward rows (no hops before jumping forward)
+  hopsThisRow: 0,  // hops made since last forward landing
+  streakBonus: 0,  // accumulated streak bonus points this level
 
   // Managed timers (replaces setTimeout/setInterval in game logic)
   timers: [],

@@ -920,9 +920,11 @@
       const lvl = LEVELS[i];
       assert(lvl.cols >= 5 && lvl.cols <= 7, `Level ${i + 1} cols in range (got ${lvl.cols})`);
       assert(lvl.rows >= 5 && lvl.rows <= 16, `Level ${i + 1} rows in range (got ${lvl.rows})`);
-      assert(lvl.fake >= 0.25 && lvl.fake <= 0.75, `Level ${i + 1} fake in range (got ${lvl.fake})`);
-      assert(lvl.memTime >= 4 && lvl.memTime <= 12, `Level ${i + 1} memTime in range (got ${lvl.memTime})`);
+      assert(lvl.fake >= 0.35 && lvl.fake <= 0.80, `Level ${i + 1} fake in range (got ${lvl.fake})`);
+      assert(lvl.memTime >= 6 && lvl.memTime <= 10, `Level ${i + 1} memTime in range (got ${lvl.memTime})`);
       assert(typeof lvl.name === 'string' && lvl.name.length > 0, `Level ${i + 1} has a name`);
+      assert(lvl.maxShift >= 1 && lvl.maxShift <= 3, `Level ${i + 1} maxShift in range (got ${lvl.maxShift})`);
+      assert(typeof lvl.decoys === 'number' && lvl.decoys >= 0, `Level ${i + 1} decoys is non-negative (got ${lvl.decoys})`);
     }
   });
 
@@ -955,42 +957,46 @@
     const cfg16 = getLevelConfig(16);
     assertEqual(cfg16.cols, 7, 'Level 16 cols = 7');
     assert(cfg16.rows >= 16 && cfg16.rows <= 20, `Level 16 rows in range (got ${cfg16.rows})`);
-    assert(cfg16.fake > 0.75 && cfg16.fake <= 0.85, `Level 16 fake > 0.75 (got ${cfg16.fake})`);
-    assert(cfg16.memTime >= 3, `Level 16 memTime >= 3 (got ${cfg16.memTime})`);
+    // Level 16 fake continues smoothly from level 15 (0.72), not a big jump
+    assert(cfg16.fake >= 0.72 && cfg16.fake <= 0.82, `Level 16 fake continues from 0.72 (got ${cfg16.fake})`);
+    assert(cfg16.memTime >= 4, `Level 16 memTime >= 4 (got ${cfg16.memTime})`);
     assertEqual(cfg16.name, 'Endless 16', 'Level 16 name');
+    assertEqual(cfg16.maxShift, 3, 'Level 16 maxShift = 3');
+    assert(typeof cfg16.decoys === 'number', 'Level 16 has decoys field');
 
     const cfg30 = getLevelConfig(30);
     assert(cfg30.rows <= 20, `Level 30 rows capped at 20 (got ${cfg30.rows})`);
-    assert(cfg30.fake <= 0.85, `Level 30 fake capped at 0.85 (got ${cfg30.fake})`);
-    assert(cfg30.memTime >= 3, `Level 30 memTime >= 3 (got ${cfg30.memTime})`);
+    assert(cfg30.fake <= 0.82, `Level 30 fake capped at 0.82 (got ${cfg30.fake})`);
+    assert(cfg30.memTime >= 4, `Level 30 memTime >= 4 (got ${cfg30.memTime})`);
   });
 
   // ═══════════════════════════════════════════════════════════════
   // SCORING TESTS
   // ═══════════════════════════════════════════════════════════════
   suite('calculateScore — Basic', () => {
-    // Level 1, 10s, minimum jumps (4 for 5 rows), memTime 12
-    const result = calculateScore(1, 10, 4, 5, 12);
+    // Level 1, 10s, minimum jumps (4 for 5 rows), memTime 10, no streak
+    const result = calculateScore(1, 10, 4, 5, 10);
     assertEqual(result.timeScore, 5000 - 10 * 50, 'Time score = 5000 - 500 = 4500');
     assertEqual(result.jumpScore, 3000, 'Jump score = 3000 (no excess)');
     assertEqual(result.levelBonus, 200, 'Level bonus = 1 * 200');
     assertEqual(result.perfectBonus, 1000, 'Perfect bonus awarded');
-    assertEqual(result.speedBonus, 0, 'No speed bonus (10s >= 12 * 0.5)');
+    assertEqual(result.speedBonus, 0, 'No speed bonus (10s >= 10 * 0.5)');
+    assertEqual(result.streakBonus, 0, 'No streak bonus (not passed)');
     assert(result.perfect === true, 'Perfect flag set');
     assert(result.fast === false, 'Fast flag not set');
     assertEqual(result.totalScore, 4500 + 3000 + 200 + 1000, 'Total = 8700');
   });
 
   suite('calculateScore — Speed Bonus', () => {
-    // Level 5, 2s (< 10 * 0.5 = 5s), 9 jumps for 10 rows
-    const result = calculateScore(5, 2, 9, 10, 10);
+    // Level 5, 2s (< 9 * 0.5 = 4.5s), 9 jumps for 10 rows
+    const result = calculateScore(5, 2, 9, 10, 9);
     assert(result.fast === true, 'Fast flag set');
     assertEqual(result.speedBonus, 500, 'Speed bonus = 500');
   });
 
   suite('calculateScore — Excess Jumps', () => {
     // Level 1, 5s, 10 jumps for 5 rows (min = 4, excess = 6)
-    const result = calculateScore(1, 5, 10, 5, 12);
+    const result = calculateScore(1, 5, 10, 5, 10);
     assertEqual(result.jumpScore, 3000 - 6 * 100, 'Jump score = 2400 (6 excess)');
     assertEqual(result.perfectBonus, 0, 'No perfect bonus');
     assert(result.perfect === false, 'Perfect flag not set');
@@ -998,14 +1004,25 @@
 
   suite('calculateScore — Floors at Zero', () => {
     // Very slow, many excess jumps
-    const result = calculateScore(1, 200, 100, 5, 12);
+    const result = calculateScore(1, 200, 100, 5, 10);
     assertEqual(result.timeScore, 0, 'Time score floors at 0');
     assertEqual(result.jumpScore, 0, 'Jump score floors at 0');
   });
 
+  suite('calculateScore — Streak Bonus', () => {
+    // Level 1, streak bonus = 250 passed in
+    const result = calculateScore(1, 10, 4, 5, 10, 0, 250);
+    assertEqual(result.streakBonus, 250, 'Streak bonus included in result');
+    assertEqual(result.totalScore, (5000 - 500) + 3000 + 200 + 1000 + 250, 'Streak bonus added to total');
+  });
+
   suite('calculateStars — Thresholds', () => {
-    // Max possible for level 1: 5000 + 3000 + 200 + 1000 + 500 = 9700
-    const maxScore = 5000 + 3000 + 200 + 1000 + 500;
+    // Max possible for level 1 (5 rows, memTime=10):
+    // 5000 + 3000 + 200 + 1000 + 500 + 10*80 + (4*5/2)*50
+    // = 5000 + 3000 + 200 + 1000 + 500 + 800 + 500 = 11000
+    const cfg1 = getLevelConfig(1);
+    const maxStreakBonus = ((cfg1.rows - 1) * cfg1.rows / 2) * SCORE_STREAK_MULT;
+    const maxScore = 5000 + 3000 + 200 + 1000 + 500 + cfg1.memTime * 80 + maxStreakBonus;
     const stars3 = calculateStars(Math.ceil(maxScore * 0.8), 1);
     assertEqual(stars3, 3, '3 stars at 80% of max');
 
@@ -1041,6 +1058,204 @@
     assert('totalScore' in G, 'G has totalScore field');
     assert('levelStars' in G, 'G has levelStars field');
     assert('levelScoreBreakdown' in G, 'G has levelScoreBreakdown field');
+    assert('jumpStreak' in G, 'G has jumpStreak field');
+    assert('hopsThisRow' in G, 'G has hopsThisRow field');
+    assert('streakBonus' in G, 'G has streakBonus field');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // STREAK MECHANICS TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Streak — Clean Forward Jump Increments Streak', () => {
+    G.gridCols = 6;
+    G.gridRows = 12;
+    G.difficulty = 'easy';
+    G.gameState = 'playing';
+    generatePlatforms();
+    resetPlayer();
+    G.jumpStreak = 0;
+    G.hopsThisRow = 0;
+    G.streakBonus = 0;
+
+    SceneManager.stack = [];
+    SceneManager.stack.push(PlayingScene);
+
+    // No hops before forward landing → streak should increment
+    const targetRow = 1;
+    const targetCol = G.safePath[1];
+    const plat = G.platforms[targetRow][targetCol];
+    plat.fake = false;
+    plat.destroyed = false;
+
+    // hopsThisRow is 0, so landing should increment streak
+    landOnPlatform(plat, targetRow, targetCol);
+
+    assertEqual(G.jumpStreak, 1, 'Streak increments on clean forward landing');
+    assertEqual(G.streakBonus, 1 * SCORE_STREAK_MULT, 'Streak bonus accumulates');
+    assertEqual(G.hopsThisRow, 0, 'hopsThisRow reset to 0 after forward landing');
+  });
+
+  suite('Streak — Hop Before Forward Jump Resets Streak', () => {
+    G.gridCols = 6;
+    G.gridRows = 12;
+    G.difficulty = 'easy';
+    G.gameState = 'playing';
+    generatePlatforms();
+    resetPlayer();
+    G.jumpStreak = 3;
+    G.hopsThisRow = 1; // one hop already made
+    G.streakBonus = 150;
+
+    SceneManager.stack = [];
+    SceneManager.stack.push(PlayingScene);
+
+    const targetRow = 1;
+    const targetCol = G.safePath[1];
+    const plat = G.platforms[targetRow][targetCol];
+    plat.fake = false;
+    plat.destroyed = false;
+
+    // hopsThisRow = 1, so streak should reset on forward landing
+    landOnPlatform(plat, targetRow, targetCol);
+
+    assertEqual(G.jumpStreak, 0, 'Streak resets when hop was made before forward jump');
+    assertEqual(G.hopsThisRow, 0, 'hopsThisRow reset after forward landing');
+  });
+
+  suite('Streak — Hop Increments hopsThisRow', () => {
+    G.gridCols = 6;
+    G.gridRows = 12;
+    G.difficulty = 'easy';
+    G.gameState = 'playing';
+    generatePlatforms();
+    resetPlayer();
+    G.hopsThisRow = 0;
+
+    // Force player to middle column
+    const midCol = Math.floor(G.gridCols / 2);
+    G.player.col = midCol;
+    G.player.x = G.platforms[0][midCol].x + G.platforms[0][midCol].w / 2;
+    G.player.onPlatform = G.platforms[0][midCol];
+    G.jumpAnim.active = false;
+
+    tryJump('right');
+    assertEqual(G.hopsThisRow, 1, 'hopsThisRow increments on hop');
+  });
+
+  suite('Streak — Consecutive Clean Rows Accumulate Bonus', () => {
+    // Simulate 3 consecutive clean forward rows manually
+    G.jumpStreak = 0;
+    G.streakBonus = 0;
+    G.hopsThisRow = 0;
+
+    G.gridCols = 6;
+    G.gridRows = 12;
+    G.difficulty = 'easy';
+    G.gameState = 'playing';
+    generatePlatforms();
+    resetPlayer();
+
+    SceneManager.stack = [];
+    SceneManager.stack.push(PlayingScene);
+
+    // 3 consecutive clean landings (row 1, 2, 3)
+    for (let r = 1; r <= 3; r++) {
+      G.hopsThisRow = 0;
+      const col = G.safePath[r];
+      const plat = G.platforms[r][col];
+      plat.fake = false;
+      plat.destroyed = false;
+      landOnPlatform(plat, r, col);
+    }
+
+    assertEqual(G.jumpStreak, 3, '3 consecutive clean rows = streak 3');
+    // Bonus: 1*50 + 2*50 + 3*50 = 300
+    assertEqual(G.streakBonus, (1 + 2 + 3) * SCORE_STREAK_MULT, 'Streak bonus triangular accumulation');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // PLATFORM GENERATION — MAXSHIFT AND DECOY TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Platform Generation — MaxShift Bridge Safety', () => {
+    // With maxShift=2, all intermediate columns between prevCol and curCol must be safe
+    G.gridCols = 7;
+    G.gridRows = 12;
+    G.levelConfig = { cols: 7, rows: 12, fake: 0.53, memTime: 8, maxShift: 2, decoys: 0, name: 'Test' };
+    G.gridCols = G.levelConfig.cols;
+    G.gridRows = G.levelConfig.rows;
+
+    // Run multiple times to catch cases with 2-col shifts
+    let bridgeAlwaysSafe = true;
+    for (let trial = 0; trial < 10; trial++) {
+      generatePlatforms();
+      for (let row = 1; row < G.gridRows; row++) {
+        const prevCol = G.safePath[row - 1];
+        const curCol  = G.safePath[row];
+        if (prevCol !== curCol) {
+          const lo = Math.min(prevCol, curCol);
+          const hi = Math.max(prevCol, curCol);
+          for (let c = lo; c <= hi; c++) {
+            if (G.platforms[row][c].fake) {
+              bridgeAlwaysSafe = false;
+            }
+          }
+        }
+      }
+    }
+    assert(bridgeAlwaysSafe, 'All bridge columns are real (not fake) with maxShift=2');
+
+    G.levelConfig = null;
+  });
+
+  suite('Platform Generation — Decoy Paths', () => {
+    // With decoys=2, two near-complete columns should exist with exactly one fake each
+    G.levelConfig = { cols: 7, rows: 12, fake: 0.64, memTime: 7, maxShift: 2, decoys: 2, name: 'Test' };
+    G.gridCols = G.levelConfig.cols;
+    G.gridRows = G.levelConfig.rows;
+
+    generatePlatforms();
+
+    const rescueCol = G.safePath[G.gridRows - 1];
+    // Count columns that have all-real platforms
+    let nearCompleteCount = 0;
+    for (let c = 0; c < G.gridCols; c++) {
+      if (c === rescueCol) continue;
+      const realCount = G.platforms.filter(row => !row[c].fake).length;
+      // A decoy column should have gridRows-1 real platforms (one fake)
+      if (realCount >= G.gridRows - 1) nearCompleteCount++;
+    }
+    // We expect at least 1 decoy-like column (safe path col + decoys)
+    assert(nearCompleteCount >= 1, 'At least one near-complete decoy column exists');
+
+    G.levelConfig = null;
+  });
+
+  suite('Platform Generation — Decoy Does Not Block Safe Path', () => {
+    // Safe path must never be blocked by a decoy
+    G.levelConfig = { cols: 7, rows: 16, fake: 0.72, memTime: 6, maxShift: 3, decoys: 3, name: 'Test' };
+    G.gridCols = G.levelConfig.cols;
+    G.gridRows = G.levelConfig.rows;
+
+    for (let trial = 0; trial < 5; trial++) {
+      generatePlatforms();
+      for (let r = 0; r < G.gridRows; r++) {
+        assert(!G.platforms[r][G.safePath[r]].fake,
+          `Safe path row ${r} not fake (decoys=3, trial ${trial})`);
+      }
+      // Bridge platforms must also be safe
+      for (let r = 1; r < G.gridRows; r++) {
+        const prev = G.safePath[r - 1];
+        const cur  = G.safePath[r];
+        const lo = Math.min(prev, cur);
+        const hi = Math.max(prev, cur);
+        for (let c = lo; c <= hi; c++) {
+          assert(!G.platforms[r][c].fake,
+            `Bridge col ${c} at row ${r} not fake (decoys=3, trial ${trial})`);
+        }
+      }
+    }
+
+    G.levelConfig = null;
   });
 
   // ═══════════════════════════════════════════════════════════════

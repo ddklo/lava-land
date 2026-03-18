@@ -36,6 +36,9 @@ function startLevel() {
   G.trailMarks = [];
   G.jumpCount = 0;
   G.memTimeSaved = 0;
+  G.jumpStreak = 0;
+  G.hopsThisRow = 0;
+  G.streakBonus = 0;
 
   SceneManager.replace(MemorizeScene);
 }
@@ -183,6 +186,9 @@ function startGame() {
   G.trailMarks = [];
   G.jumpCount = 0;
   G.memTimeSaved = 0;
+  G.jumpStreak = 0;
+  G.hopsThisRow = 0;
+  G.streakBonus = 0;
 
   SceneManager.replace(MemorizeScene);
 }
