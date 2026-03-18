@@ -8,7 +8,19 @@
   <link rel="stylesheet" href="css/style.css">
 </head>
 <body>
-  <canvas id="gameCanvas"></canvas>
+  <div class="game-area">
+    <canvas id="gameCanvas"></canvas>
+    <div id="game-hud" style="display:none;">
+      <div id="hud-left"></div>
+      <div id="hud-center">
+        <div id="hud-game-title"></div>
+        <div id="hud-game-author"></div>
+      </div>
+      <div id="hud-stats">
+        <div id="hud-text"></div>
+      </div>
+    </div>
+  </div>
   <div id="ui-overlay">
     <div id="menu-screen" class="menu-screen">
       <h1 id="menu-title">LAVA LAND</h1>
@@ -111,17 +123,6 @@
         <button class="btn" id="next-level-btn" style="display:none;">NEXT LEVEL</button>
         <button class="btn btn-secondary" id="play-again-btn">BACK TO MENU</button>
       </div>
-    </div>
-  </div>
-
-  <div id="game-hud" style="display:none;">
-    <div id="hud-left"></div>
-    <div id="hud-center">
-      <div id="hud-game-title"></div>
-      <div id="hud-game-author"></div>
-    </div>
-    <div id="hud-stats">
-      <div id="hud-text"></div>
     </div>
   </div>
 

@@ -1,5 +1,18 @@
 * { margin: 0; padding: 0; box-sizing: border-box; }
 
+/* ─── Game area wrapper — canvas + HUD together ──────────── */
+
+.game-area {
+  position: relative;
+}
+
+/* ─── Touch improvements ─────────────────────────────────── */
+
+.btn, .char-card, .opt-card {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
 body {
   background: var(--bg-dark) url('../images/background.svg') center center / cover no-repeat;
   font-family: var(--font-main);
@@ -511,6 +524,15 @@ canvas {
     align-items: flex-start;
   }
 
+  /* Canvas: full-width, borderless — feels native on mobile */
+  canvas {
+    width: 100vw;
+    height: auto;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+  }
+
   .menu-screen {
     padding: 20px 14px;
     border-radius: 12px;
@@ -524,46 +546,57 @@ canvas {
 
   .character-grid { gap: 8px; margin-bottom: 12px; }
   .char-card {
-    width: 68px;
-    height: 84px;
+    width: 72px;
+    height: 88px;
     border-radius: 8px;
   }
-  .char-card .emoji { font-size: 28px; margin-bottom: 3px; }
+  .char-card .emoji { font-size: 30px; margin-bottom: 3px; }
   .char-card .name { font-size: 10px; }
 
   .option-row { gap: 8px; }
   .opt-card {
-    padding: 8px 12px;
-    min-width: 80px;
+    padding: 10px 14px;
+    min-width: 88px;
     border-radius: 8px;
   }
-  .opt-card .opt-label { font-size: 13px; }
+  .opt-card .opt-label { font-size: 14px; }
   .opt-card .opt-desc { font-size: 10px; }
 
   .btn {
-    padding: 12px 30px;
+    padding: 14px 30px;
     font-size: 18px;
   }
 
-  .btn-adventure { font-size: 18px; padding: 14px 30px; }
+  .btn-adventure { font-size: 18px; padding: 16px 30px; }
 
   .instructions { font-size: 12px; margin-top: 12px; }
 
+  /* HUD: hide center title — prevents overlap with stats on narrow screens */
+  #hud-center { display: none; }
+
   #game-hud { height: 56px; }
   #hud-left { height: 56px; left: 8px; }
-  #hud-center { height: 56px; }
   #hud-stats { height: 56px; right: 8px; }
-  #hud-left .hud-level-line { font-size: 13px; }
+  #hud-left .hud-level-line {
+    font-size: 13px;
+    max-width: 42vw;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
   #hud-left .hud-total-score { font-size: 12px; }
-  #hud-game-title { font-size: 22px; letter-spacing: 2px; }
-  #hud-game-author { font-size: 11px; }
   #hud-stats .stat-item { font-size: 16px; }
   #hud-stats .stat-label { font-size: 10px; }
   #hud-stats .stat-row { gap: 8px; }
   #hud-stats .timer-warn { font-size: 20px; }
+  #hud-stats .timer-hint { font-size: 11px; }
 
   #win-screen h1 { font-size: 36px; }
   .win-emojis { font-size: 32px; }
+
+  /* Lose screen: match win screen sizes */
+  #lose-screen h1 { font-size: 36px; }
+  #lose-screen h2 { font-size: 14px; }
+  .lose-emoji { font-size: 36px; margin: 6px 0; }
 
   .level-info { font-size: 13px; }
   .score-section { padding: 10px 14px; max-width: 280px; }
@@ -581,4 +614,16 @@ canvas {
   .char-card { width: 58px; height: 72px; }
   .char-card .emoji { font-size: 24px; }
   .char-card .name { font-size: 9px; }
+
+  /* Compact HUD for landscape phones — canvas is height-constrained */
+  #hud-center { display: none; }
+  #game-hud { height: 44px; }
+  #hud-left, #hud-stats { height: 44px; }
+  #hud-left .hud-level-line { font-size: 12px; }
+  #hud-left .hud-total-score { font-size: 11px; }
+  #hud-stats .stat-item { font-size: 14px; }
+  #hud-stats .stat-label { font-size: 9px; }
+  #hud-stats .stat-row { gap: 6px; }
+  #hud-stats .timer-warn { font-size: 18px; }
+  #hud-stats .timer-hint { font-size: 10px; }
 }
