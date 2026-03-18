@@ -61,22 +61,24 @@ const DIFFICULTY_FAKE_CHANCE = {
 };
 
 // ─── LEVELS ─────────────────────────────────────────────────────
+// maxShift: max columns the safe path can shift per row (1=single hop, 2-3=multi-hop zigzag)
+// decoys:   number of near-complete fake columns planted to create dead-end paths
 const LEVELS = [
-  { cols: 5, rows: 5,  fake: 0.25, memTime: 12, name: 'The Crossing' },
-  { cols: 5, rows: 6,  fake: 0.28, memTime: 11, name: 'Stepping Stones' },
-  { cols: 5, rows: 7,  fake: 0.30, memTime: 10, name: 'Lava Creek' },
-  { cols: 5, rows: 8,  fake: 0.33, memTime: 10, name: 'Molten Path' },
-  { cols: 6, rows: 8,  fake: 0.35, memTime: 10, name: 'Ember Trail' },
-  { cols: 6, rows: 10, fake: 0.38, memTime: 9,  name: 'Fire Walk' },
-  { cols: 6, rows: 10, fake: 0.40, memTime: 9,  name: 'Inferno Bridge' },
-  { cols: 6, rows: 12, fake: 0.43, memTime: 8,  name: 'Scorched Passage' },
-  { cols: 7, rows: 12, fake: 0.45, memTime: 8,  name: 'Magma Maze' },
-  { cols: 7, rows: 14, fake: 0.48, memTime: 7,  name: 'Obsidian Run' },
-  { cols: 7, rows: 14, fake: 0.50, memTime: 7,  name: 'Volcano Heart' },
-  { cols: 7, rows: 16, fake: 0.55, memTime: 6,  name: 'Dragon\'s Lair' },
-  { cols: 7, rows: 16, fake: 0.60, memTime: 5,  name: 'Hellfire Sprint' },
-  { cols: 7, rows: 16, fake: 0.65, memTime: 5,  name: 'Core Meltdown' },
-  { cols: 7, rows: 16, fake: 0.70, memTime: 4,  name: 'Final Descent' },
+  { cols: 5, rows: 5,  fake: 0.35, memTime: 10, maxShift: 1, decoys: 0, name: 'The Crossing' },
+  { cols: 5, rows: 6,  fake: 0.38, memTime: 10, maxShift: 1, decoys: 0, name: 'Stepping Stones' },
+  { cols: 5, rows: 7,  fake: 0.40, memTime: 10, maxShift: 1, decoys: 0, name: 'Lava Creek' },
+  { cols: 5, rows: 8,  fake: 0.42, memTime: 10, maxShift: 1, decoys: 0, name: 'Molten Path' },
+  { cols: 6, rows: 8,  fake: 0.44, memTime: 9,  maxShift: 1, decoys: 0, name: 'Ember Trail' },
+  { cols: 6, rows: 10, fake: 0.46, memTime: 9,  maxShift: 1, decoys: 0, name: 'Fire Walk' },
+  { cols: 6, rows: 10, fake: 0.48, memTime: 9,  maxShift: 1, decoys: 0, name: 'Inferno Bridge' },
+  { cols: 6, rows: 12, fake: 0.50, memTime: 9,  maxShift: 1, decoys: 0, name: 'Scorched Passage' },
+  { cols: 7, rows: 12, fake: 0.53, memTime: 8,  maxShift: 2, decoys: 0, name: 'Magma Maze' },
+  { cols: 7, rows: 14, fake: 0.55, memTime: 8,  maxShift: 2, decoys: 0, name: 'Obsidian Run' },
+  { cols: 7, rows: 14, fake: 0.57, memTime: 8,  maxShift: 2, decoys: 0, name: 'Volcano Heart' },
+  { cols: 7, rows: 15, fake: 0.60, memTime: 7,  maxShift: 2, decoys: 0, name: 'Dragon\'s Lair' },
+  { cols: 7, rows: 16, fake: 0.64, memTime: 7,  maxShift: 2, decoys: 1, name: 'Hellfire Sprint' },
+  { cols: 7, rows: 16, fake: 0.68, memTime: 6,  maxShift: 3, decoys: 2, name: 'Core Meltdown' },
+  { cols: 7, rows: 16, fake: 0.72, memTime: 6,  maxShift: 3, decoys: 3, name: 'Final Descent' },
 ];
 
 function getLevelConfig(levelNum) {
@@ -85,9 +87,11 @@ function getLevelConfig(levelNum) {
   const n = levelNum - LEVELS.length; // how many beyond 15
   return {
     cols: 7,
-    rows: Math.min(20, 16 + n),
-    fake: Math.min(0.85, 0.75 + n * 0.02),
-    memTime: Math.max(3, 4 - Math.floor(n / 3)),
+    rows: Math.min(20, 16 + Math.floor(n / 2)),
+    fake: Math.min(0.82, 0.72 + n * 0.015),
+    memTime: Math.max(4, 6 - Math.floor(n / 2)),
+    maxShift: 3,
+    decoys: Math.min(4, 3 + Math.floor(n / 3)),
     name: 'Endless ' + levelNum,
   };
 }
@@ -101,6 +105,7 @@ const SCORE_LEVEL_MULT = 200;
 const SCORE_PERFECT_BONUS = 1000;
 const SCORE_SPEED_BONUS = 500;
 const SCORE_EARLY_MEM_MULT = 80; // points per second of memorize time saved
+const SCORE_STREAK_MULT = 50;    // points per streak-level per clean forward row
 const SPEED_BONUS_THRESHOLD = 0.5;
 const STAR_TWO_THRESHOLD = 0.5;
 const STAR_THREE_THRESHOLD = 0.8;

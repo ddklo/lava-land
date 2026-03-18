@@ -194,6 +194,14 @@ const MemorizeScene = {
   }
 };
 
+function showStreakFlash(n) {
+  const el = document.getElementById('streak-flash');
+  if (!el) return;
+  el.textContent = `\uD83D\uDD25 ${n}\xD7 STREAK!`;
+  el.style.display = 'block';
+  addTimer(1.5, () => { el.style.display = 'none'; });
+}
+
 function startPlayingEarly() {
   if (G.gameState !== 'memorize') return;
   G.memTimeSaved = Math.max(0, G.memorizeTimer);
@@ -209,6 +217,7 @@ const PlayingScene = {
   _lastCol: -1,
   _lastTimerStr: '',
   _lastJumps: -1,
+  _lastStreak: -1,
 
   onEnter() {
     G.gameState = 'playing';
@@ -217,6 +226,7 @@ const PlayingScene = {
     this._lastCol = -1;
     this._lastTimerStr = '';
     this._lastJumps = -1;
+    this._lastStreak = -1;
     playActionMusic();
 
     // Populate HUD left panel
@@ -273,17 +283,27 @@ const PlayingScene = {
     const curCol = G.player.col;
     const curTimer = formatTime(G.playTimer);
     const curJumps = G.jumpCount;
-    if (curRow !== this._lastRow || curCol !== this._lastCol || curTimer !== this._lastTimerStr || curJumps !== this._lastJumps) {
+    const curStreak = G.jumpStreak;
+    if (curRow !== this._lastRow || curCol !== this._lastCol || curTimer !== this._lastTimerStr || curJumps !== this._lastJumps || curStreak !== this._lastStreak) {
+      // Fire milestone flash before updating cache
+      if (curStreak > this._lastStreak && (curStreak === 3 || curStreak === 5 || curStreak >= 7)) {
+        showStreakFlash(curStreak);
+      }
       this._lastRow = curRow;
       this._lastCol = curCol;
       this._lastTimerStr = curTimer;
       this._lastJumps = curJumps;
+      this._lastStreak = curStreak;
+      const streakPart = curStreak > 0
+        ? `<span class="stat-item stat-streak">${curStreak}x<span class="stat-label">STREAK</span></span>`
+        : '';
       document.getElementById('hud-text').innerHTML =
         `<div class="stat-row">` +
         `<span class="stat-item">${curRow + 1}/${G.platforms.length}<span class="stat-label">ROW</span></span>` +
         `<span class="stat-item">${curCol + 1}/${G.platforms[0].length}<span class="stat-label">COL</span></span>` +
         `<span class="stat-item">${curTimer}<span class="stat-label">TIME</span></span>` +
         `<span class="stat-item">${curJumps}<span class="stat-label">JUMPS</span></span>` +
+        streakPart +
         `</div>`;
     }
   },
@@ -440,7 +460,7 @@ const WonScene = {
     const nextLevelBtn = document.getElementById('next-level-btn');
 
     if (G.gameMode === 'adventure' && G.levelConfig) {
-      const breakdown = calculateScore(G.level, G.playTimer, G.jumpCount, G.gridRows, G.levelConfig.memTime, G.memTimeSaved);
+      const breakdown = calculateScore(G.level, G.playTimer, G.jumpCount, G.gridRows, G.levelConfig.memTime, G.memTimeSaved, G.streakBonus);
       const stars = calculateStars(breakdown.totalScore, G.level);
       G.levelScore = breakdown.totalScore;
       G.levelStars = stars;
@@ -463,6 +483,9 @@ const WonScene = {
       }
       if (breakdown.earlyMemBonus > 0) {
         scoreHtml += `<div class="score-row bonus"><span>Early start bonus!</span><span>+${breakdown.earlyMemBonus}</span></div>`;
+      }
+      if (breakdown.streakBonus > 0) {
+        scoreHtml += `<div class="score-row bonus"><span>Streak bonus!</span><span>+${breakdown.streakBonus}</span></div>`;
       }
       scoreHtml += `<div class="score-total"><span>Level Score</span><span>${breakdown.totalScore}</span></div>`;
       scoreHtml += `<div class="score-cumulative">Total Score: ${G.totalScore}</div>`;

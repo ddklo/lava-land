@@ -1,5 +1,5 @@
 // ─── SCORING ────────────────────────────────────────────────────
-function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTimeSaved) {
+function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTimeSaved, streakBonus) {
   const minJumps = totalRows - 1;
   const excessJumps = Math.max(0, jumpCount - minJumps);
   const perfect = excessJumps === 0;
@@ -11,16 +11,19 @@ function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTim
   const perfectBonus = perfect ? SCORE_PERFECT_BONUS : 0;
   const speedBonus = fast ? SCORE_SPEED_BONUS : 0;
   const earlyMemBonus = Math.round((memTimeSaved || 0) * SCORE_EARLY_MEM_MULT);
-  const totalScore = timeScore + jumpScore + levelBonus + perfectBonus + speedBonus + earlyMemBonus;
+  const streakBonusVal = streakBonus || 0;
+  const totalScore = timeScore + jumpScore + levelBonus + perfectBonus + speedBonus + earlyMemBonus + streakBonusVal;
 
-  return { timeScore, jumpScore, levelBonus, perfectBonus, speedBonus, earlyMemBonus, totalScore, perfect, fast };
+  return { timeScore, jumpScore, levelBonus, perfectBonus, speedBonus, earlyMemBonus, streakBonus: streakBonusVal, totalScore, perfect, fast };
 }
 
 function calculateStars(score, levelNum) {
   const cfg = getLevelConfig(levelNum);
-  const minJumps = cfg.rows - 1;
-  // Max possible: perfect path, zero time, all bonuses + full early mem bonus
-  const maxScore = SCORE_TIME_BASE + SCORE_JUMP_BASE + levelNum * SCORE_LEVEL_MULT + SCORE_PERFECT_BONUS + SCORE_SPEED_BONUS + cfg.memTime * SCORE_EARLY_MEM_MULT;
+  // Max possible: perfect path, zero time, all bonuses + full early mem + max streak
+  const maxStreakBonus = ((cfg.rows - 1) * cfg.rows / 2) * SCORE_STREAK_MULT;
+  const maxScore = SCORE_TIME_BASE + SCORE_JUMP_BASE + levelNum * SCORE_LEVEL_MULT
+                 + SCORE_PERFECT_BONUS + SCORE_SPEED_BONUS
+                 + cfg.memTime * SCORE_EARLY_MEM_MULT + maxStreakBonus;
   if (score >= maxScore * STAR_THREE_THRESHOLD) return 3;
   if (score >= maxScore * STAR_TWO_THRESHOLD) return 2;
   return 1;
@@ -53,6 +56,7 @@ function tryJump(direction) {
 
     const targetPlat = row[targetCol];
     G.jumpCount++;
+    G.hopsThisRow++;
     playHopSound();
     destroyDeparturePlatform();
 
@@ -123,6 +127,18 @@ function landOnPlatform(plat, row, col) {
     addTimer(0.3, () => { SceneManager.replace(FallingScene); });
   } else {
     playLandSound();
+
+    // Streak tracking: a clean forward row = no hops made before jumping forward
+    if (row > G.player.row) {
+      if (G.hopsThisRow === 0) {
+        G.jumpStreak++;
+        G.streakBonus += G.jumpStreak * SCORE_STREAK_MULT;
+      } else {
+        G.jumpStreak = 0;
+      }
+      G.hopsThisRow = 0;
+    }
+
     G.player.x = plat.x + plat.w / 2;
     G.player.y = plat.y - PLAYER_Y_OFFSET;
     G.player.row = row;
