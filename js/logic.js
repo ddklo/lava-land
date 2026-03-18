@@ -128,10 +128,8 @@ function landOnPlatform(plat, row, col) {
   } else {
     playLandSound();
 
-    const prevRow = G.player.row;
-
     // Streak tracking: a clean forward row = no hops made before jumping forward
-    if (row > prevRow) {
+    if (row > G.player.row) {
       if (G.hopsThisRow === 0) {
         G.jumpStreak++;
         G.streakBonus += G.jumpStreak * SCORE_STREAK_MULT;
@@ -159,9 +157,9 @@ function landOnPlatform(plat, row, col) {
       life: 1.0,
     });
 
-    // Win only when jumping forward onto the rescue character's platform (not hopping sideways)
+    // Win only when landing on the rescue character's platform
     const rescueCol = G.safePath[G.safePath.length - 1];
-    if (row === G.platforms.length - 1 && col === rescueCol && row > prevRow) {
+    if (row === G.platforms.length - 1 && col === rescueCol) {
       spawnPlatformExplosion(plat);
       plat.destroyed = true;
       SceneManager.replace(WonScene);
