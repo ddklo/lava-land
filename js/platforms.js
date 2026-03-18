@@ -156,4 +156,22 @@ function generatePlatforms() {
     // Bridge always wins — safe path bridges override any decoy fake
     applyBridge();
   }
+
+  // Lock down the last 2 rows: only platforms within the bridge range
+  // (between the incoming safe column and the destination safe column)
+  // are allowed to be real. This prevents players from ignoring the safe
+  // path, going straight down to near the rescue character, and hopping across.
+  const lockRows = Math.min(2, G.gridRows - 1);
+  for (let ri = 0; ri < lockRows; ri++) {
+    const row = G.gridRows - 1 - ri;
+    const safeCol = G.safePath[row];
+    const prevSafeCol = row > 0 ? G.safePath[row - 1] : safeCol;
+    const lo = Math.min(safeCol, prevSafeCol);
+    const hi = Math.max(safeCol, prevSafeCol);
+    for (let c = 0; c < G.gridCols; c++) {
+      if (c < lo || c > hi) {
+        G.platforms[row][c].fake = true;
+      }
+    }
+  }
 }
