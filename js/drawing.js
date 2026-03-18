@@ -478,11 +478,20 @@ function drawParticles() {
     ctx.fillStyle = p.color;
     if (p.confetti) {
       const sx = p.y - G.camera.y;
-      const scaleX = Math.cos(p.rotation);
       ctx.save();
       ctx.translate(p.x, sx);
-      ctx.scale(scaleX, 1);
-      ctx.fillRect(-p.size / 2, -p.size * p.aspect / 2, p.size, p.size * p.aspect);
+      if (p.confettiShape === 'circle') {
+        ctx.beginPath();
+        ctx.arc(0, 0, p.size / 2, 0, Math.PI * 2);
+        ctx.fill();
+      } else if (p.confettiShape === 'streamer') {
+        ctx.rotate(p.rotation);
+        ctx.fillRect(-p.streamerLen / 2, -p.size / 2, p.streamerLen, p.size);
+      } else {
+        const scaleX = Math.cos(p.rotation);
+        ctx.scale(scaleX, 1);
+        ctx.fillRect(-p.size / 2, -p.size * p.aspect / 2, p.size, p.size * p.aspect);
+      }
       ctx.restore();
     } else if (p.round) {
       ctx.beginPath();
