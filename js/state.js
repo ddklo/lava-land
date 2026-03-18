@@ -15,6 +15,11 @@ const G = {
   canvas: null,
   ctx: null,
 
+  // Lava offscreen canvas cache (drawing.js uses these for throttled re-render)
+  lavaCache: null,
+  lavaCacheCtx: null,
+  lavaFrameCount: 0,
+
   // Selections
   heroChoice: null,
   rescueChoice: null,
