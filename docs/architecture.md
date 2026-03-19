@@ -229,7 +229,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `insertBacktracks(safePath, gridCols, gridRows, numBacktracks)` - Insert backward-jump sections into the safe path for late-level difficulty
 
 ### platforms.js (1 function)
-- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES via pathgen.js), insert backtracks, mark fakes
+- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES via pathgen.js), insert backtracks, mark fakes, block straight-down exploits
 
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
@@ -321,7 +321,7 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - Grid sizes and difficulty configuration
 - State initialization
 - Platform generation (correct dimensions, safe path validity, fake marking)
-- Board rules (BOARD_RULES config, max consecutive same-direction enforcement, bounds safety)
+- Board rules (BOARD_RULES config, max consecutive same-direction enforcement, bounds safety, no straight-down column exploit)
 - Platform initialization (all properties including `destroyed` are explicit)
 - Player reset (position, platform reference)
 - Timer system (add, fire, clear, concurrent timers)

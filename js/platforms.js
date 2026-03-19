@@ -232,4 +232,40 @@ function generatePlatforms() {
       }
     }
   }
+
+  // ── Anti-straight-down exploit ──────────────────────────────
+  // Ensure no single column is entirely real from row 0 to the last row.
+  // Without this, a player could jump straight down one column to win
+  // without needing to memorize the safe path at all.
+  for (let c = 0; c < G.gridCols; c++) {
+    let allReal = true;
+    for (let r = 0; r < G.gridRows; r++) {
+      if (G.platforms[r][c].fake || G.platforms[r][c].destroyed) {
+        allReal = false;
+        break;
+      }
+    }
+    if (!allReal) continue;
+
+    // This column is all-real — insert a fake in a non-safe row to block it.
+    // Collect candidate rows where this column isn't on the safe path or
+    // an extra-safe (backtrack) column.
+    const candidates = [];
+    for (let r = 1; r < G.gridRows - 1; r++) {
+      if (G.safePath[r] === c) continue;
+      const extras = G.extraSafeCols[r] || [];
+      if (extras.indexOf(c) !== -1) continue;
+      // Also skip rows where this column is a bridge between adjacent safe columns
+      const prev = r > 0 ? G.safePath[r - 1] : G.safePath[r];
+      const cur = G.safePath[r];
+      const bridgeLo = Math.min(prev, cur);
+      const bridgeHi = Math.max(prev, cur);
+      if (c >= bridgeLo && c <= bridgeHi) continue;
+      candidates.push(r);
+    }
+    if (candidates.length > 0) {
+      const pick = candidates[Math.floor(Math.random() * candidates.length)];
+      G.platforms[pick][c].fake = true;
+    }
+  }
 }
