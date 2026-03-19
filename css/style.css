@@ -587,7 +587,7 @@ canvas {
     align-items: flex-start;
   }
 
-  /* Canvas: full-width, full remaining height — fills the screen on mobile */
+  /* Canvas: fill available space while preserving aspect ratio */
   canvas {
     width: 100%;
     flex: 1;
@@ -596,6 +596,7 @@ canvas {
     border: none;
     border-radius: 0;
     box-shadow: none;
+    object-fit: contain;
   }
 
   .menu-screen {
