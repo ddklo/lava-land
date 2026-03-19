@@ -1,3 +1,51 @@
+// ─── BOARD RULE HELPERS ─────────────────────────────────────────
+
+// Enforce BOARD_RULES.maxConsecutiveSameDirection on a safe path.
+// Scans for runs of consecutive same-direction moves (left or right)
+// that exceed the limit and breaks them by reversing the direction
+// at the boundary row.
+function applyMaxConsecutiveDirectionRule(safePath, gridCols) {
+  const maxRun = BOARD_RULES.maxConsecutiveSameDirection;
+  let runDir = 0;   // -1 = left, +1 = right, 0 = straight
+  let runLen = 0;
+
+  for (let row = 1; row < safePath.length; row++) {
+    const diff = safePath[row] - safePath[row - 1];
+    const dir = diff > 0 ? 1 : diff < 0 ? -1 : 0;
+
+    if (dir === 0) {
+      // Straight move resets the lateral run
+      runDir = 0;
+      runLen = 0;
+      continue;
+    }
+
+    if (dir === runDir) {
+      runLen++;
+    } else {
+      // Direction changed — start a new run
+      runDir = dir;
+      runLen = 1;
+    }
+
+    if (runLen > maxRun) {
+      // Break the run: shift this row in the opposite direction instead
+      const oppositeShift = -runDir;
+      const newCol = Math.max(0, Math.min(gridCols - 1, safePath[row - 1] + oppositeShift));
+      if (newCol !== safePath[row - 1]) {
+        safePath[row] = newCol;
+        runDir = oppositeShift > 0 ? 1 : -1;
+        runLen = 1;
+      } else {
+        // Can't go opposite (at edge) — stay in same column
+        safePath[row] = safePath[row - 1];
+        runDir = 0;
+        runLen = 0;
+      }
+    }
+  }
+}
+
 // ─── PLATFORM GENERATION ────────────────────────────────────────
 function generatePlatforms() {
   G.platforms = [];
@@ -27,8 +75,7 @@ function generatePlatforms() {
     G.platforms.push(rowPlatforms);
   }
 
-  // Build guaranteed safe path — biased toward sideways movement,
-  // never allows more than 1 consecutive straight-down jump.
+  // ── Build guaranteed safe path ──────────────────────────────
   // maxShift controls how many columns the path can shift per row.
   const maxShift = (G.levelConfig && G.levelConfig.maxShift) || 1;
   G.safePath = new Array(G.gridRows);
@@ -37,8 +84,8 @@ function generatePlatforms() {
 
   for (let row = 1; row < G.gridRows; row++) {
     const prevCol = G.safePath[row - 1];
-    // Force sideways if we just went straight down
-    const forceSide = stayCount >= 1;
+    // Force sideways if we hit the max consecutive straight limit
+    const forceSide = stayCount >= BOARD_RULES.maxConsecutiveStraight;
 
     // Determine probability of staying based on maxShift
     const stayProb = maxShift === 1 ? 0.2 : maxShift === 2 ? 0.2 : 0.1;
@@ -67,9 +114,17 @@ function generatePlatforms() {
     }
   }
 
-  // Guarantee enough horizontal moves for variety
+  // ── Rule: maxConsecutiveSameDirection ──────────────────────
+  // Break up runs where the path moves in the same lateral direction
+  // (left or right) for more than BOARD_RULES.maxConsecutiveSameDirection
+  // consecutive rows. This prevents long diagonal lines that are too
+  // easy to memorize.
+  applyMaxConsecutiveDirectionRule(G.safePath, G.gridCols);
+
+  // ── Rule: minLateralMoveFraction ──────────────────────────
+  // Guarantee enough horizontal moves for variety.
   let sideMoves = G.safePath.reduce((n, col, i) => n + (i > 0 && col !== G.safePath[i - 1] ? 1 : 0), 0);
-  const minSideMoves = Math.max(2, Math.floor(G.gridRows * 0.4));
+  const minSideMoves = Math.max(2, Math.floor(G.gridRows * BOARD_RULES.minLateralMoveFraction));
   while (sideMoves < minSideMoves) {
     // Pick a random row that currently goes straight and force a side move
     const candidates = [];

@@ -60,6 +60,18 @@ const DIFFICULTY_FAKE_CHANCE = {
   hard:   0.7,
 };
 
+// ─── BOARD GENERATION RULES ────────────────────────────────────
+// Named constraints applied to the safe path during board generation.
+// Each rule is enforced as a post-processing pass on the generated path.
+const BOARD_RULES = {
+  // Max consecutive rows the path can stay in the same column (straight down)
+  maxConsecutiveStraight: 1,
+  // Max consecutive rows the path can move in the same lateral direction
+  maxConsecutiveSameDirection: 5,
+  // Minimum fraction of rows that must include a lateral (non-straight) move
+  minLateralMoveFraction: 0.4,
+};
+
 // ─── LEVELS ─────────────────────────────────────────────────────
 // maxShift: max columns the safe path can shift per row (1=single hop, 2-3=multi-hop zigzag)
 // decoys:   number of near-complete fake columns planted to create dead-end paths
