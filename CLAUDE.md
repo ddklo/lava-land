@@ -97,8 +97,8 @@ Open `tests/test.html` in a browser. Tests cover: config, state, platform genera
 
 - Menu: select hero, rescue character, open settings, change difficulty/grid/memorize time
 - Memorize phase: zoomed-out view with countdown timer
-- Playing: arrow keys to hop left/right, up/space to jump forward
-- Mobile: swipe left/right to hop, tap/swipe up to jump forward
+- Playing: arrow keys to move in all 4 directions — left/right hop, down/space to jump forward, up to go backward
+- Mobile: swipe left/right to hop, swipe down to jump forward, swipe up to go backward
 - Platforms explode when you leave them; trail marks show your path
 - Fall on fake platform: crumble + shake + lose screen with retry/menu options
 - Win: fireworks, character celebration walk, speech synthesis, play-again flow
