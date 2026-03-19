@@ -154,42 +154,25 @@ function drawTutorialArrow() {
   const nextRow = G.platforms[nextRowIdx];
   if (!nextRow) return;
 
-  // Find the platform the player would actually land on (same logic as tryJump)
-  let nearest = 0;
-  let nearestDist = Infinity;
-  for (let i = 0; i < nextRow.length; i++) {
-    const platCenter = nextRow[i].x + nextRow[i].w / 2;
-    const dist = Math.abs(platCenter - G.player.x);
-    if (dist < nearestDist) {
-      nearestDist = dist;
-      nearest = i;
-    }
-  }
-
-  const plat = nextRow[nearest];
+  // Always point at the guaranteed-safe platform in the next row.
+  // Using safePath avoids two bugs: (1) nearest-by-pixel-X picks a fake platform
+  // during hop animations while G.player.x is mid-transition, and (2) the old
+  // redirect pointed at platforms[curRow][safeCol] which isn't guaranteed real.
+  const safeCol = G.safePath[nextRowIdx];
+  const plat = nextRow[safeCol];
   if (!plat) return;
 
-  // Determine hint text based on whether the landing is safe
+  const tx = plat.x + plat.w / 2;
+  const ty = plat.y - G.camera.y - 20;
+  const bobY = Math.sin(G.lavaTime * 4) * 8;
   let hint;
-  if (plat.fake) {
-    // Landing column is fake — need to sidestep first
-    const safeCol = G.safePath[nextRowIdx];
+  if (G.player.col === safeCol) {
+    hint = G.isTouchDevice ? 'Tap to jump!' : 'Press \u2193 to jump!';
+  } else {
     const dir = safeCol < G.player.col ? '\u2190' : '\u2192';
     hint = `Hop ${dir} first!`;
-    // Point at the safe column in current row instead
-    const safeInCurRow = G.platforms[curRow][safeCol];
-    if (!safeInCurRow) return;
-    const tx = safeInCurRow.x + safeInCurRow.w / 2;
-    const ty = safeInCurRow.y - G.camera.y - 20;
-    const bobY = Math.sin(G.lavaTime * 4) * 8;
-    drawTutorialHint(ctx, tx, ty + bobY, hint);
-  } else {
-    hint = G.isTouchDevice ? 'Tap to jump!' : 'Press \u2193 to jump!';
-    const tx = plat.x + plat.w / 2;
-    const ty = plat.y - G.camera.y - 20;
-    const bobY = Math.sin(G.lavaTime * 4) * 8;
-    drawTutorialHint(ctx, tx, ty + bobY, hint);
   }
+  drawTutorialHint(ctx, tx, ty + bobY, hint);
 }
 
 function drawTutorialHint(ctx, tx, ty, text) {
