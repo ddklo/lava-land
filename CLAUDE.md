@@ -32,7 +32,7 @@ js/config.js        Constants, physics tuning, LEVELS array, getLevelConfig(), s
 js/state.js         Shared mutable state object: const G = {}
 js/timers.js        Managed timer system (addTimer, updateTimers, clearTimers)
 js/audio.js         Procedural music + sound effects (Web Audio API, with error guards)
-js/platforms.js     Grid generation + safe-path algorithm
+js/platforms.js     Grid generation + safe-path algorithm + backtrack insertion
 js/player.js        resetPlayer()
 js/drawing.js       Canvas rendering (read-only) + particle/trail update/render + formatTime()
 js/effects.js       All particle spawners (dust, explosions, lava, fireworks, confetti)

@@ -152,7 +152,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Canvas | `canvas`, `ctx` | init.js (write-once) |
 | Selections | `heroChoice`, `rescueChoice`, `heroChar`, `rescueChar` | menu.js (startGame caches lookups) |
 | Game mode | `gameState` | scenes (set in onEnter) |
-| Entities | `platforms`, `player`, `safePath` | platforms.js, player.js, logic.js |
+| Entities | `platforms`, `player`, `safePath`, `safeRoute`, `extraSafeCols` | platforms.js, player.js, logic.js |
 | Camera | `camera` | player.js, PlayingScene |
 | Effects | `particles`, `lavaTime`, `shakeTimer`, `fallY`, `trailMarks` | scenes, drawing.js |
 | Animation | `jumpAnim` | logic.js, PlayingScene |
@@ -219,9 +219,10 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `speakText(text, rate, pitch)` - Shared speech helper with English voice selection
 - `speakCongrats()` / `speakLose()` - Speech synthesis (via speakText)
 
-### platforms.js (2 functions)
+### platforms.js (3 functions)
 - `applyMaxConsecutiveDirectionRule(safePath, gridCols)` - Enforce max consecutive same-direction moves on a path
-- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES), mark fakes
+- `insertBacktracks(safePath, gridCols, gridRows, numBacktracks)` - Insert backward-jump sections into the safe path for late-level difficulty
+- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES), insert backtracks, mark fakes
 
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
@@ -234,6 +235,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `drawRescueCharacter()` - Floating rescue target with SOS rings, sparkles, and "Help!"
 - `updateParticles(dt)` / `drawParticles()` - Particle physics and rendering
 - `updateTrailMarks(dt)` / `drawTrailMarks()` - Trail breadcrumb system
+- `drawRouteSteps()` - Draw numbered step markers and arrows on safeRoute during memorize (only when backtracks exist)
 - `formatTime(seconds)` - Timer display formatter
 - `updateTransition(dt)` / `drawTransition()` / `transitionTo(scene)` - Scene fade transition system
 - `updateStreakPopups(dt)` / `drawStreakPopups()` - Combo streak counter display
@@ -263,7 +265,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime)` - Compute score breakdown
 - `calculateStars(score, levelNum)` - Compute 1-3 star rating
 - `destroyDeparturePlatform()` - Explode and mark current platform as destroyed
-- `tryJump(direction)` - Handle left/right/forward jump; uses destroyDeparturePlatform
+- `tryJump(direction)` - Handle left/right/forward/backward jump; uses destroyDeparturePlatform
 - `landOnPlatform(plat, row, col)` - Process landing; check win/fake/destroyed
 
 ### input.js (2 functions)

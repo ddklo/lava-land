@@ -74,6 +74,42 @@ function tryJump(direction) {
     return;
   }
 
+  // Backward jump — go back one row
+  if (direction === 'backward') {
+    const targetRow = currentRow - 1;
+    if (targetRow < 0) return;
+
+    const prevRowPlats = G.platforms[targetRow];
+    let nearest = 0;
+    let nearestDist = Infinity;
+    for (let i = 0; i < prevRowPlats.length; i++) {
+      const platCenter = prevRowPlats[i].x + prevRowPlats[i].w / 2;
+      const dist = Math.abs(platCenter - G.player.x);
+      if (dist < nearestDist) {
+        nearestDist = dist;
+        nearest = i;
+      }
+    }
+
+    const targetPlat = prevRowPlats[nearest];
+    G.jumpCount++;
+    playJumpSound();
+    destroyDeparturePlatform();
+
+    G.jumpAnim = {
+      active: true,
+      startX: G.player.x,
+      startY: G.player.y,
+      endX: targetPlat.x + targetPlat.w / 2,
+      endY: targetPlat.y - PLAYER_Y_OFFSET,
+      t: 0,
+      targetRow: targetRow,
+      targetCol: nearest,
+      targetPlat: targetPlat,
+    };
+    return;
+  }
+
   // Forward jump — advance one row
   const targetRow = currentRow + 1;
   if (targetRow >= G.platforms.length) {
@@ -136,6 +172,10 @@ function landOnPlatform(plat, row, col) {
       } else {
         G.jumpStreak = 0;
       }
+      G.hopsThisRow = 0;
+    } else if (row < G.player.row) {
+      // Backward jump resets streak
+      G.jumpStreak = 0;
       G.hopsThisRow = 0;
     }
 

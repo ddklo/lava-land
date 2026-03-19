@@ -49,6 +49,8 @@ const G = {
   shakeTimer: 0,
   jumpAnim: { active: false, startX: 0, startY: 0, endX: 0, endY: 0, t: 0 },
   safePath: [],
+  safeRoute: [],       // ordered [{row, col}, ...] steps including backtracks
+  extraSafeCols: {},   // row -> [col, ...] additional safe columns for backtracks
   trailMarks: [],
   winTimer: 0,
   playTimer: 0,
