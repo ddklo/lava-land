@@ -131,6 +131,8 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `SCORE_LEVEL_MULT` | 200 | Points per level number |
 | `SCORE_PERFECT_BONUS` | 1000 | Bonus for zero excess jumps |
 | `SCORE_SPEED_BONUS` | 500 | Bonus for fast completion |
+| `SCORE_DIFFICULTY_MULT` | 30 | Bonus points per grid cell, scaled by fake density |
+| `SCORE_FAKE_MULT` | 2000 | Bonus multiplied by fake chance for harder boards |
 | `BOARD_RULES.maxConsecutiveStraight` | 1 | Max consecutive straight-down rows |
 | `BOARD_RULES.maxConsecutiveSameDirection` | 5 | Max consecutive same lateral direction |
 | `BOARD_RULES.minLateralMoveFraction` | 0.4 | Min fraction of rows with lateral moves |
@@ -270,7 +272,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `renderPlatforms(reveal)` / `applyShake(ctx)` / `updatePlatformBob(dt)` / `updateCrumbleTimers(dt)` / `startPlayingEarly()`
 
 ### scoring.js (2 functions)
-- `calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTimeSaved, streakBonus)` - Compute score breakdown (pure function)
+- `calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTimeSaved, streakBonus, opts)` - Compute score breakdown (pure function). opts: {routeRevealed, totalCols, fakeChance}. Returns 0 score if route was revealed.
 - `calculateStars(score, levelNum)` - Compute 1-3 star rating (pure function)
 
 ### logic.js (3 functions)
@@ -342,10 +344,10 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - PlayingScene HUD caching properties
 - Level config validation (15 entries, ranges, difficulty increases)
 - `getLevelConfig()` table and formula ranges
-- `calculateScore()` basic, perfect, speed, floor at zero
+- `calculateScore()` basic, perfect, speed, floor at zero, route reveal penalty, difficulty bonus scaling
 - `calculateStars()` thresholds (1/2/3 stars)
 - Backward compatibility (custom mode with null levelConfig)
-- New state fields (level, levelConfig, gameMode, scoring fields)
+- New state fields (level, levelConfig, gameMode, scoring fields, routeRevealed)
 
 ---
 

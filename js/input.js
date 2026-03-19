@@ -31,6 +31,7 @@ function setupInput() {
       if (e.code === 'KeyH') {
         G.revealRoute = true;
         G.revealRouteTimer = 3;
+        G.routeRevealed = true;
       }
       e.preventDefault();
     }
@@ -80,6 +81,7 @@ function setupInput() {
         longPressTriggered = true;
         G.revealRoute = true;
         G.revealRouteTimer = 3;
+        G.routeRevealed = true;
       }, LONG_PRESS_MS);
     }
 

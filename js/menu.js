@@ -40,6 +40,7 @@ function startLevel() {
   G.jumpStreak = 0;
   G.hopsThisRow = 0;
   G.streakBonus = 0;
+  G.routeRevealed = false;
 
   transitionTo(MemorizeScene);
 }
@@ -190,6 +191,7 @@ function startGame() {
   G.jumpStreak = 0;
   G.hopsThisRow = 0;
   G.streakBonus = 0;
+  G.routeRevealed = false;
 
   transitionTo(MemorizeScene);
 }

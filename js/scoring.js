@@ -2,7 +2,18 @@
 // Pure scoring functions — no game state side effects.
 // Depends only on constants from config.js.
 
-function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTimeSaved, streakBonus) {
+function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTimeSaved, streakBonus, opts) {
+  const { routeRevealed, totalCols, fakeChance } = opts || {};
+
+  // If route was revealed, score is zero — you used the cheat
+  if (routeRevealed) {
+    return {
+      timeScore: 0, jumpScore: 0, levelBonus: 0, perfectBonus: 0, speedBonus: 0,
+      earlyMemBonus: 0, streakBonus: 0, difficultyBonus: 0, totalScore: 0,
+      perfect: false, fast: false, routeRevealed: true,
+    };
+  }
+
   const minJumps = totalRows - 1;
   const excessJumps = Math.max(0, jumpCount - minJumps);
   const perfect = excessJumps === 0;
@@ -15,18 +26,29 @@ function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTim
   const speedBonus = fast ? SCORE_SPEED_BONUS : 0;
   const earlyMemBonus = Math.round((memTimeSaved || 0) * SCORE_EARLY_MEM_MULT);
   const streakBonusVal = streakBonus || 0;
-  const totalScore = timeScore + jumpScore + levelBonus + perfectBonus + speedBonus + earlyMemBonus + streakBonusVal;
 
-  return { timeScore, jumpScore, levelBonus, perfectBonus, speedBonus, earlyMemBonus, streakBonus: streakBonusVal, totalScore, perfect, fast };
+  // Difficulty bonus: rewards larger grids and higher fake density
+  const gridCells = (totalCols || 5) * totalRows;
+  const fakePct = fakeChance || 0;
+  const difficultyBonus = Math.round(gridCells * SCORE_DIFFICULTY_MULT * (1 + fakePct))
+                        + Math.round(fakePct * SCORE_FAKE_MULT);
+
+  const totalScore = timeScore + jumpScore + levelBonus + perfectBonus + speedBonus + earlyMemBonus + streakBonusVal + difficultyBonus;
+
+  return { timeScore, jumpScore, levelBonus, perfectBonus, speedBonus, earlyMemBonus, streakBonus: streakBonusVal, difficultyBonus, totalScore, perfect, fast, routeRevealed: false };
 }
 
 function calculateStars(score, levelNum) {
   const cfg = getLevelConfig(levelNum);
-  // Max possible: perfect path, zero time, all bonuses + full early mem + max streak
+  // Max possible: perfect path, zero time, all bonuses + full early mem + max streak + difficulty
   const maxStreakBonus = ((cfg.rows - 1) * cfg.rows / 2) * SCORE_STREAK_MULT;
+  const gridCells = cfg.cols * cfg.rows;
+  const fakePct = cfg.fake || 0;
+  const maxDifficultyBonus = Math.round(gridCells * SCORE_DIFFICULTY_MULT * (1 + fakePct))
+                           + Math.round(fakePct * SCORE_FAKE_MULT);
   const maxScore = SCORE_TIME_BASE + SCORE_JUMP_BASE + levelNum * SCORE_LEVEL_MULT
                  + SCORE_PERFECT_BONUS + SCORE_SPEED_BONUS
-                 + cfg.memTime * SCORE_EARLY_MEM_MULT + maxStreakBonus;
+                 + cfg.memTime * SCORE_EARLY_MEM_MULT + maxStreakBonus + maxDifficultyBonus;
   if (score >= maxScore * STAR_THREE_THRESHOLD) return 3;
   if (score >= maxScore * STAR_TWO_THRESHOLD) return 2;
   return 1;

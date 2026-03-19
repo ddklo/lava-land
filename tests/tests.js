@@ -1073,7 +1073,11 @@
     assertEqual(result.streakBonus, 0, 'No streak bonus (not passed)');
     assert(result.perfect === true, 'Perfect flag set');
     assert(result.fast === false, 'Fast flag not set');
-    assertEqual(result.totalScore, 4500 + 3000 + 200 + 1000, 'Total = 8700');
+    assert(result.routeRevealed === false, 'Route not revealed');
+    // difficultyBonus = 0 when no opts passed (totalCols defaults to 5, fakeChance defaults to 0)
+    const expectedDiff = Math.round(5 * 5 * SCORE_DIFFICULTY_MULT * 1) + 0;
+    assertEqual(result.difficultyBonus, expectedDiff, 'Difficulty bonus with defaults');
+    assertEqual(result.totalScore, 4500 + 3000 + 200 + 1000 + expectedDiff, 'Total includes difficulty bonus');
   });
 
   suite('calculateScore — Speed Bonus', () => {
@@ -1085,7 +1089,7 @@
 
   suite('calculateScore — Excess Jumps', () => {
     // Level 1, 5s, 10 jumps for 5 rows (min = 4, excess = 6)
-    const result = calculateScore(1, 5, 10, 5, 10);
+    const result = calculateScore(1, 5, 10, 5, 10, 0, 0);
     assertEqual(result.jumpScore, 3000 - 6 * 100, 'Jump score = 2400 (6 excess)');
     assertEqual(result.perfectBonus, 0, 'No perfect bonus');
     assert(result.perfect === false, 'Perfect flag not set');
@@ -1102,16 +1106,18 @@
     // Level 1, streak bonus = 250 passed in
     const result = calculateScore(1, 10, 4, 5, 10, 0, 250);
     assertEqual(result.streakBonus, 250, 'Streak bonus included in result');
-    assertEqual(result.totalScore, (5000 - 500) + 3000 + 200 + 1000 + 250, 'Streak bonus added to total');
+    const expectedDiff = Math.round(5 * 5 * SCORE_DIFFICULTY_MULT * 1) + 0;
+    assertEqual(result.totalScore, (5000 - 500) + 3000 + 200 + 1000 + 250 + expectedDiff, 'Streak bonus added to total');
   });
 
   suite('calculateStars — Thresholds', () => {
-    // Max possible for level 1 (5 rows, memTime=10):
-    // 5000 + 3000 + 200 + 1000 + 500 + 10*80 + (4*5/2)*50
-    // = 5000 + 3000 + 200 + 1000 + 500 + 800 + 500 = 11000
     const cfg1 = getLevelConfig(1);
     const maxStreakBonus = ((cfg1.rows - 1) * cfg1.rows / 2) * SCORE_STREAK_MULT;
-    const maxScore = 5000 + 3000 + 200 + 1000 + 500 + cfg1.memTime * 80 + maxStreakBonus;
+    const gridCells = cfg1.cols * cfg1.rows;
+    const fakePct = cfg1.fake || 0;
+    const maxDiffBonus = Math.round(gridCells * SCORE_DIFFICULTY_MULT * (1 + fakePct))
+                       + Math.round(fakePct * SCORE_FAKE_MULT);
+    const maxScore = 5000 + 3000 + 200 + 1000 + 500 + cfg1.memTime * 80 + maxStreakBonus + maxDiffBonus;
     const stars3 = calculateStars(Math.ceil(maxScore * 0.8), 1);
     assertEqual(stars3, 3, '3 stars at 80% of max');
 
@@ -1120,6 +1126,36 @@
 
     const stars1 = calculateStars(Math.floor(maxScore * 0.3), 1);
     assertEqual(stars1, 1, '1 star below 50% of max');
+  });
+
+  suite('calculateScore — Route Revealed Zeroes Score', () => {
+    const result = calculateScore(5, 2, 9, 10, 9, 5, 300, { routeRevealed: true, totalCols: 7, fakeChance: 0.5 });
+    assertEqual(result.totalScore, 0, 'Total score is 0 when route revealed');
+    assertEqual(result.timeScore, 0, 'Time score is 0');
+    assertEqual(result.jumpScore, 0, 'Jump score is 0');
+    assertEqual(result.levelBonus, 0, 'Level bonus is 0');
+    assertEqual(result.perfectBonus, 0, 'Perfect bonus is 0');
+    assertEqual(result.speedBonus, 0, 'Speed bonus is 0');
+    assertEqual(result.earlyMemBonus, 0, 'Early mem bonus is 0');
+    assertEqual(result.streakBonus, 0, 'Streak bonus is 0');
+    assertEqual(result.difficultyBonus, 0, 'Difficulty bonus is 0');
+    assert(result.routeRevealed === true, 'routeRevealed flag set');
+  });
+
+  suite('calculateScore — Difficulty Bonus Scales With Grid', () => {
+    // Small easy level
+    const small = calculateScore(1, 10, 4, 5, 10, 0, 0, { totalCols: 5, fakeChance: 0.35 });
+    // Large hard level
+    const large = calculateScore(15, 10, 15, 16, 6, 0, 0, { totalCols: 7, fakeChance: 0.72 });
+    assert(large.difficultyBonus > small.difficultyBonus,
+      `Large grid diff bonus (${large.difficultyBonus}) > small (${small.difficultyBonus})`);
+  });
+
+  suite('calculateScore — Difficulty Bonus Calculation', () => {
+    const result = calculateScore(1, 10, 4, 5, 10, 0, 0, { totalCols: 6, fakeChance: 0.5 });
+    const expectedDiff = Math.round(6 * 5 * SCORE_DIFFICULTY_MULT * (1 + 0.5))
+                       + Math.round(0.5 * SCORE_FAKE_MULT);
+    assertEqual(result.difficultyBonus, expectedDiff, 'Difficulty bonus matches formula');
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -1150,6 +1186,7 @@
     assert('jumpStreak' in G, 'G has jumpStreak field');
     assert('hopsThisRow' in G, 'G has hopsThisRow field');
     assert('streakBonus' in G, 'G has streakBonus field');
+    assert('routeRevealed' in G, 'G has routeRevealed field');
   });
 
   // ═══════════════════════════════════════════════════════════════
