@@ -27,6 +27,10 @@ function setupInput() {
       if (e.code === 'ArrowLeft') tryJump('left');
       if (e.code === 'ArrowRight') tryJump('right');
       if (e.code === 'ArrowDown' || e.code === 'Space') tryJump('forward');
+      if (e.key === '?') {
+        G.revealRoute = true;
+        G.revealRouteTimer = 3;
+      }
       e.preventDefault();
     }
     if (G.gameState === 'memorize') {
