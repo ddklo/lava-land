@@ -576,14 +576,23 @@ canvas {
 /* ─── Mobile responsive ──────────────────────────────────── */
 
 @media (max-width: 600px) {
+  /* Game area fills the entire viewport on mobile */
+  .game-area {
+    width: 100vw;
+    height: 100vh;
+    height: 100dvh;
+  }
+
   #ui-overlay {
     align-items: flex-start;
   }
 
-  /* Canvas: full-width, borderless — feels native on mobile */
+  /* Canvas: full-width, full remaining height — fills the screen on mobile */
   canvas {
-    width: 100vw;
-    height: auto;
+    width: 100%;
+    flex: 1;
+    min-height: 0;
+    max-height: none;
     border: none;
     border-radius: 0;
     box-shadow: none;
