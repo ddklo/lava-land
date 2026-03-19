@@ -82,7 +82,10 @@ The fake chance applies to every platform that is NOT on the safe path. The safe
 ### Safe Path
 - Every generated level has exactly one guaranteed safe path from the first row to the last row
 - The path moves laterally (left/right) with 70% probability at each row, staying straight 30% of the time
-- At least one lateral move is guaranteed so the path isn't just a straight line
+- Path generation is governed by configurable **board rules** (defined in `BOARD_RULES` in config.js):
+  - **maxConsecutiveStraight** (default 1): Max consecutive rows the path can stay in the same column
+  - **maxConsecutiveSameDirection** (default 5): Max consecutive rows the path can move in the same lateral direction (left or right). Prevents long easy-to-memorize diagonals
+  - **minLateralMoveFraction** (default 0.4): At least 40% of rows must include a lateral move for variety
 
 ### Platform Behavior
 - **Safe platforms**: Solid stone blocks. Landing on them produces a dust effect and bob animation

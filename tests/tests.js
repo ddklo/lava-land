@@ -152,6 +152,95 @@
     assert(hasLateral, 'Safe path includes at least one lateral move (20 trials)');
   });
 
+  // ═══════════════════════════════════════════════════════════════
+  // BOARD RULES TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Board Rules — BOARD_RULES Config Exists', () => {
+    assertEqual(typeof BOARD_RULES, 'object', 'BOARD_RULES is an object');
+    assertEqual(BOARD_RULES.maxConsecutiveStraight, 1, 'maxConsecutiveStraight = 1');
+    assertEqual(BOARD_RULES.maxConsecutiveSameDirection, 5, 'maxConsecutiveSameDirection = 5');
+    assertInRange(BOARD_RULES.minLateralMoveFraction, 0, 1, 'minLateralMoveFraction between 0 and 1');
+  });
+
+  suite('Board Rules — Max Consecutive Same Direction', () => {
+    // Test the rule directly with a controlled path
+    const testPath = [3, 2, 1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 6];
+    // testPath has a run of 5 rights (cols 1,2,3,4,5,6) at rows 6-11
+    applyMaxConsecutiveDirectionRule(testPath, 7);
+
+    // Count max consecutive same-direction run
+    let maxRun = 0;
+    let runDir = 0;
+    let runLen = 0;
+    for (let i = 1; i < testPath.length; i++) {
+      const diff = testPath[i] - testPath[i - 1];
+      const dir = diff > 0 ? 1 : diff < 0 ? -1 : 0;
+      if (dir !== 0 && dir === runDir) {
+        runLen++;
+      } else if (dir !== 0) {
+        runDir = dir;
+        runLen = 1;
+      } else {
+        runDir = 0;
+        runLen = 0;
+      }
+      if (runLen > maxRun) maxRun = runLen;
+    }
+    assert(maxRun <= BOARD_RULES.maxConsecutiveSameDirection,
+      `Max same-direction run <= ${BOARD_RULES.maxConsecutiveSameDirection} (got ${maxRun})`);
+  });
+
+  suite('Board Rules — Generated Path Respects Max Same Direction', () => {
+    // Run many trials across different grid sizes to verify the rule holds
+    const configs = [
+      { cols: 5, rows: 8 },
+      { cols: 7, rows: 16 },
+      { cols: 7, rows: 20 },
+    ];
+    let violation = null;
+    for (const cfg of configs) {
+      G.gridCols = cfg.cols;
+      G.gridRows = cfg.rows;
+      G.difficulty = 'easy';
+      G.levelConfig = null;
+      for (let trial = 0; trial < 20; trial++) {
+        generatePlatforms();
+        let runDir = 0;
+        let runLen = 0;
+        for (let r = 1; r < G.safePath.length; r++) {
+          const diff = G.safePath[r] - G.safePath[r - 1];
+          const dir = diff > 0 ? 1 : diff < 0 ? -1 : 0;
+          if (dir !== 0 && dir === runDir) {
+            runLen++;
+          } else if (dir !== 0) {
+            runDir = dir;
+            runLen = 1;
+          } else {
+            runDir = 0;
+            runLen = 0;
+          }
+          if (runLen > BOARD_RULES.maxConsecutiveSameDirection) {
+            violation = `${cfg.cols}x${cfg.rows} trial ${trial}: run of ${runLen} at row ${r}`;
+            break;
+          }
+        }
+        if (violation) break;
+      }
+      if (violation) break;
+    }
+    assert(violation === null,
+      violation ? `Same-direction violation: ${violation}` : 'No same-direction violations in 60 trials');
+  });
+
+  suite('Board Rules — applyMaxConsecutiveDirectionRule Keeps Path In Bounds', () => {
+    // Path that runs left to edge
+    const testPath = [6, 5, 4, 3, 2, 1, 0, 0, 0, 1, 2, 3, 4, 5, 6, 6];
+    applyMaxConsecutiveDirectionRule(testPath, 7);
+    for (let i = 0; i < testPath.length; i++) {
+      assertInRange(testPath[i], 0, 6, `Path[${i}] in bounds after rule (got ${testPath[i]})`);
+    }
+  });
+
   suite('Platform Properties', () => {
     G.gridCols = 6;
     G.gridRows = 12;

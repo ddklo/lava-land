@@ -128,6 +128,9 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `SCORE_LEVEL_MULT` | 200 | Points per level number |
 | `SCORE_PERFECT_BONUS` | 1000 | Bonus for zero excess jumps |
 | `SCORE_SPEED_BONUS` | 500 | Bonus for fast completion |
+| `BOARD_RULES.maxConsecutiveStraight` | 1 | Max consecutive straight-down rows |
+| `BOARD_RULES.maxConsecutiveSameDirection` | 5 | Max consecutive same lateral direction |
+| `BOARD_RULES.minLateralMoveFraction` | 0.4 | Min fraction of rows with lateral moves |
 
 ### 6. Audio Error Handling (audio.js)
 
@@ -216,8 +219,9 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `speakText(text, rate, pitch)` - Shared speech helper with English voice selection
 - `speakCongrats()` / `speakLose()` - Speech synthesis (via speakText)
 
-### platforms.js (1 function)
-- `generatePlatforms()` - Create grid, build safe path, mark fakes
+### platforms.js (2 functions)
+- `applyMaxConsecutiveDirectionRule(safePath, gridCols)` - Enforce max consecutive same-direction moves on a path
+- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES), mark fakes
 
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
@@ -303,6 +307,7 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - Grid sizes and difficulty configuration
 - State initialization
 - Platform generation (correct dimensions, safe path validity, fake marking)
+- Board rules (BOARD_RULES config, max consecutive same-direction enforcement, bounds safety)
 - Platform initialization (all properties including `destroyed` are explicit)
 - Player reset (position, platform reference)
 - Timer system (add, fire, clear, concurrent timers)
