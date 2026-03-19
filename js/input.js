@@ -49,8 +49,10 @@ function setupInput() {
 
   // ── Touch ──────────────────────────────────────
   // Swipe left/right to hop, tap or swipe up to jump forward.
-  // Hold for 10 seconds to reveal the safe route.
+  // Long-press (~0.8s) to reveal the safe route.
   const SWIPE_THRESHOLD = 30;
+  const LONG_PRESS_MS = 800;
+  const LONG_PRESS_MOVE_CANCEL = 12; // px of movement that cancels long-press
   let touchStartX = 0;
   let touchStartY = 0;
   let touchId = null;
@@ -78,7 +80,7 @@ function setupInput() {
         longPressTriggered = true;
         G.revealRoute = true;
         G.revealRouteTimer = 3;
-      }, 10000);
+      }, LONG_PRESS_MS);
     }
 
     e.preventDefault();
@@ -144,15 +146,35 @@ function setupInput() {
           tryJump('right');
         }
       } else {
-        // Tap on empty area → jump forward
-        tryJump('forward');
+        // Tap on empty area → infer direction from tap position relative to player
+        const tapDx = canvasX - G.player.x;
+        const tapDy = canvasY - G.player.y;
+        if (Math.abs(tapDx) > Math.abs(tapDy)) {
+          tryJump(tapDx < 0 ? 'left' : 'right');
+        } else {
+          tryJump(tapDy > 0 ? 'forward' : 'backward');
+        }
       }
     }
     e.preventDefault();
   }, { passive: false });
 
   G.canvas.addEventListener('touchmove', (e) => {
-    cancelLongPress(); // movement cancels long-press
+    // Only cancel long-press if finger moved significantly
+    let movedTouch = null;
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      if (e.changedTouches[i].identifier === touchId) {
+        movedTouch = e.changedTouches[i];
+        break;
+      }
+    }
+    if (movedTouch) {
+      const moveDx = movedTouch.clientX - touchStartX;
+      const moveDy = movedTouch.clientY - touchStartY;
+      if (Math.sqrt(moveDx * moveDx + moveDy * moveDy) > LONG_PRESS_MOVE_CANCEL) {
+        cancelLongPress();
+      }
+    }
     e.preventDefault();
   }, { passive: false });
 
