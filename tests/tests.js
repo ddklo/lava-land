@@ -1597,6 +1597,43 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // NO STRAIGHT-DOWN COLUMN EXPLOIT TEST
+  // ═══════════════════════════════════════════════════════════════
+  suite('No Straight-Down Column — Anti-Exploit', () => {
+    const configs = [
+      { cols: 5, rows: 5, fake: 0.35, memTime: 10, maxShift: 1, decoys: 0, name: 'Test Easy' },
+      { cols: 5, rows: 8, fake: 0.42, memTime: 10, maxShift: 1, decoys: 0, name: 'Test Med' },
+      { cols: 7, rows: 16, fake: 0.72, memTime: 6, maxShift: 3, decoys: 3, backtracks: 2, decoyFakes: 2, name: 'Test Hard' },
+    ];
+
+    let violation = null;
+    for (const cfg of configs) {
+      G.levelConfig = cfg;
+      G.gridCols = cfg.cols;
+      G.gridRows = cfg.rows;
+      for (let trial = 0; trial < 20; trial++) {
+        generatePlatforms();
+        for (let c = 0; c < G.gridCols; c++) {
+          let allReal = true;
+          for (let r = 0; r < G.gridRows; r++) {
+            if (G.platforms[r][c].fake) { allReal = false; break; }
+          }
+          if (allReal) {
+            violation = `${cfg.cols}x${cfg.rows} trial ${trial}: column ${c} is all-real`;
+            break;
+          }
+        }
+        if (violation) break;
+      }
+      if (violation) break;
+    }
+    assert(violation === null,
+      violation ? `Straight-down exploit: ${violation}` : 'No column is all-real across all rows (60 trials)');
+
+    G.levelConfig = null;
+  });
+
+  // ═══════════════════════════════════════════════════════════════
   // CENTER-BIASED START TEST
   // ═══════════════════════════════════════════════════════════════
   suite('Center-Biased Start — Distribution Skews Center', () => {
