@@ -10,7 +10,7 @@ Lava Land is a browser-based memory-platformer. The player memorizes a grid of p
 
 ```
 lava-land/
-  index.html              HTML markup + <link> + 14 <script> tags
+  index.html              HTML markup + <link> + 17 <script> tags
   css/
     theme.css             CSS custom properties (colors, fonts) — the design token file
     style.css             All CSS (responsive, mobile-friendly), uses theme.css variables
@@ -21,12 +21,15 @@ lava-land/
     state.js              Shared mutable state object (G)
     timers.js             Managed timer system (replaces setTimeout in game logic)
     audio.js              Procedural music generators + sound effects (with error guards)
-    platforms.js          Grid generation + safe-path algorithm
+    pathgen.js            Safe-path shaping algorithms (board rules, backtrack insertion)
+    platforms.js          Grid generation + fake seeding (calls pathgen.js algorithms)
     player.js             resetPlayer()
-    drawing.js            Canvas draw functions (render-only) + particle update/render
+    drawing.js            Core canvas rendering (lava, platforms, player, particles, trail, route)
+    hud.js                UI overlays (level preview, transitions, streak popups, tutorial, urgency)
     effects.js            All particle spawners (dust, explosions, lava, fireworks, confetti)
     scenes.js             SceneManager + 5 scene objects (pushdown automaton)
-    logic.js              Jump + landing game rules
+    scoring.js            Pure scoring functions (calculateScore, calculateStars)
+    logic.js              Jump + landing game rules (tryJump, landOnPlatform)
     input.js              Keyboard + touch event listeners
     loop.js               Fixed-timestep game loop
     menu.js               Menu/settings UI setup + startGame
@@ -43,8 +46,8 @@ lava-land/
 ### Script Load Order
 
 ```
-config -> state -> timers -> audio -> platforms -> player ->
-drawing -> effects -> scenes -> logic -> input -> loop -> menu -> init
+config -> state -> timers -> audio -> pathgen -> platforms -> player ->
+drawing -> hud -> effects -> scenes -> scoring -> logic -> input -> loop -> menu -> init
 ```
 
 Only `init.js` executes code at parse time. All other files define functions/objects only.
@@ -219,15 +222,17 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `speakText(text, rate, pitch)` - Shared speech helper with English voice selection
 - `speakCongrats()` / `speakLose()` - Speech synthesis (via speakText)
 
-### platforms.js (3 functions)
+### pathgen.js (2 functions)
 - `applyMaxConsecutiveDirectionRule(safePath, gridCols)` - Enforce max consecutive same-direction moves on a path
 - `insertBacktracks(safePath, gridCols, gridRows, numBacktracks)` - Insert backward-jump sections into the safe path for late-level difficulty
-- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES), insert backtracks, mark fakes
+
+### platforms.js (1 function)
+- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES via pathgen.js), insert backtracks, mark fakes
 
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
 
-### drawing.js (19 functions)
+### drawing.js (10 functions)
 - `drawEmoji(ctx, emoji, x, y, size)` - Shared emoji renderer with shadow pass
 - `drawLava(offsetY, height)` - 7-layer animated lava background
 - `drawPlatform(p, reveal)` - 3D stone block with brick texture + glow (memorize) + heat (lava proximity)
@@ -237,11 +242,14 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `updateTrailMarks(dt)` / `drawTrailMarks()` - Trail breadcrumb system
 - `drawRouteSteps()` - Draw numbered step markers and arrows on safeRoute during memorize (only when backtracks exist)
 - `formatTime(seconds)` - Timer display formatter
-- `updateTransition(dt)` / `drawTransition()` / `transitionTo(scene)` - Scene fade transition system
+
+### hud.js (9 functions)
+- `transitionTo(scene)` - Scene fade transition (DOM overlay with CSS transitions)
+- `updateTransition(dt)` / `drawTransition()` - No-ops kept for backward compat
 - `updateStreakPopups(dt)` / `drawStreakPopups()` - Combo streak counter display
 - `drawUrgencyVignette(intensity)` - Red vignette pulse for memorize countdown
 - `drawLevelPreview()` - Level name/info card overlay
-- `drawTutorialArrow()` - Pulsing arrow pointing at first safe platform
+- `drawTutorialArrow()` / `drawTutorialHint(ctx, tx, ty, text)` - Tutorial arrow pointing at first safe platform
 
 ### effects.js (7 functions)
 - `spawnPlatformExplosion(plat)` - 18 stone debris particles on departure
@@ -261,9 +269,11 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `WonScene` - Firework sequence, character celebration walk, star pop-in animation, win screen
 - `renderPlatforms(reveal)` / `applyShake(ctx)` / `updatePlatformBob(dt)` / `updateCrumbleTimers(dt)` / `startPlayingEarly()`
 
-### logic.js (5 functions)
-- `calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime)` - Compute score breakdown
-- `calculateStars(score, levelNum)` - Compute 1-3 star rating
+### scoring.js (2 functions)
+- `calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTimeSaved, streakBonus)` - Compute score breakdown (pure function)
+- `calculateStars(score, levelNum)` - Compute 1-3 star rating (pure function)
+
+### logic.js (3 functions)
 - `destroyDeparturePlatform()` - Explode and mark current platform as destroyed
 - `tryJump(direction)` - Handle left/right/forward/backward jump; uses destroyDeparturePlatform
 - `landOnPlatform(plat, row, col)` - Process landing; check win/fake/destroyed
@@ -341,7 +351,7 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 
 ## Still Open
 
-1. **God object (G)** - All state in one flat mutable bag. Could be split into namespaced sub-objects.
+1. **God object (G)** - All state in one flat mutable bag. Could be split into namespaced sub-objects (e.g. `G.score`, `G.board`, `G.fx`).
 2. **No object pool for particles** - Particles use push/splice. Could use pre-allocated pool.
 3. **DOM manipulation in scenes** - Scenes directly show/hide HTML elements. Could use a UI manager.
 4. **Dead data** - `CHARACTERS[*].color` defined but never read.
@@ -349,13 +359,10 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 
 ## Future Improvements
 
-### 1. Structured State Namespaces (Medium Impact, Low Effort)
-Split `G` into `G.audio`, `G.input`, `G.game`, `G.ui` sub-objects.
+### 1. Structured State Namespaces (Medium Impact, Medium Effort)
+Split `G` into sub-objects (e.g. `G.score`, `G.board`, `G.fx`, `G.audio`, `G.input`). Touches all JS files but eliminates implicit cross-file dependencies through shared field names.
 
-### 2. Move Particle Spawners to effects.js (Low Impact, Low Effort)
-Consolidate all particle spawning in one file.
-
-### 3. ES Modules (Low Impact, Medium Effort)
+### 2. ES Modules (Low Impact, Medium Effort)
 Convert to `<script type="module">` with import/export. Requires HTTP server.
 
 ## Resolved

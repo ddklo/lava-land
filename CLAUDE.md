@@ -23,7 +23,7 @@ See [docs/rules.md](docs/rules.md) for complete game rules documentation.
 ### File Layout
 
 ```
-index.html          HTML + 14 script tags (entry point)
+index.html          HTML + 17 script tags (entry point)
 css/theme.css       CSS custom properties (colors, fonts) — design tokens
 css/style.css       All styles (responsive, mobile-friendly), references theme.css
 images/             Static assets
@@ -32,12 +32,15 @@ js/config.js        Constants, physics tuning, LEVELS array, getLevelConfig(), s
 js/state.js         Shared mutable state object: const G = {}
 js/timers.js        Managed timer system (addTimer, updateTimers, clearTimers)
 js/audio.js         Procedural music + sound effects (Web Audio API, with error guards)
-js/platforms.js     Grid generation + safe-path algorithm + backtrack insertion
+js/pathgen.js       Safe-path shaping algorithms (applyMaxConsecutiveDirectionRule, insertBacktracks)
+js/platforms.js     Grid generation + fake seeding (uses pathgen.js for path algorithms)
 js/player.js        resetPlayer()
-js/drawing.js       Canvas rendering (read-only) + particle/trail update/render + formatTime()
+js/drawing.js       Core canvas rendering (lava, platforms, player, particles, trail, route) + formatTime()
+js/hud.js           UI overlays (level preview, transitions, streak popups, tutorial, urgency vignette)
 js/effects.js       All particle spawners (dust, explosions, lava, fireworks, confetti)
 js/scenes.js        SceneManager + 5 scene objects (Menu/Memorize/Playing/Falling/Won)
-js/logic.js         Core game rules (tryJump, landOnPlatform) + scoring (calculateScore, calculateStars)
+js/scoring.js       Pure scoring functions (calculateScore, calculateStars)
+js/logic.js         Core game rules (tryJump, landOnPlatform, destroyDeparturePlatform)
 js/input.js         Keyboard + touch event listeners
 js/loop.js          Fixed-timestep game loop (TICK=1/60)
 js/menu.js          Menu/settings UI + startGame/startLevel/advanceLevel/returnToMenu
@@ -50,7 +53,7 @@ docs/rules.md       Game rules documentation
 
 ### Script Load Order
 
-`config -> state -> timers -> audio -> platforms -> player -> drawing -> effects -> scenes -> logic -> input -> loop -> menu -> init`
+`config -> state -> timers -> audio -> pathgen -> platforms -> player -> drawing -> hud -> effects -> scenes -> scoring -> logic -> input -> loop -> menu -> init`
 
 Only `init.js` executes code at parse time. All other files only define functions/objects.
 
@@ -108,12 +111,15 @@ Open `tests/test.html` in a browser. Tests cover: config, state, platform genera
 |------|------|
 | New game constant or physics value | `js/config.js` |
 | New particle effect | `js/effects.js` (spawner) + `js/drawing.js` (renderer if needed) |
-| New game rule or scoring change | `js/logic.js` |
+| New game rule (jump/land) | `js/logic.js` |
+| Scoring formula change | `js/scoring.js` |
 | New scene / game state | `js/scenes.js` |
 | New UI element or button | `js/menu.js` |
+| New HUD overlay or transition | `js/hud.js` |
 | New audio sound | `js/audio.js` |
 | New keyboard/touch control | `js/input.js` |
 | New visual rendering | `js/drawing.js` |
+| New path generation rule | `js/pathgen.js` |
 | New state field | `js/state.js` (add to `G`) |
 | New test | `tests/tests.js` |
 
