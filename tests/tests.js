@@ -1348,6 +1348,246 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // BACKTRACK PATH GENERATION TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Backtrack — SafeRoute Generated for Backtrack Levels', () => {
+    G.levelConfig = { cols: 7, rows: 16, fake: 0.64, memTime: 7, maxShift: 2, decoys: 1, backtracks: 1, decoyFakes: 1, name: 'Test' };
+    G.gridCols = G.levelConfig.cols;
+    G.gridRows = G.levelConfig.rows;
+
+    generatePlatforms();
+
+    // safeRoute should have more steps than gridRows (extra steps for backtrack)
+    assert(G.safeRoute.length > G.gridRows, 'safeRoute has extra steps for backtrack');
+    // Should contain at least one backward step
+    let hasBackward = false;
+    for (let i = 1; i < G.safeRoute.length; i++) {
+      if (G.safeRoute[i].row < G.safeRoute[i - 1].row) { hasBackward = true; break; }
+    }
+    assert(hasBackward, 'safeRoute contains at least one backward step');
+
+    G.levelConfig = null;
+  });
+
+  suite('Backtrack — All SafeRoute Platforms Are Real', () => {
+    G.levelConfig = { cols: 7, rows: 16, fake: 0.72, memTime: 6, maxShift: 3, decoys: 3, backtracks: 2, decoyFakes: 2, name: 'Test' };
+    G.gridCols = G.levelConfig.cols;
+    G.gridRows = G.levelConfig.rows;
+
+    for (let trial = 0; trial < 5; trial++) {
+      generatePlatforms();
+      for (let i = 0; i < G.safeRoute.length; i++) {
+        const step = G.safeRoute[i];
+        assert(!G.platforms[step.row][step.col].fake,
+          `safeRoute step ${i} (row=${step.row}, col=${step.col}) not fake (trial ${trial})`);
+      }
+    }
+
+    G.levelConfig = null;
+  });
+
+  suite('Backtrack — ExtraSafeCols Are Not Fake', () => {
+    G.levelConfig = { cols: 7, rows: 16, fake: 0.68, memTime: 6, maxShift: 3, decoys: 2, backtracks: 1, decoyFakes: 2, name: 'Test' };
+    G.gridCols = G.levelConfig.cols;
+    G.gridRows = G.levelConfig.rows;
+
+    generatePlatforms();
+
+    for (const rowStr of Object.keys(G.extraSafeCols)) {
+      const row = parseInt(rowStr);
+      for (const col of G.extraSafeCols[row]) {
+        assert(!G.platforms[row][col].fake,
+          `extraSafeCols row=${row} col=${col} is not fake`);
+      }
+    }
+
+    G.levelConfig = null;
+  });
+
+  suite('Backtrack — No Backtracks on Early Levels', () => {
+    G.levelConfig = { cols: 5, rows: 8, fake: 0.42, memTime: 10, maxShift: 1, decoys: 0, name: 'Test' };
+    G.gridCols = G.levelConfig.cols;
+    G.gridRows = G.levelConfig.rows;
+
+    generatePlatforms();
+
+    // safeRoute should equal gridRows (no backtracks)
+    assertEqual(G.safeRoute.length, G.gridRows, 'safeRoute has no extra steps for early level');
+    // No backward steps
+    let hasBackward = false;
+    for (let i = 1; i < G.safeRoute.length; i++) {
+      if (G.safeRoute[i].row < G.safeRoute[i - 1].row) { hasBackward = true; break; }
+    }
+    assert(!hasBackward, 'No backward steps on early level');
+
+    G.levelConfig = null;
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // BACKWARD JUMP TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Backward Jump — Cannot Jump Past Row 0', () => {
+    G.gridCols = 6;
+    G.gridRows = 12;
+    G.difficulty = 'easy';
+    G.gameState = 'playing';
+    G.levelConfig = null;
+    generatePlatforms();
+    resetPlayer();
+    G.jumpAnim.active = false;
+
+    // Player starts at row 0
+    assertEqual(G.player.row, 0, 'Player starts at row 0');
+    const jumpsBefore = G.jumpCount;
+    tryJump('backward');
+    // Should not jump (no row -1)
+    assertEqual(G.jumpCount, jumpsBefore, 'No jump when at row 0');
+    assert(!G.jumpAnim.active, 'No jump animation started');
+  });
+
+  suite('Backward Jump — Jumps to Previous Row', () => {
+    G.gridCols = 6;
+    G.gridRows = 12;
+    G.difficulty = 'easy';
+    G.gameState = 'playing';
+    G.levelConfig = null;
+    generatePlatforms();
+    resetPlayer();
+
+    SceneManager.stack = [];
+    SceneManager.stack.push(PlayingScene);
+
+    // Move player to row 1 first
+    const row1Col = G.safePath[1];
+    const row1Plat = G.platforms[1][row1Col];
+    row1Plat.fake = false;
+    row1Plat.destroyed = false;
+    G.player.row = 1;
+    G.player.col = row1Col;
+    G.player.x = row1Plat.x + row1Plat.w / 2;
+    G.player.y = row1Plat.y - PLAYER_Y_OFFSET;
+    G.player.onPlatform = row1Plat;
+    G.jumpAnim.active = false;
+
+    tryJump('backward');
+    assert(G.jumpAnim.active, 'Backward jump animation started');
+    assertEqual(G.jumpAnim.targetRow, 0, 'Target row is 0 (backward)');
+  });
+
+  suite('Backward Jump — Resets Streak', () => {
+    G.gridCols = 6;
+    G.gridRows = 12;
+    G.difficulty = 'easy';
+    G.gameState = 'playing';
+    G.levelConfig = null;
+    generatePlatforms();
+    resetPlayer();
+    G.jumpStreak = 5;
+    G.hopsThisRow = 0;
+
+    SceneManager.stack = [];
+    SceneManager.stack.push(PlayingScene);
+
+    // Move player to row 2
+    G.player.row = 2;
+    G.player.col = G.safePath[2];
+    const plat2 = G.platforms[2][G.safePath[2]];
+    G.player.x = plat2.x + plat2.w / 2;
+    G.player.y = plat2.y - PLAYER_Y_OFFSET;
+    G.player.onPlatform = plat2;
+
+    // Land on row 1 (backward)
+    const backCol = G.safePath[1] === G.safePath[2] ? (G.safePath[1] + 1) % G.gridCols : G.safePath[1];
+    const backPlat = G.platforms[1][backCol];
+    backPlat.fake = false;
+    backPlat.destroyed = false;
+    landOnPlatform(backPlat, 1, backCol);
+
+    assertEqual(G.jumpStreak, 0, 'Streak resets on backward landing');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // DECOY FAKES SCALING TEST
+  // ═══════════════════════════════════════════════════════════════
+  suite('Decoy Fakes — Multiple Fakes Per Decoy Column', () => {
+    G.levelConfig = { cols: 7, rows: 16, fake: 0.72, memTime: 6, maxShift: 3, decoys: 2, backtracks: 0, decoyFakes: 3, name: 'Test' };
+    G.gridCols = G.levelConfig.cols;
+    G.gridRows = G.levelConfig.rows;
+
+    // Run a few times and check that at least one decoy has >1 fake
+    let foundMultiFake = false;
+    for (let trial = 0; trial < 10; trial++) {
+      generatePlatforms();
+      const rescueCol = G.safePath[G.gridRows - 1];
+      for (let c = 0; c < G.gridCols; c++) {
+        if (c === rescueCol) continue;
+        // Count fakes in this column
+        let fakes = 0;
+        let reals = 0;
+        for (let r = 0; r < G.gridRows; r++) {
+          if (G.platforms[r][c].fake) fakes++;
+          else reals++;
+        }
+        // A decoy column with multiple fakes: mostly real but 2+ fakes
+        if (reals >= G.gridRows - 4 && fakes >= 2) { foundMultiFake = true; break; }
+      }
+      if (foundMultiFake) break;
+    }
+    assert(foundMultiFake, 'At least one decoy column has multiple fakes with decoyFakes=3');
+
+    G.levelConfig = null;
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // LAST ROW LOCKDOWN — MIN 3 REAL TEST
+  // ═══════════════════════════════════════════════════════════════
+  suite('Last Row Lockdown — At Least 3 Real Platforms', () => {
+    G.levelConfig = { cols: 7, rows: 16, fake: 0.72, memTime: 6, maxShift: 3, decoys: 0, name: 'Test' };
+    G.gridCols = G.levelConfig.cols;
+    G.gridRows = G.levelConfig.rows;
+
+    for (let trial = 0; trial < 10; trial++) {
+      generatePlatforms();
+      const lastRow = G.platforms[G.gridRows - 1];
+      let realCount = 0;
+      for (let c = 0; c < G.gridCols; c++) {
+        if (!lastRow[c].fake) realCount++;
+      }
+      assert(realCount >= 3, `Last row has at least 3 real platforms (got ${realCount}, trial ${trial})`);
+    }
+
+    G.levelConfig = null;
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // CENTER-BIASED START TEST
+  // ═══════════════════════════════════════════════════════════════
+  suite('Center-Biased Start — Distribution Skews Center', () => {
+    G.levelConfig = null;
+    G.gridCols = 7;
+    G.gridRows = 8;
+    G.difficulty = 'easy';
+
+    const counts = new Array(7).fill(0);
+    for (let trial = 0; trial < 200; trial++) {
+      generatePlatforms();
+      counts[G.safePath[0]]++;
+    }
+    // Center columns (2,3,4) should have more starts than edges (0,6)
+    const centerTotal = counts[2] + counts[3] + counts[4];
+    const edgeTotal = counts[0] + counts[6];
+    assert(centerTotal > edgeTotal, `Center starts (${centerTotal}) > edge starts (${edgeTotal})`);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // STATE FIELDS — NEW FIELDS
+  // ═══════════════════════════════════════════════════════════════
+  suite('State — Backtrack Fields', () => {
+    assert('safeRoute' in G, 'G has safeRoute field');
+    assert('extraSafeCols' in G, 'G has extraSafeCols field');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
   // RENDER RESULTS
   // ═══════════════════════════════════════════════════════════════
   const container = document.getElementById('results');

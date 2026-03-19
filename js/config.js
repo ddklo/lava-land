@@ -88,9 +88,9 @@ const LEVELS = [
   { cols: 7, rows: 14, fake: 0.55, memTime: 8,  maxShift: 2, decoys: 0, name: 'Obsidian Run' },
   { cols: 7, rows: 14, fake: 0.57, memTime: 8,  maxShift: 2, decoys: 0, name: 'Volcano Heart' },
   { cols: 7, rows: 15, fake: 0.60, memTime: 7,  maxShift: 2, decoys: 0, name: 'Dragon\'s Lair' },
-  { cols: 7, rows: 16, fake: 0.64, memTime: 7,  maxShift: 2, decoys: 1, name: 'Hellfire Sprint' },
-  { cols: 7, rows: 16, fake: 0.68, memTime: 6,  maxShift: 3, decoys: 2, name: 'Core Meltdown' },
-  { cols: 7, rows: 16, fake: 0.72, memTime: 6,  maxShift: 3, decoys: 3, name: 'Final Descent' },
+  { cols: 7, rows: 16, fake: 0.64, memTime: 7,  maxShift: 2, decoys: 1, backtracks: 1, decoyFakes: 1, name: 'Hellfire Sprint' },
+  { cols: 7, rows: 16, fake: 0.68, memTime: 6,  maxShift: 3, decoys: 2, backtracks: 1, decoyFakes: 2, name: 'Core Meltdown' },
+  { cols: 7, rows: 16, fake: 0.72, memTime: 6,  maxShift: 3, decoys: 3, backtracks: 2, decoyFakes: 2, name: 'Final Descent' },
 ];
 
 function getLevelConfig(levelNum) {
@@ -104,6 +104,8 @@ function getLevelConfig(levelNum) {
     memTime: Math.max(4, 6 - Math.floor(n / 2)),
     maxShift: 3,
     decoys: Math.min(4, 3 + Math.floor(n / 3)),
+    backtracks: Math.min(3, 2 + Math.floor(n / 4)),
+    decoyFakes: Math.min(3, 2 + Math.floor(n / 3)),
     name: 'Endless ' + levelNum,
   };
 }

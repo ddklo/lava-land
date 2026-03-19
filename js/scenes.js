@@ -210,6 +210,7 @@ const MemorizeScene = {
     }
 
     renderPlatforms(true);
+    drawRouteSteps();
     drawRescueCharacter(true);
     drawParticles();
     drawPlayer();
@@ -298,8 +299,8 @@ const PlayingScene = {
       G.trailMarks.push({ x: p.x + p.w / 2, y: p.y + (PLAT_H - PLAT_DEPTH) / 2, life: 1.0 });
     }
     document.getElementById('hud-text').innerHTML = G.isTouchDevice
-      ? '<div class="timer-hint">Tap platform to move &nbsp;|&nbsp; Swipe to jump</div>'
-      : '<div class="timer-hint">&larr; &rarr; move sideways &nbsp;|&nbsp; &darr; / Space jump forward</div>';
+      ? '<div class="timer-hint">Tap platform to move &nbsp;|&nbsp; Swipe down/up to jump</div>'
+      : '<div class="timer-hint">&larr; &rarr; hop &nbsp;|&nbsp; &darr; / Space forward &nbsp;|&nbsp; &uarr; backward</div>';
   },
   onExit() {
     clearTimers();

@@ -1,8 +1,8 @@
 // ─── INPUT ──────────────────────────────────────────────────────
 function findTappedPlatform(canvasX, canvasY) {
   const currentRow = G.player.row;
-  // Only check current row (for left/right) and next row (for forward)
-  const rowsToCheck = [currentRow, currentRow + 1];
+  // Check current row (left/right), next row (forward), and previous row (backward)
+  const rowsToCheck = [currentRow - 1, currentRow, currentRow + 1];
   for (const row of rowsToCheck) {
     if (row < 0 || row >= G.platforms.length) continue;
     for (let col = 0; col < G.platforms[row].length; col++) {
@@ -27,6 +27,7 @@ function setupInput() {
       if (e.code === 'ArrowLeft') tryJump('left');
       if (e.code === 'ArrowRight') tryJump('right');
       if (e.code === 'ArrowDown' || e.code === 'Space') tryJump('forward');
+      if (e.code === 'ArrowUp') tryJump('backward');
       if (e.code === 'KeyH') {
         G.revealRoute = true;
         G.revealRouteTimer = 3;
@@ -118,6 +119,9 @@ function setupInput() {
     } else if (Math.abs(dy) > SWIPE_THRESHOLD && dy > 0) {
       // Downward swipe → jump forward
       tryJump('forward');
+    } else if (Math.abs(dy) > SWIPE_THRESHOLD && dy < 0) {
+      // Upward swipe → jump backward
+      tryJump('backward');
     } else {
       // Tap — check if tapping on a specific platform
       const rect = G.canvas.getBoundingClientRect();
@@ -132,6 +136,8 @@ function setupInput() {
         const colDiff = tapped.col - G.player.col;
         if (rowDiff === 1) {
           tryJump('forward');
+        } else if (rowDiff === -1) {
+          tryJump('backward');
         } else if (rowDiff === 0 && colDiff === -1) {
           tryJump('left');
         } else if (rowDiff === 0 && colDiff === 1) {

@@ -684,6 +684,82 @@ function drawTrailMarks() {
   ctx.globalAlpha = 1;
 }
 
+// ─── ROUTE STEP VISUALIZATION (memorize phase) ──────────────
+// Draw numbered step markers and directional arrows on safeRoute platforms
+// when reveal=true and safeRoute contains backtracks.
+function drawRouteSteps() {
+  if (!G.safeRoute || G.safeRoute.length === 0) return;
+  // Only show step numbers if there are backtracks (route has more steps than rows)
+  if (G.safeRoute.length <= G.gridRows) return;
+
+  const ctx = G.ctx;
+  for (let i = 0; i < G.safeRoute.length; i++) {
+    const step = G.safeRoute[i];
+    const plat = G.platforms[step.row][step.col];
+    if (!plat) continue;
+    const px = plat.x + plat.w / 2;
+    const py = plat.y + (PLAT_H - PLAT_DEPTH) / 2;
+
+    // Step number circle
+    const isBackward = i > 0 && G.safeRoute[i].row < G.safeRoute[i - 1].row;
+    const isHop = i > 0 && G.safeRoute[i].row === G.safeRoute[i - 1].row;
+
+    // Background circle — orange for backtrack steps, blue for hops, green for normal
+    let bgColor = 'rgba(40,180,80,0.85)';
+    if (isBackward) bgColor = 'rgba(220,120,30,0.9)';
+    else if (isHop) bgColor = 'rgba(60,120,200,0.85)';
+
+    ctx.fillStyle = bgColor;
+    ctx.beginPath();
+    ctx.arc(px, py, 11, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Step number text
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(i + 1), px, py);
+
+    // Arrow from previous step to this step
+    if (i > 0) {
+      const prev = G.safeRoute[i - 1];
+      const prevPlat = G.platforms[prev.row][prev.col];
+      if (!prevPlat) continue;
+      const fromX = prevPlat.x + prevPlat.w / 2;
+      const fromY = prevPlat.y + (PLAT_H - PLAT_DEPTH) / 2;
+
+      // Draw arrow line (shortened to not overlap circles)
+      const dx = px - fromX;
+      const dy = py - fromY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 20) continue;
+      const nx = dx / dist, ny = dy / dist;
+      const ax = fromX + nx * 14;
+      const ay = fromY + ny * 14;
+      const bx = px - nx * 14;
+      const by = py - ny * 14;
+
+      ctx.strokeStyle = isBackward ? 'rgba(255,150,50,0.7)' : isHop ? 'rgba(100,160,255,0.7)' : 'rgba(80,255,120,0.5)';
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.stroke();
+
+      // Arrowhead
+      const headLen = 6;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx - headLen * nx + headLen * 0.5 * ny, by - headLen * ny - headLen * 0.5 * nx);
+      ctx.lineTo(bx - headLen * nx - headLen * 0.5 * ny, by - headLen * ny + headLen * 0.5 * nx);
+      ctx.closePath();
+      ctx.fillStyle = ctx.strokeStyle;
+      ctx.fill();
+    }
+  }
+}
+
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);

@@ -42,15 +42,17 @@ Navigate across a grid of platforms suspended over lava to reach and rescue your
 |-----|--------|
 | Left Arrow | Hop left (same row) |
 | Right Arrow | Hop right (same row) |
-| Up Arrow | Jump forward (next row) |
+| Down Arrow | Jump forward (next row) |
 | Space | Jump forward (next row) |
+| Up Arrow | Jump backward (previous row) |
 
 ### Touch (Mobile)
 | Gesture | Action |
 |---------|--------|
 | Swipe left | Hop left |
 | Swipe right | Hop right |
-| Tap / Swipe up | Jump forward |
+| Tap / Swipe down | Jump forward |
+| Swipe up | Jump backward |
 
 ## Settings
 
@@ -81,11 +83,19 @@ The fake chance applies to every platform that is NOT on the safe path. The safe
 
 ### Safe Path
 - Every generated level has exactly one guaranteed safe path from the first row to the last row
-- The path moves laterally (left/right) with 70% probability at each row, staying straight 30% of the time
+- The path moves laterally (left/right) with 80-90% probability at each row
 - Path generation is governed by configurable **board rules** (defined in `BOARD_RULES` in config.js):
   - **maxConsecutiveStraight** (default 1): Max consecutive rows the path can stay in the same column
   - **maxConsecutiveSameDirection** (default 5): Max consecutive rows the path can move in the same lateral direction (left or right). Prevents long easy-to-memorize diagonals
   - **minLateralMoveFraction** (default 0.4): At least 40% of rows must include a lateral move for variety
+- Starting column is center-biased (average of two random values)
+
+### Backtrack Sections (Levels 13+)
+- Late-level paths may include **backtrack sections** where the safe route goes backward (up) before continuing forward
+- At a backtrack point, the player must: hop sideways, jump backward to the previous row (different column), then jump forward again
+- During the memorize phase, backtrack routes show numbered step markers and directional arrows
+- Step markers are color-coded: green = forward, blue = hop, orange = backward
+- The backward jump mechanic uses Up Arrow (keyboard) or swipe up (touch)
 
 ### Platform Behavior
 - **Safe platforms**: Solid stone blocks. Landing on them produces a dust effect and bob animation
