@@ -368,8 +368,6 @@ const PlayingScene = {
         : '';
       document.getElementById('hud-text').innerHTML =
         `<div class="stat-row">` +
-        `<span class="stat-item">${curRow + 1}/${G.platforms.length}<span class="stat-label">ROW</span></span>` +
-        `<span class="stat-item">${curCol + 1}/${G.platforms[0].length}<span class="stat-label">COL</span></span>` +
         `<span class="stat-item">${curTimer}<span class="stat-label">TIME</span></span>` +
         `<span class="stat-item">${curJumps}<span class="stat-label">JUMPS</span></span>` +
         streakPart +
