@@ -279,6 +279,7 @@ canvas {
   z-index: 5;
   position: relative;
   flex-shrink: 0;
+  order: -1;
 }
 
 /* Left: pinned to left edge */
@@ -674,7 +675,7 @@ canvas {
   #hud-center { display: none; }
   #game-hud { height: 44px; }
   #hud-left, #hud-stats { height: 44px; }
-  canvas { margin-top: 44px; }
+  canvas { margin-top: 0; }
   #hud-left .hud-level-line { font-size: 12px; }
   #hud-left .hud-total-score { font-size: 11px; }
   #hud-stats .stat-item { font-size: 14px; }
