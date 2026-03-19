@@ -75,6 +75,10 @@ const G = {
   // Managed timers (replaces setTimeout/setInterval in game logic)
   timers: [],
 
+  // Secret route reveal (? key during playing)
+  revealRoute: false,
+  revealRouteTimer: 0,
+
   // Input
   keys: {},
   isTouchDevice: false,

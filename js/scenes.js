@@ -260,6 +260,8 @@ const PlayingScene = {
     G.playTimer = 0;
     G.streak = 0;
     G.streakPopups = [];
+    G.revealRoute = false;
+    G.revealRouteTimer = 0;
     this._lastRow = -1;
     this._lastCol = -1;
     this._lastTimerStr = '';
@@ -312,6 +314,15 @@ const PlayingScene = {
     updateTrailMarks(dt);
     updateStreakPopups(dt);
     updateTransition(dt);
+
+    // Secret route reveal countdown
+    if (G.revealRoute) {
+      G.revealRouteTimer -= dt;
+      if (G.revealRouteTimer <= 0) {
+        G.revealRoute = false;
+        G.revealRouteTimer = 0;
+      }
+    }
 
     // Jump animation + trail particles
     if (G.jumpAnim.active) {
@@ -381,7 +392,7 @@ const PlayingScene = {
     applyShake(ctx);
 
     drawLava(G.camera.y, CANVAS_H);
-    renderPlatforms(false);
+    renderPlatforms(G.revealRoute);
     drawTrailMarks();
     drawRescueCharacter();
     drawParticles();
@@ -390,6 +401,23 @@ const PlayingScene = {
     drawTutorialArrow();
 
     ctx.restore();
+
+    // Route reveal overlay hint
+    if (G.revealRoute) {
+      const secs = Math.ceil(G.revealRouteTimer);
+      ctx.save();
+      ctx.globalAlpha = 0.85;
+      ctx.fillStyle = '#000';
+      ctx.fillRect(0, 0, CANVAS_W, 36);
+      ctx.globalAlpha = 1;
+      ctx.fillStyle = '#44ff88';
+      ctx.font = 'bold 16px sans-serif';
+      ctx.textAlign = 'center';
+      ctx.textBaseline = 'middle';
+      ctx.fillText(`\uD83D\uDDFA\uFE0F Hemmelig rute (${secs}s) — gr\xF8nn = trygg, r\xF8d = farlig`, CANVAS_W / 2, 18);
+      ctx.restore();
+    }
+
     drawTransition();
   }
 };

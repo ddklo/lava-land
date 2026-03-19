@@ -27,6 +27,10 @@ function setupInput() {
       if (e.code === 'ArrowLeft') tryJump('left');
       if (e.code === 'ArrowRight') tryJump('right');
       if (e.code === 'ArrowDown' || e.code === 'Space') tryJump('forward');
+      if (e.code === 'KeyH') {
+        G.revealRoute = true;
+        G.revealRouteTimer = 3;
+      }
       e.preventDefault();
     }
     if (G.gameState === 'memorize') {
@@ -44,10 +48,20 @@ function setupInput() {
 
   // ── Touch ──────────────────────────────────────
   // Swipe left/right to hop, tap or swipe up to jump forward.
+  // Hold for 10 seconds to reveal the safe route.
   const SWIPE_THRESHOLD = 30;
   let touchStartX = 0;
   let touchStartY = 0;
   let touchId = null;
+  let longPressTimer = null;
+  let longPressTriggered = false;
+
+  function cancelLongPress() {
+    if (longPressTimer !== null) {
+      clearTimeout(longPressTimer);
+      longPressTimer = null;
+    }
+  }
 
   G.canvas.addEventListener('touchstart', (e) => {
     if (touchId !== null) return;
@@ -55,10 +69,22 @@ function setupInput() {
     touchId = t.identifier;
     touchStartX = t.clientX;
     touchStartY = t.clientY;
+    longPressTriggered = false;
+
+    if (G.gameState === 'playing') {
+      longPressTimer = setTimeout(() => {
+        longPressTimer = null;
+        longPressTriggered = true;
+        G.revealRoute = true;
+        G.revealRouteTimer = 3;
+      }, 10000);
+    }
+
     e.preventDefault();
   }, { passive: false });
 
   G.canvas.addEventListener('touchend', (e) => {
+    cancelLongPress();
     let found = null;
     for (let i = 0; i < e.changedTouches.length; i++) {
       if (e.changedTouches[i].identifier === touchId) {
@@ -68,6 +94,13 @@ function setupInput() {
     }
     if (!found) return;
     touchId = null;
+
+    // Long-press just fired — don't treat as a normal tap
+    if (longPressTriggered) {
+      longPressTriggered = false;
+      e.preventDefault();
+      return;
+    }
 
     if (G.gameState === 'memorize') {
       startPlayingEarly();
@@ -113,6 +146,7 @@ function setupInput() {
   }, { passive: false });
 
   G.canvas.addEventListener('touchmove', (e) => {
+    cancelLongPress(); // movement cancels long-press
     e.preventDefault();
   }, { passive: false });
 
