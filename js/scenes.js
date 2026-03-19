@@ -416,7 +416,7 @@ const PlayingScene = {
       ctx.font = 'bold 16px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`\uD83D\uDDFA\uFE0F Ruten vises (${secs}s) — gr\xF8nn = trygg, r\xF8d = farlig`, CANVAS_W / 2, 18);
+      ctx.fillText(`\uD83D\uDDFA\uFE0F Hemmelig rute (${secs}s) — gr\xF8nn = trygg, r\xF8d = farlig`, CANVAS_W / 2, 18);
       ctx.restore();
     }
 
