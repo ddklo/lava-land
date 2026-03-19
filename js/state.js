@@ -77,9 +77,10 @@ const G = {
   // Managed timers (replaces setTimeout/setInterval in game logic)
   timers: [],
 
-  // Secret route reveal (? key during playing)
+  // Secret route reveal (H key / long-press during playing)
   revealRoute: false,
   revealRouteTimer: 0,
+  routeRevealed: false,  // true if player used hint this level (zeroes score)
 
   // Input
   keys: {},

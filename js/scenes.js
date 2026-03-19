@@ -577,7 +577,11 @@ const WonScene = {
     const nextLevelBtn = document.getElementById('next-level-btn');
 
     if (G.gameMode === 'adventure' && G.levelConfig) {
-      const breakdown = calculateScore(G.level, G.playTimer, G.jumpCount, G.gridRows, G.levelConfig.memTime, G.memTimeSaved, G.streakBonus);
+      const breakdown = calculateScore(G.level, G.playTimer, G.jumpCount, G.gridRows, G.levelConfig.memTime, G.memTimeSaved, G.streakBonus, {
+        routeRevealed: G.routeRevealed,
+        totalCols: G.gridCols,
+        fakeChance: G.levelConfig.fake,
+      });
       const stars = calculateStars(breakdown.totalScore, G.level);
       G.levelScore = breakdown.totalScore;
       G.levelStars = stars;
@@ -593,20 +597,27 @@ const WonScene = {
         return `<span class="star-pop" style="animation-delay:${delay}s">${char}</span>`;
       }).join('');
       let scoreHtml = `<div class="score-stars">${starStr}</div>`;
-      scoreHtml += `<div class="score-row"><span>Time bonus</span><span>${breakdown.timeScore}</span></div>`;
-      scoreHtml += `<div class="score-row"><span>Jump efficiency</span><span>${breakdown.jumpScore}</span></div>`;
-      scoreHtml += `<div class="score-row"><span>Level bonus</span><span>${breakdown.levelBonus}</span></div>`;
-      if (breakdown.perfectBonus > 0) {
-        scoreHtml += `<div class="score-row bonus"><span>Perfect path!</span><span>+${breakdown.perfectBonus}</span></div>`;
-      }
-      if (breakdown.speedBonus > 0) {
-        scoreHtml += `<div class="score-row bonus"><span>Speed bonus!</span><span>+${breakdown.speedBonus}</span></div>`;
-      }
-      if (breakdown.earlyMemBonus > 0) {
-        scoreHtml += `<div class="score-row bonus"><span>Early start bonus!</span><span>+${breakdown.earlyMemBonus}</span></div>`;
-      }
-      if (breakdown.streakBonus > 0) {
-        scoreHtml += `<div class="score-row bonus"><span>Streak bonus!</span><span>+${breakdown.streakBonus}</span></div>`;
+      if (breakdown.routeRevealed) {
+        scoreHtml += `<div class="score-row bonus" style="color:#ff6644"><span>Route revealed — no score!</span><span>0</span></div>`;
+      } else {
+        scoreHtml += `<div class="score-row"><span>Time bonus</span><span>${breakdown.timeScore}</span></div>`;
+        scoreHtml += `<div class="score-row"><span>Jump efficiency</span><span>${breakdown.jumpScore}</span></div>`;
+        scoreHtml += `<div class="score-row"><span>Level bonus</span><span>${breakdown.levelBonus}</span></div>`;
+        if (breakdown.difficultyBonus > 0) {
+          scoreHtml += `<div class="score-row"><span>Difficulty bonus</span><span>${breakdown.difficultyBonus}</span></div>`;
+        }
+        if (breakdown.perfectBonus > 0) {
+          scoreHtml += `<div class="score-row bonus"><span>Perfect path!</span><span>+${breakdown.perfectBonus}</span></div>`;
+        }
+        if (breakdown.speedBonus > 0) {
+          scoreHtml += `<div class="score-row bonus"><span>Speed bonus!</span><span>+${breakdown.speedBonus}</span></div>`;
+        }
+        if (breakdown.earlyMemBonus > 0) {
+          scoreHtml += `<div class="score-row bonus"><span>Early start bonus!</span><span>+${breakdown.earlyMemBonus}</span></div>`;
+        }
+        if (breakdown.streakBonus > 0) {
+          scoreHtml += `<div class="score-row bonus"><span>Streak bonus!</span><span>+${breakdown.streakBonus}</span></div>`;
+        }
       }
       scoreHtml += `<div class="score-total"><span>Level Score</span><span>${breakdown.totalScore}</span></div>`;
       scoreHtml += `<div class="score-cumulative">Total Score: ${G.totalScore}</div>`;
