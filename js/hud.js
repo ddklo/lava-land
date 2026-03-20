@@ -149,29 +149,65 @@ function drawTutorialArrow() {
   if (!G.safePath || G.safePath.length < 2) return;
 
   const curRow = G.player.row;
-  const nextRowIdx = curRow + 1;
-  if (nextRowIdx >= G.platforms.length) return;
-  const nextRow = G.platforms[nextRowIdx];
-  if (!nextRow) return;
+  const curCol = G.player.col;
 
-  // Always point at the guaranteed-safe platform in the next row.
-  // Using safePath avoids two bugs: (1) nearest-by-pixel-X picks a fake platform
-  // during hop animations while G.player.x is mid-transition, and (2) the old
-  // redirect pointed at platforms[curRow][safeCol] which isn't guaranteed real.
-  const safeCol = G.safePath[nextRowIdx];
-  const plat = nextRow[safeCol];
+  // Determine the next target step using safeRoute (handles backtracks) or
+  // fall back to the next row's safe column from safePath.
+  let nextStepRow, nextStepCol;
+  if (G.safeRoute && G.safeRoute.length > 0) {
+    for (let i = 0; i < G.safeRoute.length - 1; i++) {
+      if (G.safeRoute[i].row === curRow && G.safeRoute[i].col === curCol) {
+        nextStepRow = G.safeRoute[i + 1].row;
+        nextStepCol = G.safeRoute[i + 1].col;
+        break;
+      }
+    }
+  }
+  if (nextStepRow === undefined) {
+    const nextRowIdx = curRow + 1;
+    if (nextRowIdx >= G.platforms.length) return;
+    nextStepRow = nextRowIdx;
+    nextStepCol = G.safePath[nextRowIdx];
+  }
+
+  // Decide the immediate action and where to point the arrow.
+  // When a hop is needed, point at the adjacent platform in the current row
+  // (one step in the right direction) rather than the final destination in
+  // another row — this avoids a confusing diagonal arrow.
+  let hint, arrowRow, arrowCol;
+  if (nextStepRow === curRow) {
+    // Sideways hop needed (backtrack scenario)
+    const dir = nextStepCol < curCol ? '\u2190' : '\u2192';
+    hint = `Hop ${dir} first!`;
+    arrowRow = curRow;
+    arrowCol = nextStepCol < curCol ? curCol - 1 : curCol + 1;
+  } else if (nextStepRow < curRow) {
+    // Jump backward
+    hint = G.isTouchDevice ? 'Swipe \u2191 to jump back!' : 'Press \u2191 to jump back!';
+    arrowRow = nextStepRow;
+    arrowCol = nextStepCol;
+  } else if (curCol === nextStepCol) {
+    // Aligned with next row's safe platform — jump forward
+    hint = G.isTouchDevice ? 'Tap to jump!' : 'Press \u2193 to jump!';
+    arrowRow = nextStepRow;
+    arrowCol = nextStepCol;
+  } else {
+    // Need to hop sideways before jumping — point at the adjacent platform
+    // in the current row (one step toward the target column).
+    const dir = nextStepCol < curCol ? '\u2190' : '\u2192';
+    hint = `Hop ${dir} first!`;
+    arrowRow = curRow;
+    arrowCol = nextStepCol < curCol ? curCol - 1 : curCol + 1;
+  }
+
+  const rowPlats = G.platforms[arrowRow];
+  if (!rowPlats) return;
+  const plat = rowPlats[arrowCol];
   if (!plat) return;
 
   const tx = plat.x + plat.w / 2;
   const ty = plat.y - G.camera.y - 20;
   const bobY = Math.sin(G.lavaTime * 4) * 8;
-  let hint;
-  if (G.player.col === safeCol) {
-    hint = G.isTouchDevice ? 'Tap to jump!' : 'Press \u2193 to jump!';
-  } else {
-    const dir = safeCol < G.player.col ? '\u2190' : '\u2192';
-    hint = `Hop ${dir} first!`;
-  }
   drawTutorialHint(ctx, tx, ty + bobY, hint);
 }
 
