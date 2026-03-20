@@ -1,20 +1,30 @@
 // ─── INPUT ──────────────────────────────────────────────────────
 function findTappedPlatform(canvasX, canvasY) {
   const currentRow = G.player.row;
+  const TOUCH_PAD = 18; // extra px around each platform for easier tapping
   // Check current row (left/right), next row (forward), and previous row (backward)
   const rowsToCheck = [currentRow - 1, currentRow, currentRow + 1];
+  let best = null;
+  let bestDist = Infinity;
   for (const row of rowsToCheck) {
     if (row < 0 || row >= G.platforms.length) continue;
     for (let col = 0; col < G.platforms[row].length; col++) {
       const plat = G.platforms[row][col];
       if (plat.destroyed) continue;
-      if (canvasX >= plat.x && canvasX <= plat.x + plat.w &&
-          canvasY >= plat.y && canvasY <= plat.y + plat.h) {
-        return { row: row, col: col, plat: plat };
+      if (canvasX >= plat.x - TOUCH_PAD && canvasX <= plat.x + plat.w + TOUCH_PAD &&
+          canvasY >= plat.y - TOUCH_PAD && canvasY <= plat.y + plat.h + TOUCH_PAD) {
+        // Pick closest platform center if pads overlap
+        const cx = plat.x + plat.w / 2;
+        const cy = plat.y + plat.h / 2;
+        const dist = (canvasX - cx) * (canvasX - cx) + (canvasY - cy) * (canvasY - cy);
+        if (dist < bestDist) {
+          bestDist = dist;
+          best = { row: row, col: col, plat: plat };
+        }
       }
     }
   }
-  return null;
+  return best;
 }
 
 function setupInput() {
@@ -116,16 +126,22 @@ function setupInput() {
 
     const dx = found.clientX - touchStartX;
     const dy = found.clientY - touchStartY;
+    const absDx = Math.abs(dx);
+    const absDy = Math.abs(dy);
 
-    if (Math.abs(dx) > SWIPE_THRESHOLD && Math.abs(dx) > Math.abs(dy)) {
-      // Horizontal swipe
+    if (absDx > SWIPE_THRESHOLD && absDx > absDy * 1.2) {
+      // Horizontal swipe (must clearly dominate vertical)
       tryJump(dx < 0 ? 'left' : 'right');
-    } else if (Math.abs(dy) > SWIPE_THRESHOLD && dy > 0) {
-      // Downward swipe → jump forward
-      tryJump('forward');
-    } else if (Math.abs(dy) > SWIPE_THRESHOLD && dy < 0) {
-      // Upward swipe → jump backward
-      tryJump('backward');
+    } else if (absDy > SWIPE_THRESHOLD && absDy > absDx * 1.2) {
+      // Vertical swipe (must clearly dominate horizontal)
+      tryJump(dy > 0 ? 'forward' : 'backward');
+    } else if (absDx > SWIPE_THRESHOLD || absDy > SWIPE_THRESHOLD) {
+      // Diagonal-ish swipe — pick dominant axis
+      if (absDx >= absDy) {
+        tryJump(dx < 0 ? 'left' : 'right');
+      } else {
+        tryJump(dy > 0 ? 'forward' : 'backward');
+      }
     } else {
       // Tap — check if tapping on a specific platform
       const rect = G.canvas.getBoundingClientRect();
