@@ -246,12 +246,15 @@ function drawPlatform(p, reveal) {
   if (!reveal && (screenY < -80 || screenY > CANVAS_H + 80)) return;
 
   let ox = 0, oy = 0;
+  let crumbleAlpha = 1;
   if (p.crumbling) {
-    ox = (Math.random() - 0.5) * 4;
-    oy = p.crumbleTimer * 2;
+    ox = (Math.random() - 0.5) * 6;
+    oy = p.crumbleTimer * 6;
+    crumbleAlpha = Math.max(0, 1 - p.crumbleTimer * 3.5);
   }
 
   ctx.save();
+  ctx.globalAlpha = crumbleAlpha;
   ctx.translate(ox, oy);
 
   const x = p.x, w = p.w, h = p.h;
@@ -478,6 +481,34 @@ function drawPlatform(p, reveal) {
       ctx.fillStyle = `rgba(255,80,0,${heatFactor * 0.3})`;
       ctx.fillRect(x, screenY + h - depth - 2, w, depth + 4);
     }
+
+    // Crumble reveal — red cracks bleed through as fake platform breaks apart
+    if (p.crumbling) {
+      const crumbleProgress = Math.min(1, p.crumbleTimer * 3.5);
+      // Red danger wash
+      ctx.fillStyle = `rgba(200,30,10,${crumbleProgress * 0.65})`;
+      ctx.fillRect(x, screenY, w, h - depth);
+      // Crack lines radiating from center
+      ctx.strokeStyle = `rgba(255,80,30,${crumbleProgress * 0.9})`;
+      ctx.lineWidth = 1.5;
+      const cx2 = x + w / 2, cy2 = screenY + (h - depth) / 2;
+      for (let ci = 0; ci < 6; ci++) {
+        const angle = (ci / 6) * Math.PI * 2 + 0.4;
+        const len = (8 + ci * 4) * crumbleProgress;
+        ctx.beginPath();
+        ctx.moveTo(cx2, cy2);
+        ctx.lineTo(cx2 + Math.cos(angle) * len, cy2 + Math.sin(angle) * len);
+        ctx.stroke();
+      }
+      // Hot red border glow
+      ctx.shadowColor = '#ff2200';
+      ctx.shadowBlur = 12 * crumbleProgress;
+      ctx.strokeStyle = `rgba(255,60,20,${crumbleProgress * 0.8})`;
+      ctx.lineWidth = 2;
+      ctx.strokeRect(x + 1, screenY + 1, w - 2, h - depth - 2);
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+    }
   }
   ctx.restore();
 }
@@ -528,6 +559,7 @@ function drawPlayer() {
   ctx.save();
   ctx.globalAlpha = 1;
   ctx.translate(px, py + drawOffsetY + bob);
+  if (G.player.facing === 'left') ctx.scale(-1, 1);
   ctx.scale(scaleX, scaleY);
   drawEmoji(ctx, G.heroChar.emoji, 0, 0, EMOJI_SIZE);
   ctx.restore();
@@ -632,6 +664,15 @@ function drawParticles() {
         ctx.fillRect(-p.size / 2, -p.size * p.aspect / 2, p.size, p.size * p.aspect);
       }
       ctx.restore();
+    } else if (p.ring) {
+      const progress = 1 - p.life / p.startLife;
+      const radius = p.maxR * progress;
+      ctx.globalAlpha = (p.life / p.startLife) * 0.75;
+      ctx.strokeStyle = p.color;
+      ctx.lineWidth = 4 * (1 - progress) + 1;
+      ctx.beginPath();
+      ctx.arc(p.x, p.y - G.camera.y, radius, 0, Math.PI * 2);
+      ctx.stroke();
     } else if (p.round) {
       ctx.beginPath();
       ctx.arc(p.x, p.y - G.camera.y, p.size, 0, Math.PI * 2);
