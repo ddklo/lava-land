@@ -56,6 +56,37 @@ canvas {
   opacity: 1;
 }
 
+/* ─── Pause overlay ──────────────────────────────────────── */
+
+#pause-screen {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 90;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#pause-inner {
+  background: var(--surface);
+  border: 2px solid var(--primary);
+  border-radius: 16px;
+  padding: 32px 48px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+  text-align: center;
+}
+
+#pause-inner h1 {
+  color: var(--primary);
+  font-size: 2.2rem;
+  letter-spacing: 0.12em;
+  margin-bottom: 8px;
+}
+
 /* ─── UI overlay ─────────────────────────────────────────── */
 
 #ui-overlay {
@@ -341,10 +372,44 @@ canvas {
   text-align: center;
 }
 
+/* HUD action buttons (forfeit + pause) — far right */
+#hud-actions {
+  position: absolute;
+  right: 8px;
+  top: 0; height: 48px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: auto;
+}
+
+.btn-forfeit, .btn-pause {
+  background: rgba(80, 20, 0, 0.75);
+  border: 1px solid rgba(255, 100, 30, 0.4);
+  color: #ff8855;
+  font-size: 14px;
+  padding: 4px 10px;
+  border-radius: 8px;
+  cursor: pointer;
+  line-height: 1;
+  margin-top: 0;
+  min-width: unset;
+  letter-spacing: 0;
+  opacity: 0.75;
+  transition: opacity 0.15s;
+}
+
+.btn-forfeit:hover, .btn-pause:hover {
+  opacity: 1;
+  background: rgba(130, 40, 0, 0.9);
+  transform: none;
+}
+
+/* Shift stats left to make room for action buttons */
 /* Right: pinned to right edge */
 #hud-stats {
   position: absolute;
-  right: 12px;
+  right: 96px;
   top: 0; height: 48px;
   display: flex;
   flex-direction: column;

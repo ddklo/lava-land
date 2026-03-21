@@ -1,4 +1,24 @@
 // ─── MENU ───────────────────────────────────────────────────────
+
+function saveSettings() {
+  try {
+    localStorage.setItem('ll_difficulty', G.difficulty);
+    localStorage.setItem('ll_size', G.selectedSize);
+    localStorage.setItem('ll_memtime', G.selectedMemTime);
+  } catch (e) { /* storage unavailable */ }
+}
+
+function loadSettings() {
+  try {
+    const diff = localStorage.getItem('ll_difficulty');
+    const size = localStorage.getItem('ll_size');
+    const mem  = localStorage.getItem('ll_memtime');
+    if (diff && ['easy', 'medium', 'hard'].includes(diff))             G.difficulty = diff;
+    if (size && ['small', 'medium', 'large'].includes(size))           G.selectedSize = size;
+    if (mem  && ['short', 'medium', 'long'].includes(mem))             G.selectedMemTime = mem;
+  } catch (e) { /* storage unavailable */ }
+}
+
 function updateStartBtn() {
   const ready = !!(G.heroChoice && G.rescueChoice);
   document.getElementById('start-btn').disabled = !ready;
@@ -85,12 +105,25 @@ function setupMenu() {
     rescueGrid.appendChild(rCard);
   });
 
+  // Load persisted settings and reflect them on the UI
+  loadSettings();
+  document.querySelectorAll('#diff-row .opt-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.diff === G.difficulty);
+  });
+  document.querySelectorAll('#size-row .opt-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.size === G.selectedSize);
+  });
+  document.querySelectorAll('#memtime-row .opt-card').forEach(c => {
+    c.classList.toggle('selected', c.dataset.memtime === G.selectedMemTime);
+  });
+
   // Difficulty selector
   document.querySelectorAll('#diff-row .opt-card').forEach(card => {
     card.addEventListener('click', () => {
       document.querySelectorAll('#diff-row .opt-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       G.difficulty = card.dataset.diff;
+      saveSettings();
     });
   });
 
@@ -100,6 +133,7 @@ function setupMenu() {
       document.querySelectorAll('#size-row .opt-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       G.selectedSize = card.dataset.size;
+      saveSettings();
     });
   });
 
@@ -109,6 +143,7 @@ function setupMenu() {
       document.querySelectorAll('#memtime-row .opt-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       G.selectedMemTime = card.dataset.memtime;
+      saveSettings();
     });
   });
 
@@ -148,6 +183,27 @@ function setupMenu() {
     G.gameMode = 'custom';
     G.levelConfig = null;
     startGame();
+  });
+
+  // Forfeit button (playing HUD)
+  document.getElementById('forfeit-btn').addEventListener('click', () => {
+    if (G.gameState === 'playing') SceneManager.replace(FallingScene);
+  });
+
+  // Pause button (playing HUD)
+  document.getElementById('pause-btn').addEventListener('click', () => {
+    if (G.gameState === 'playing') SceneManager.push(PauseScene);
+  });
+
+  // Resume button (pause screen)
+  document.getElementById('resume-btn').addEventListener('click', () => {
+    if (G.gameState === 'paused') SceneManager.pop();
+  });
+
+  // Quit to menu button (pause screen)
+  document.getElementById('pause-menu-btn').addEventListener('click', () => {
+    if (G.gameState === 'paused') SceneManager.pop();
+    returnToMenu();
   });
 
   // Next level button (win screen — adventure mode)

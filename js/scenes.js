@@ -34,6 +34,29 @@ const SceneManager = {
   render()   { this.current?.render(); }
 };
 
+// ─── PAUSE SCENE ────────────────────────────────────────────────
+// Pushed on top of PlayingScene — the underlying scene is frozen.
+const PauseScene = {
+  onEnter() {
+    G.gameState = 'paused';
+    document.getElementById('pause-screen').style.display = 'flex';
+    stopMusic();
+  },
+  onExit() {
+    document.getElementById('pause-screen').style.display = 'none';
+    if (G.gameState === 'paused') {
+      // Resuming — restore gameState and music
+      G.gameState = 'playing';
+      playActionMusic();
+    }
+  },
+  update() { /* frozen */ },
+  render() {
+    // Re-render the playing scene underneath so the canvas isn't blank
+    PlayingScene.render();
+  }
+};
+
 // ─── HELPER: render platforms ───────────────────────────────────
 function renderPlatforms(reveal) {
   for (const row of G.platforms) {
@@ -301,9 +324,14 @@ const PlayingScene = {
     document.getElementById('hud-text').innerHTML = G.isTouchDevice
       ? '<div class="timer-hint">Tap platform to move &nbsp;|&nbsp; Swipe down/up to jump</div>'
       : '<div class="timer-hint">&larr; &rarr; hop &nbsp;|&nbsp; &darr; / Space forward &nbsp;|&nbsp; &uarr; backward</div>';
+
+    document.getElementById('forfeit-btn').style.display = '';
+    document.getElementById('pause-btn').style.display = '';
   },
   onExit() {
     clearTimers();
+    document.getElementById('forfeit-btn').style.display = 'none';
+    document.getElementById('pause-btn').style.display = 'none';
   },
   update(dt) {
     G.lavaTime += dt;
@@ -696,6 +724,13 @@ const WonScene = {
         document.getElementById('win-screen').style.display = 'block';
         document.getElementById('game-hud').style.display = 'none';
       }
+    }
+
+    // Skip fireworks after a brief grace period
+    if (G.winSkipRequested && G.winTimer > 0.5) {
+      G.winSkipRequested = false;
+      this._fwCount = 16;
+      this._showScreenTimer = 0.01; // show on next tick
     }
   },
   render() {

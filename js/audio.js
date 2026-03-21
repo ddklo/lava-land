@@ -1,3 +1,8 @@
+// ─── HAPTIC FEEDBACK ────────────────────────────────────────────
+function haptic(pattern) {
+  if (navigator.vibrate) navigator.vibrate(pattern);
+}
+
 // ─── AUDIO ENGINE ───────────────────────────────────────────────
 function initAudio() {
   if (G.audioCtx) return;
