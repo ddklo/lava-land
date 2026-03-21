@@ -60,6 +60,9 @@ const G = {
   hopsThisRow: 0,  // hops made since last forward landing
   streakBonus: 0,  // accumulated streak bonus points this level
 
+  // Win sequence
+  winSkipRequested: false,
+
   // Scene transitions
   transition: { active: false, nextScene: null },
 

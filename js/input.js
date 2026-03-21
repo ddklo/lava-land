@@ -34,6 +34,11 @@ function setupInput() {
     G.keys[e.code] = true;
 
     if (G.gameState === 'playing') {
+      if (e.code === 'KeyP' || e.code === 'Escape') {
+        SceneManager.push(PauseScene);
+        e.preventDefault();
+        return;
+      }
       if (e.code === 'ArrowLeft') tryJump('left');
       if (e.code === 'ArrowRight') tryJump('right');
       if (e.code === 'ArrowDown' || e.code === 'Space') tryJump('forward');
@@ -45,14 +50,26 @@ function setupInput() {
       }
       e.preventDefault();
     }
+    if (G.gameState === 'paused') {
+      if (e.code === 'KeyP' || e.code === 'Escape') {
+        SceneManager.pop();
+        e.preventDefault();
+      }
+    }
     if (G.gameState === 'memorize') {
       startPlayingEarly();
       e.preventDefault();
     }
-    if (G.gameState === 'won' && (e.code === 'Enter' || e.code === 'Space')) {
-      if (G.gameMode === 'adventure') advanceLevel();
-      else returnToMenu();
-      e.preventDefault();
+    if (G.gameState === 'won') {
+      if (e.code === 'Enter' || e.code === 'Space') {
+        if (document.getElementById('win-screen').style.display === 'block') {
+          if (G.gameMode === 'adventure') advanceLevel();
+          else returnToMenu();
+        } else {
+          G.winSkipRequested = true;
+        }
+        e.preventDefault();
+      }
     }
   });
 
@@ -119,6 +136,16 @@ function setupInput() {
 
     if (G.gameState === 'memorize') {
       startPlayingEarly();
+      e.preventDefault();
+      return;
+    }
+    if (G.gameState === 'won') {
+      if (document.getElementById('win-screen').style.display === 'block') {
+        if (G.gameMode === 'adventure') advanceLevel();
+        else returnToMenu();
+      } else {
+        G.winSkipRequested = true;
+      }
       e.preventDefault();
       return;
     }

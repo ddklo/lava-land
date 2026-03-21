@@ -20,6 +20,10 @@
         <div id="hud-text"></div>
         <div id="streak-flash" style="display:none;"></div>
       </div>
+      <div id="hud-actions">
+        <button id="forfeit-btn" class="btn btn-forfeit" style="display:none;" title="Give up and retry">&#128293;</button>
+        <button id="pause-btn" class="btn btn-pause" style="display:none;" title="Pause (P)">&#9646;&#9646;</button>
+      </div>
     </div>
   </div>
   <div id="ui-overlay">
@@ -125,6 +129,14 @@
         <button class="btn" id="next-level-btn" style="display:none;">NEXT LEVEL</button>
         <button class="btn btn-secondary" id="play-again-btn">BACK TO MENU</button>
       </div>
+    </div>
+  </div>
+
+  <div id="pause-screen" style="display:none;">
+    <div id="pause-inner">
+      <h1>PAUSED</h1>
+      <button class="btn" id="resume-btn">RESUME</button>
+      <button class="btn btn-secondary" id="pause-menu-btn">QUIT TO MENU</button>
     </div>
   </div>
 
