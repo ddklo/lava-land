@@ -19,8 +19,8 @@ function tryJump(direction) {
     if (currentRow >= G.platforms.length) return;
     const row = G.platforms[currentRow];
     let targetCol = currentCol;
-    if (direction === 'left') targetCol = Math.max(0, currentCol - 1);
-    if (direction === 'right') targetCol = Math.min(row.length - 1, currentCol + 1);
+    if (direction === 'left') { targetCol = Math.max(0, currentCol - 1); G.player.facing = 'left'; }
+    if (direction === 'right') { targetCol = Math.min(row.length - 1, currentCol + 1); G.player.facing = 'right'; }
     if (targetCol === currentCol) return;
 
     const targetPlat = row[targetCol];
@@ -161,6 +161,7 @@ function landOnPlatform(plat, row, col) {
     G.player.onPlatform = plat;
 
     // Landing impact effects
+    spawnImpactRing(plat);
     spawnLandDust(plat);
     plat.bobOffset = LAND_BOB_OFFSET;
     plat.bobVel = LAND_BOB_VEL;

@@ -123,6 +123,20 @@ function spawnJumpTrail(x, y) {
   }
 }
 
+function spawnImpactRing(plat) {
+  // Shockwave ring that expands outward on landing
+  G.particles.push({
+    x: plat.x + plat.w / 2,
+    y: plat.y,
+    vx: 0, vy: 0, size: 0,
+    color: '#ffcc66',
+    life: 0.6, startLife: 0.6,
+    gravity: 0,
+    ring: true,
+    maxR: 45,
+  });
+}
+
 function spawnConfetti() {
   const colors = ['#ff0000', '#00ff00', '#0088ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff', '#ffaa00',
                   '#ff6699', '#66ccff', '#ffcc00', '#cc44ff', '#ff4400', '#44ff88', '#ff88cc', '#88ff44',

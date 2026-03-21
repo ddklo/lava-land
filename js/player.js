@@ -9,6 +9,7 @@ function resetPlayer() {
     col: startCol,
     size: 16,
     onPlatform: startPlat,
+    facing: 'right',
   };
   G.camera.y = 0;
   G.jumpAnim.active = false;
