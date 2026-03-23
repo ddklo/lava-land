@@ -142,6 +142,8 @@ const MemorizeScene = {
     G.gameState = 'memorize';
     G.camera.y = 0;
     this._lastSecs = -1;
+    G.memorizeInitialTime = G.memorizeTimer;
+    G.pathRevealCount = 0;
     document.getElementById('game-hud').style.display = 'block';
     document.getElementById('lose-screen').style.display = 'none';
 
@@ -187,6 +189,18 @@ const MemorizeScene = {
     }
 
     G.memorizeTimer -= dt;
+
+    // Sequential path reveal: show one step at a time in first half; hide in second half
+    const _initT = G.memorizeInitialTime;
+    const _half  = _initT / 2;
+    const _elapsed = _initT - G.memorizeTimer;
+    if (_elapsed < _half && _half > 0) {
+      const _totalSteps = G.safeRoute.length;
+      G.pathRevealCount = Math.min(_totalSteps, Math.floor(_elapsed / (_half / _totalSteps)) + 1);
+    } else {
+      G.pathRevealCount = 0;
+    }
+
     const secs = Math.ceil(G.memorizeTimer);
     if (secs !== this._lastSecs) {
       this._lastSecs = secs;
@@ -221,19 +235,8 @@ const MemorizeScene = {
 
     drawLava(0, levelTotalH);
 
-    // Draw goal column highlight so rescue position is obvious
-    if (G.platforms.length > 0 && G.safePath.length > 0) {
-      const goalCol = G.safePath[G.safePath.length - 1];
-      const goalPlat = G.platforms[G.platforms.length - 1][goalCol];
-      if (goalPlat) {
-        const pulse = 0.35 + 0.2 * Math.abs(Math.sin(G.lavaTime * 3));
-        ctx.fillStyle = `rgba(255, 220, 80, ${pulse})`;
-        ctx.fillRect(goalPlat.x - 4, 0, goalPlat.w + 8, levelTotalH);
-      }
-    }
-
     renderPlatforms(true);
-    drawRouteSteps();
+    drawPathReveal(G.pathRevealCount);
     drawRescueCharacter(true);
     drawParticles();
     drawPlayer();

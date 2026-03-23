@@ -833,6 +833,92 @@ function drawRouteSteps() {
   }
 }
 
+// ─── PATH REVEAL (memorize phase) ───────────────────────────────────────────
+// Highlights the first `revealCount` steps of safeRoute one at a time.
+// The latest step pulses; earlier steps are dimmer. Called from MemorizeScene.
+function drawPathReveal(revealCount) {
+  if (!revealCount || revealCount <= 0) return;
+  if (!G.safeRoute || G.safeRoute.length === 0) return;
+
+  const ctx = G.ctx;
+  const count = Math.min(revealCount, G.safeRoute.length);
+
+  for (let i = 0; i < count; i++) {
+    const step = G.safeRoute[i];
+    const plat = G.platforms[step.row] && G.platforms[step.row][step.col];
+    if (!plat) continue;
+
+    const px = plat.x + plat.w / 2;
+    const py = plat.y + (PLAT_H - PLAT_DEPTH) / 2;
+    const isLatest = (i === count - 1);
+
+    // Gold glow overlay on platform
+    const pulse = isLatest ? 0.45 + 0.25 * Math.abs(Math.sin(G.lavaTime * 4)) : 0.25;
+    ctx.save();
+    ctx.shadowColor = '#ffe066';
+    ctx.shadowBlur  = isLatest ? 24 : 12;
+    ctx.globalAlpha = pulse;
+    ctx.fillStyle   = '#ffe066';
+    ctx.fillRect(plat.x - 2, plat.y - 2, plat.w + 4, PLAT_H + 4);
+    ctx.restore();
+
+    // Gold border
+    ctx.save();
+    ctx.strokeStyle = isLatest ? '#ffe066' : 'rgba(255,200,40,0.65)';
+    ctx.lineWidth   = isLatest ? 3 : 2;
+    ctx.strokeRect(plat.x - 1, plat.y - 1, plat.w + 2, PLAT_H + 2);
+    ctx.restore();
+
+    // Arrow from previous step
+    if (i > 0) {
+      const prev     = G.safeRoute[i - 1];
+      const prevPlat = G.platforms[prev.row] && G.platforms[prev.row][prev.col];
+      if (!prevPlat) continue;
+      const fromX = prevPlat.x + prevPlat.w / 2;
+      const fromY = prevPlat.y + (PLAT_H - PLAT_DEPTH) / 2;
+
+      const dx = px - fromX, dy = py - fromY;
+      const dist = Math.sqrt(dx * dx + dy * dy);
+      if (dist < 20) continue;
+      const nx = dx / dist, ny = dy / dist;
+      const ax = fromX + nx * 14, ay = fromY + ny * 14;
+      const bx = px    - nx * 14, by = py    - ny * 14;
+
+      ctx.save();
+      ctx.globalAlpha = isLatest ? 0.9 : 0.5;
+      ctx.strokeStyle = '#ffe066';
+      ctx.lineWidth   = 2;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.stroke();
+
+      const headLen = 6;
+      ctx.fillStyle = '#ffe066';
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx - headLen * nx + headLen * 0.5 * ny, by - headLen * ny - headLen * 0.5 * nx);
+      ctx.lineTo(bx - headLen * nx - headLen * 0.5 * ny, by - headLen * ny + headLen * 0.5 * nx);
+      ctx.closePath();
+      ctx.fill();
+      ctx.restore();
+    }
+
+    // Step number badge
+    ctx.save();
+    ctx.fillStyle = isLatest ? 'rgba(255,200,20,0.95)' : 'rgba(200,150,20,0.80)';
+    ctx.beginPath();
+    ctx.arc(px, py, 11, 0, Math.PI * 2);
+    ctx.fill();
+    ctx.fillStyle = '#1a0a00';
+    ctx.font = 'bold 11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(String(i + 1), px, py);
+    ctx.restore();
+  }
+}
+
 function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
