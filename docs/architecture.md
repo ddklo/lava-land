@@ -166,6 +166,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Tutorial | `tutorialShown`, `tutorialActive` | logic.js, PlayingScene |
 | Streak | `streak`, `streakPopups` | logic.js, PlayingScene |
 | Level Preview | `levelPreview` | MemorizeScene |
+| Path Reveal | `memorizeInitialTime`, `pathRevealCount` | MemorizeScene |
 | Timers | `timers` | timers.js |
 | Input | `keys`, `isTouchDevice` | input.js |
 | Loop | `lastTime`, `accumulator` | loop.js |
@@ -234,7 +235,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
 
-### drawing.js (10 functions)
+### drawing.js (11 functions)
 - `drawEmoji(ctx, emoji, x, y, size)` - Shared emoji renderer with shadow pass
 - `drawLava(offsetY, height)` - 7-layer animated lava background
 - `drawPlatform(p, reveal)` - 3D stone block with brick texture + glow (memorize) + heat (lava proximity)
@@ -242,7 +243,8 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `drawRescueCharacter()` - Floating rescue target with SOS rings, sparkles, and "Help!"
 - `updateParticles(dt)` / `drawParticles()` - Particle physics and rendering
 - `updateTrailMarks(dt)` / `drawTrailMarks()` - Trail breadcrumb system
-- `drawRouteSteps()` - Draw numbered step markers and arrows on safeRoute during memorize (only when backtracks exist)
+- `drawRouteSteps()` - Draw numbered step markers and arrows on safeRoute during memorize (only when backtracks exist; no longer called from MemorizeScene)
+- `drawPathReveal(revealCount)` - Sequential path reveal during memorize: highlights first `revealCount` safeRoute steps with gold glow, border, step number badge, and arrows; replaces column indicator
 - `formatTime(seconds)` - Timer display formatter
 
 ### hud.js (9 functions)

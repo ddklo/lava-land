@@ -43,6 +43,8 @@ const G = {
   player: {},
   camera: { y: 0 },
   memorizeTimer: 0,
+  memorizeInitialTime: 0,  // snapshot of memorizeTimer at memorize scene start
+  pathRevealCount: 0,      // number of safeRoute steps currently highlighted
   lavaTime: 0,
   fallY: 0,
   particles: [],
