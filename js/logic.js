@@ -161,6 +161,7 @@ function landOnPlatform(plat, row, col) {
     G.player.onPlatform = plat;
 
     // Landing impact effects
+    G.player.landTimer = LAND_SQUASH_DURATION;
     spawnImpactRing(plat);
     spawnLandDust(plat);
     plat.bobOffset = LAND_BOB_OFFSET;

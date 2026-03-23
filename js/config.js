@@ -35,6 +35,7 @@ const LAND_BOB_VEL = 80;
 // Jump squash/stretch
 const SQUASH_X = 0.12;
 const STRETCH_Y = 0.18;
+const LAND_SQUASH_DURATION = 0.25;
 
 // Trail marks
 const TRAIL_FADE_RATE = 0.12;

@@ -555,6 +555,31 @@ function drawPlayer() {
   ctx.ellipse(px, shadowY, 14 * shadowScale, 5 * shadowScale, 0, 0, Math.PI * 2);
   ctx.fill();
 
+  // Character color glow — semi-transparent halo in the hero's color
+  const glowPulse = 0.25 + Math.sin(G.lavaTime * 2.5) * 0.08;
+  ctx.save();
+  ctx.globalAlpha = glowPulse;
+  ctx.fillStyle = G.heroChar.color;
+  ctx.beginPath();
+  ctx.arc(px, py + drawOffsetY + bob, 22, 0, Math.PI * 2);
+  ctx.fill();
+  ctx.restore();
+
+  // Idle breathing scale when grounded (subtle size oscillation)
+  if (!G.jumpAnim.active) {
+    const breathe = 1 + Math.sin(G.lavaTime * 2.2) * 0.04;
+    scaleX *= breathe;
+    scaleY *= breathe;
+  }
+
+  // Landing squash: apply squash for a brief window after landing
+  if (!G.jumpAnim.active && G.player.landTimer > 0) {
+    const squashPhase = G.player.landTimer / LAND_SQUASH_DURATION;
+    const squashAmt = Math.sin(squashPhase * Math.PI) * 0.3;
+    scaleX *= 1 + squashAmt;
+    scaleY *= 1 - squashAmt * 0.6;
+  }
+
   // Player emoji — large, fully opaque, centered on platform face
   ctx.save();
   ctx.globalAlpha = 1;
@@ -577,16 +602,20 @@ function drawRescueCharacter(noClip) {
 
   const floatY = Math.sin(G.lavaTime * 3) * 5;
 
-  // SOS expanding rings
+  // SOS expanding rings — use rescue character's theme color
+  const rescueColor = G.rescueChar.color;
   for (let i = 0; i < 3; i++) {
     const phase = (G.lavaTime * 0.8 + i * 0.33) % 1;
     const ringR = 20 + phase * 40;
-    const ringAlpha = (1 - phase) * 0.4;
-    ctx.strokeStyle = `rgba(255,100,100,${ringAlpha})`;
+    const ringAlpha = (1 - phase) * 0.5;
+    ctx.save();
+    ctx.globalAlpha = ringAlpha;
+    ctx.strokeStyle = rescueColor;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.arc(gx, gy + floatY, ringR, 0, Math.PI * 2);
     ctx.stroke();
+    ctx.restore();
   }
 
   // Sparkle particles around rescue character
@@ -601,10 +630,13 @@ function drawRescueCharacter(noClip) {
   }
   ctx.globalAlpha = 1;
 
-  ctx.fillStyle = 'rgba(255,100,100,0.5)';
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  ctx.fillStyle = rescueColor;
   ctx.beginPath();
   ctx.arc(gx, gy + floatY, 34 + Math.sin(G.lavaTime * 4) * 6, 0, Math.PI * 2);
   ctx.fill();
+  ctx.restore();
 
   ctx.globalAlpha = 1;
   drawEmoji(ctx, G.rescueChar.emoji, gx, gy + floatY, EMOJI_SIZE);
