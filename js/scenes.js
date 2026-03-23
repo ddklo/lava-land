@@ -344,6 +344,9 @@ const PlayingScene = {
     updateStreakPopups(dt);
     updateTransition(dt);
 
+    // Landing squash timer
+    if (G.player.landTimer > 0) G.player.landTimer = Math.max(0, G.player.landTimer - dt);
+
     // Secret route reveal countdown
     if (G.revealRoute) {
       G.revealRouteTimer -= dt;

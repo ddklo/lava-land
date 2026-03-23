@@ -10,6 +10,7 @@ function resetPlayer() {
     size: 16,
     onPlatform: startPlat,
     facing: 'right',
+    landTimer: 0,
   };
   G.camera.y = 0;
   G.jumpAnim.active = false;
