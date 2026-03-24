@@ -707,7 +707,8 @@ canvas {
 
   #game-hud { height: 40px; }
   #hud-left { height: 40px; left: 8px; }
-  #hud-stats { height: 40px; right: 8px; }
+  #hud-stats { height: 40px; right: 96px; }
+  #hud-actions { height: 40px; }
   #hud-left .hud-level-line {
     font-size: 13px;
     max-width: 42vw;
@@ -749,7 +750,7 @@ canvas {
   /* Compact HUD for landscape phones — canvas is height-constrained */
   #hud-center { display: none; }
   #game-hud { height: 44px; }
-  #hud-left, #hud-stats { height: 44px; }
+  #hud-left, #hud-stats, #hud-actions { height: 44px; }
   canvas { margin-top: 0; }
   #hud-left .hud-level-line { font-size: 12px; }
   #hud-left .hud-total-score { font-size: 11px; }
