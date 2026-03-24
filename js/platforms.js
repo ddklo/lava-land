@@ -95,6 +95,34 @@ function generatePlatforms() {
     }
   }
 
+  // ── Rule: minColumnSpreadFraction ────────────────────────
+  // Ensure the path visits enough unique columns so boards don't cluster
+  // in a narrow band. When the spread is too low, swap straight rows to
+  // visit an unvisited column instead.
+  const minSpread = Math.max(2, Math.ceil(G.gridCols * BOARD_RULES.minColumnSpreadFraction));
+  const visited = new Set(G.safePath);
+  let spreadAttempts = 0;
+  while (visited.size < minSpread && spreadAttempts < G.gridRows * 2) {
+    spreadAttempts++;
+    // Find columns not yet visited
+    const unvisited = [];
+    for (let c = 0; c < G.gridCols; c++) {
+      if (!visited.has(c)) unvisited.push(c);
+    }
+    if (unvisited.length === 0) break;
+    const targetCol = unvisited[Math.floor(Math.random() * unvisited.length)];
+    // Find a row where we can redirect to reach the target column
+    const candidates = [];
+    for (let r = 1; r < G.gridRows - 1; r++) {
+      const prev = G.safePath[r - 1];
+      if (Math.abs(targetCol - prev) <= maxShift) candidates.push(r);
+    }
+    if (candidates.length === 0) continue;
+    const row = candidates[Math.floor(Math.random() * candidates.length)];
+    G.safePath[row] = targetCol;
+    visited.add(targetCol);
+  }
+
   // ── Insert backtrack sections (late levels only) ───────────
   const numBacktracks = (G.levelConfig && G.levelConfig.backtracks) || 0;
   G.extraSafeCols = {};

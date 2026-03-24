@@ -1771,6 +1771,165 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // LEVEL DIFFICULTY BALANCE TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Level Difficulty — Monotonic Progression', () => {
+    // fake chance should never decrease between consecutive levels
+    for (let i = 1; i < LEVELS.length; i++) {
+      assert(LEVELS[i].fake >= LEVELS[i - 1].fake,
+        `Level ${i + 1} fake (${LEVELS[i].fake}) >= level ${i} fake (${LEVELS[i - 1].fake})`);
+    }
+    // grid area (cols*rows) should never decrease
+    for (let i = 1; i < LEVELS.length; i++) {
+      const areaPrev = LEVELS[i - 1].cols * LEVELS[i - 1].rows;
+      const areaCur = LEVELS[i].cols * LEVELS[i].rows;
+      assert(areaCur >= areaPrev,
+        `Level ${i + 1} area (${areaCur}) >= level ${i} area (${areaPrev})`);
+    }
+    // memTime should never increase
+    for (let i = 1; i < LEVELS.length; i++) {
+      assert(LEVELS[i].memTime <= LEVELS[i - 1].memTime,
+        `Level ${i + 1} memTime (${LEVELS[i].memTime}) <= level ${i} memTime (${LEVELS[i - 1].memTime})`);
+    }
+  });
+
+  suite('Level Difficulty — No Excessive Fake Jumps', () => {
+    // Between consecutive levels, fake chance should not jump by more than 0.06
+    const maxFakeJump = 0.06;
+    for (let i = 1; i < LEVELS.length; i++) {
+      const jump = LEVELS[i].fake - LEVELS[i - 1].fake;
+      assert(jump <= maxFakeJump + 0.001,
+        `Level ${i}→${i + 1} fake jump (${jump.toFixed(3)}) <= ${maxFakeJump}`);
+    }
+  });
+
+  suite('Level Difficulty — Endless Scaling Continuity', () => {
+    // Level 16 (first endless) should be close to level 15 in difficulty
+    const last = LEVELS[LEVELS.length - 1];
+    const endless1 = getLevelConfig(LEVELS.length + 1);
+    assert(endless1.fake >= last.fake, 'Endless level 16 fake >= level 15 fake');
+    assert(endless1.fake - last.fake <= 0.05, 'Endless level 16 fake within 0.05 of level 15');
+    assert(endless1.rows >= last.rows, 'Endless level 16 rows >= level 15 rows');
+    assert(endless1.memTime <= last.memTime, 'Endless level 16 memTime <= level 15');
+  });
+
+  suite('Level Difficulty — BOARD_RULES Has Column Spread', () => {
+    assertEqual(typeof BOARD_RULES.minColumnSpreadFraction, 'number',
+      'minColumnSpreadFraction is defined');
+    assertInRange(BOARD_RULES.minColumnSpreadFraction, 0.3, 1.0,
+      'minColumnSpreadFraction between 0.3 and 1.0');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // STATISTICAL BOARD GENERATION TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Statistical — Column Spread (50 trials per level tier)', () => {
+    const tiers = [
+      { cols: 5, rows: 8,  maxShift: 1, label: '5-col tier' },
+      { cols: 6, rows: 12, maxShift: 2, label: '6-col tier' },
+      { cols: 7, rows: 16, maxShift: 2, label: '7-col tier' },
+    ];
+    const trials = 50;
+    const minSpreadFrac = BOARD_RULES.minColumnSpreadFraction;
+
+    for (const tier of tiers) {
+      let violations = 0;
+      for (let t = 0; t < trials; t++) {
+        G.gridCols = tier.cols;
+        G.gridRows = tier.rows;
+        G.difficulty = 'medium';
+        G.levelConfig = { fake: 0.5, maxShift: tier.maxShift };
+        generatePlatforms();
+        const uniqueCols = new Set(G.safePath).size;
+        const minCols = Math.max(2, Math.ceil(tier.cols * minSpreadFrac));
+        if (uniqueCols < minCols) violations++;
+      }
+      assert(violations === 0,
+        `${tier.label}: all ${trials} boards hit min column spread (${violations} violations)`);
+    }
+  });
+
+  suite('Statistical — Lateral Move Fraction (50 trials per level tier)', () => {
+    const tiers = [
+      { cols: 5, rows: 8,  maxShift: 1, label: '5-col tier' },
+      { cols: 6, rows: 12, maxShift: 2, label: '6-col tier' },
+      { cols: 7, rows: 16, maxShift: 2, label: '7-col tier' },
+    ];
+    const trials = 50;
+
+    for (const tier of tiers) {
+      let violations = 0;
+      for (let t = 0; t < trials; t++) {
+        G.gridCols = tier.cols;
+        G.gridRows = tier.rows;
+        G.difficulty = 'medium';
+        G.levelConfig = { fake: 0.5, maxShift: tier.maxShift };
+        generatePlatforms();
+        const lateralMoves = G.safePath.reduce(
+          (n, col, i) => n + (i > 0 && col !== G.safePath[i - 1] ? 1 : 0), 0);
+        const minMoves = Math.max(2, Math.floor(tier.rows * BOARD_RULES.minLateralMoveFraction));
+        if (lateralMoves < minMoves) violations++;
+      }
+      assert(violations === 0,
+        `${tier.label}: all ${trials} boards hit min lateral fraction (${violations} violations)`);
+    }
+  });
+
+  suite('Statistical — Fake Density Within Tolerance (50 trials)', () => {
+    // Generate boards at different fake chances and verify actual fake % is reasonable
+    const configs = [
+      { fake: 0.35, cols: 5, rows: 8,  label: 'low fake (0.35)' },
+      { fake: 0.55, cols: 7, rows: 14, label: 'mid fake (0.55)' },
+      { fake: 0.72, cols: 7, rows: 16, label: 'high fake (0.72)' },
+    ];
+    const trials = 50;
+    const tolerance = 0.20; // actual fake % should be within ±20% of target
+
+    for (const cfg of configs) {
+      let totalFakeFrac = 0;
+      for (let t = 0; t < trials; t++) {
+        G.gridCols = cfg.cols;
+        G.gridRows = cfg.rows;
+        G.difficulty = 'medium';
+        G.levelConfig = { fake: cfg.fake, maxShift: 2 };
+        generatePlatforms();
+        let totalNonPath = 0, fakeCount = 0;
+        for (let r = 0; r < G.gridRows; r++) {
+          for (let c = 0; c < G.gridCols; c++) {
+            if (c === G.safePath[r]) continue;
+            totalNonPath++;
+            if (G.platforms[r][c].fake) fakeCount++;
+          }
+        }
+        if (totalNonPath > 0) totalFakeFrac += fakeCount / totalNonPath;
+      }
+      const avgFakeFrac = totalFakeFrac / trials;
+      assertInRange(avgFakeFrac, cfg.fake - tolerance, cfg.fake + tolerance,
+        `${cfg.label}: avg fake fraction ${avgFakeFrac.toFixed(3)} near target`);
+    }
+  });
+
+  suite('Statistical — Adventure Levels Generate Valid Boards (10 trials each)', () => {
+    const trials = 10;
+    for (let lvl = 1; lvl <= LEVELS.length; lvl++) {
+      const cfg = getLevelConfig(lvl);
+      let failures = 0;
+      for (let t = 0; t < trials; t++) {
+        G.gridCols = cfg.cols;
+        G.gridRows = cfg.rows;
+        G.levelConfig = cfg;
+        generatePlatforms();
+        // Verify safe path is never fake
+        for (let r = 0; r < G.gridRows; r++) {
+          if (G.platforms[r][G.safePath[r]].fake) { failures++; break; }
+        }
+      }
+      assert(failures === 0,
+        `Level ${lvl} (${cfg.name}): all ${trials} boards have valid safe path`);
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════════
   // RENDER RESULTS
   // ═══════════════════════════════════════════════════════════════
   const container = document.getElementById('results');

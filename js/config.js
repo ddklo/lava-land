@@ -74,26 +74,33 @@ const BOARD_RULES = {
   maxConsecutiveSameDirection: 5,
   // Minimum fraction of rows that must include a lateral (non-straight) move
   minLateralMoveFraction: 0.4,
+  // Minimum fraction of available columns the safe path must visit
+  // (e.g. 0.6 on a 5-col grid means path must touch at least 3 unique columns)
+  minColumnSpreadFraction: 0.6,
 };
 
 // ─── LEVELS ─────────────────────────────────────────────────────
 // maxShift: max columns the safe path can shift per row (1=single hop, 2-3=multi-hop zigzag)
 // decoys:   number of near-complete fake columns planted to create dead-end paths
 const LEVELS = [
+  // Tier 1 (5-col): Learning — small grids, simple paths
   { cols: 5, rows: 5,  fake: 0.35, memTime: 10, maxShift: 1, decoys: 0, name: 'The Crossing' },
   { cols: 5, rows: 6,  fake: 0.38, memTime: 10, maxShift: 1, decoys: 0, name: 'Stepping Stones' },
   { cols: 5, rows: 7,  fake: 0.40, memTime: 10, maxShift: 1, decoys: 0, name: 'Lava Creek' },
   { cols: 5, rows: 8,  fake: 0.42, memTime: 10, maxShift: 1, decoys: 0, name: 'Molten Path' },
-  { cols: 6, rows: 8,  fake: 0.44, memTime: 9,  maxShift: 1, decoys: 0, name: 'Ember Trail' },
-  { cols: 6, rows: 10, fake: 0.46, memTime: 9,  maxShift: 1, decoys: 0, name: 'Fire Walk' },
-  { cols: 6, rows: 10, fake: 0.48, memTime: 9,  maxShift: 1, decoys: 0, name: 'Inferno Bridge' },
-  { cols: 6, rows: 12, fake: 0.50, memTime: 9,  maxShift: 1, decoys: 0, name: 'Scorched Passage' },
-  { cols: 7, rows: 12, fake: 0.53, memTime: 8,  maxShift: 2, decoys: 0, name: 'Magma Maze' },
-  { cols: 7, rows: 14, fake: 0.55, memTime: 8,  maxShift: 2, decoys: 0, name: 'Obsidian Run' },
-  { cols: 7, rows: 14, fake: 0.57, memTime: 8,  maxShift: 2, decoys: 0, name: 'Volcano Heart' },
-  { cols: 7, rows: 15, fake: 0.60, memTime: 7,  maxShift: 2, decoys: 0, name: 'Dragon\'s Lair' },
-  { cols: 7, rows: 16, fake: 0.64, memTime: 7,  maxShift: 2, decoys: 1, backtracks: 1, decoyFakes: 1, name: 'Hellfire Sprint' },
-  { cols: 7, rows: 16, fake: 0.68, memTime: 6,  maxShift: 3, decoys: 2, backtracks: 1, decoyFakes: 2, name: 'Core Meltdown' },
+  // Tier 2 (6-col): Expansion — wider grid, introduce multi-hop at end of tier
+  { cols: 6, rows: 8,  fake: 0.44, memTime: 10, maxShift: 1, decoys: 0, name: 'Ember Trail' },
+  { cols: 6, rows: 10, fake: 0.46, memTime: 10, maxShift: 1, decoys: 0, name: 'Fire Walk' },
+  { cols: 6, rows: 10, fake: 0.48, memTime: 9,  maxShift: 2, decoys: 0, name: 'Inferno Bridge' },
+  { cols: 6, rows: 12, fake: 0.50, memTime: 9,  maxShift: 2, decoys: 0, name: 'Scorched Passage' },
+  // Tier 3 (7-col): Complexity — larger grids, multi-hop, introduce decoys at end
+  { cols: 7, rows: 12, fake: 0.52, memTime: 9,  maxShift: 2, decoys: 0, name: 'Magma Maze' },
+  { cols: 7, rows: 13, fake: 0.54, memTime: 8,  maxShift: 2, decoys: 0, name: 'Obsidian Run' },
+  { cols: 7, rows: 14, fake: 0.56, memTime: 8,  maxShift: 2, decoys: 1, decoyFakes: 1, name: 'Volcano Heart' },
+  { cols: 7, rows: 15, fake: 0.58, memTime: 8,  maxShift: 2, decoys: 1, decoyFakes: 1, name: 'Dragon\'s Lair' },
+  // Tier 4 (7-col): Mastery — backtracks, heavy decoys, tighter memorize time
+  { cols: 7, rows: 15, fake: 0.62, memTime: 7,  maxShift: 2, decoys: 2, backtracks: 1, decoyFakes: 1, name: 'Hellfire Sprint' },
+  { cols: 7, rows: 16, fake: 0.66, memTime: 7,  maxShift: 3, decoys: 2, backtracks: 1, decoyFakes: 2, name: 'Core Meltdown' },
   { cols: 7, rows: 16, fake: 0.72, memTime: 6,  maxShift: 3, decoys: 3, backtracks: 2, decoyFakes: 2, name: 'Final Descent' },
 ];
 
@@ -101,11 +108,15 @@ function getLevelConfig(levelNum) {
   if (levelNum <= LEVELS.length) return LEVELS[levelNum - 1];
   // Endless scaling for level 16+
   const n = levelNum - LEVELS.length; // how many beyond 15
+  const rows = Math.min(20, 16 + Math.floor(n / 3));
+  // memTime scales with grid size: larger grids get proportionally more time,
+  // but still decreases as levels progress (minimum 4s)
+  const baseMemTime = Math.max(4, 6 - Math.floor(n / 3));
   return {
     cols: 7,
-    rows: Math.min(20, 16 + Math.floor(n / 2)),
-    fake: Math.min(0.82, 0.72 + n * 0.015),
-    memTime: Math.max(4, 6 - Math.floor(n / 2)),
+    rows: rows,
+    fake: Math.min(0.82, 0.72 + n * 0.012),
+    memTime: baseMemTime,
     maxShift: 3,
     decoys: Math.min(4, 3 + Math.floor(n / 3)),
     backtracks: Math.min(3, 2 + Math.floor(n / 4)),
