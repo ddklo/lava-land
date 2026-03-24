@@ -269,7 +269,7 @@ function startPlayingEarly() {
   if (G.gameState !== 'memorize') return;
   G.memTimeSaved = Math.max(0, G.memorizeTimer);
   G.memorizeTimer = 0;
-  transitionTo(PlayingScene);
+  SceneManager.replace(PlayingScene);
 }
 
 // ═══════════════════════════════════════════════════════════════
