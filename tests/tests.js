@@ -1423,6 +1423,23 @@
     G.levelConfig = null;
   });
 
+  suite('No Backtracks — All SafeRoute Platforms Are Real', () => {
+    G.levelConfig = { cols: 5, rows: 8, fake: 0.6, memTime: 10, maxShift: 2, decoys: 0, name: 'Test' };
+    G.gridCols = G.levelConfig.cols;
+    G.gridRows = G.levelConfig.rows;
+
+    for (let trial = 0; trial < 5; trial++) {
+      generatePlatforms();
+      for (let i = 0; i < G.safeRoute.length; i++) {
+        const step = G.safeRoute[i];
+        assert(!G.platforms[step.row][step.col].fake,
+          `safeRoute step ${i} (row=${step.row}, col=${step.col}) not fake (trial ${trial})`);
+      }
+    }
+
+    G.levelConfig = null;
+  });
+
   suite('Backtrack — ExtraSafeCols Are Not Fake', () => {
     G.levelConfig = { cols: 7, rows: 16, fake: 0.68, memTime: 6, maxShift: 3, decoys: 2, backtracks: 1, decoyFakes: 2, name: 'Test' };
     G.gridCols = G.levelConfig.cols;
@@ -1448,14 +1465,29 @@
 
     generatePlatforms();
 
-    // safeRoute should equal gridRows (no backtracks)
-    assertEqual(G.safeRoute.length, G.gridRows, 'safeRoute has no extra steps for early level');
+    // safeRoute should have at least one entry per row (may have more due to intermediate hops)
+    assert(G.safeRoute.length >= G.gridRows, 'safeRoute covers all rows');
     // No backward steps
     let hasBackward = false;
     for (let i = 1; i < G.safeRoute.length; i++) {
       if (G.safeRoute[i].row < G.safeRoute[i - 1].row) { hasBackward = true; break; }
     }
     assert(!hasBackward, 'No backward steps on early level');
+    // First entry is at row 0; last entry is at the final row's safe column
+    assertEqual(G.safeRoute[0].row, 0, 'safeRoute starts at row 0');
+    assertEqual(G.safeRoute[G.safeRoute.length - 1].row, G.gridRows - 1, 'safeRoute ends at last row');
+    assertEqual(G.safeRoute[G.safeRoute.length - 1].col, G.safePath[G.gridRows - 1], 'safeRoute ends at safe column');
+    // Every consecutive pair must be a legal move: hop (same row ±1 col) or forward jump (next row, same col)
+    let illegalMove = false;
+    for (let i = 1; i < G.safeRoute.length; i++) {
+      const prev = G.safeRoute[i - 1], cur = G.safeRoute[i];
+      const rowDiff = cur.row - prev.row;
+      const colDiff = Math.abs(cur.col - prev.col);
+      const isHop = rowDiff === 0 && colDiff === 1;
+      const isForwardJump = rowDiff === 1 && colDiff === 0;
+      if (!isHop && !isForwardJump) { illegalMove = true; break; }
+    }
+    assert(!illegalMove, 'All safeRoute moves are legal (hop ±1 or forward jump same col)');
 
     G.levelConfig = null;
   });
