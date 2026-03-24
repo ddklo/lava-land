@@ -1,31 +1,4 @@
 // ─── INPUT ──────────────────────────────────────────────────────
-function findNearestReachablePlatform(canvasX, canvasY) {
-  const currentRow = G.player.row;
-  // Check current row (left/right), next row (forward), and previous row (backward)
-  const rowsToCheck = [currentRow - 1, currentRow, currentRow + 1];
-  let best = null;
-  let bestDist = Infinity;
-  for (const row of rowsToCheck) {
-    if (row < 0 || row >= G.platforms.length) continue;
-    for (let col = 0; col < G.platforms[row].length; col++) {
-      const plat = G.platforms[row][col];
-      if (plat.destroyed) continue;
-      // Skip the platform the player is already on
-      if (row === currentRow && col === G.player.col) continue;
-      // Only allow left/right neighbors on the same row
-      if (row === currentRow && Math.abs(col - G.player.col) !== 1) continue;
-      const cx = plat.x + plat.w / 2;
-      const cy = plat.y + plat.h / 2;
-      const dist = (canvasX - cx) * (canvasX - cx) + (canvasY - cy) * (canvasY - cy);
-      if (dist < bestDist) {
-        bestDist = dist;
-        best = { row: row, col: col, plat: plat };
-      }
-    }
-  }
-  return best;
-}
-
 function setupInput() {
   // ── Keyboard ───────────────────────────────────
   document.addEventListener('keydown', (e) => {
@@ -170,26 +143,27 @@ function setupInput() {
         tryJump(dy > 0 ? 'forward' : 'backward');
       }
     } else {
-      // Tap — find the nearest reachable platform to the tap point
+      // Tap — determine direction from tap position relative to the player
       const rect = G.canvas.getBoundingClientRect();
       const scaleX = CANVAS_W / rect.width;
       const scaleY = CANVAS_H / rect.height;
       const canvasX = (found.clientX - rect.left) * scaleX;
       const canvasY = (found.clientY - rect.top) * scaleY + G.camera.y;
 
-      const tapped = findNearestReachablePlatform(canvasX, canvasY);
-      if (tapped) {
-        const rowDiff = tapped.row - G.player.row;
-        const colDiff = tapped.col - G.player.col;
-        if (rowDiff === 1) {
-          tryJump('forward');
-        } else if (rowDiff === -1) {
-          tryJump('backward');
-        } else if (rowDiff === 0 && colDiff === -1) {
-          tryJump('left');
-        } else if (rowDiff === 0 && colDiff === 1) {
-          tryJump('right');
-        }
+      // Player's center position in canvas/world coordinates
+      const playerX = G.player.x;
+      const playerY = G.player.y;
+      const tapDx = canvasX - playerX;
+      const tapDy = canvasY - playerY;
+      const absTapDx = Math.abs(tapDx);
+      const absTapDy = Math.abs(tapDy);
+
+      if (absTapDx > absTapDy) {
+        // Tap is more horizontal — hop left or right
+        tryJump(tapDx < 0 ? 'left' : 'right');
+      } else {
+        // Tap is more vertical — jump forward or backward
+        tryJump(tapDy > 0 ? 'forward' : 'backward');
       }
     }
     e.preventDefault();
