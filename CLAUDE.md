@@ -129,6 +129,20 @@ Open `tests/test.html` in a browser. Tests cover: config, state, platform genera
 | Cached assets for offline | `sw.js` (ASSETS array) |
 | PWA metadata | `manifest.json` |
 
+## Deploying a New Version
+
+**When making any code changes that will be deployed, bump the version in two places:**
+
+1. `sw.js` line 4 — `const VERSION = '1.0.0';` → increment (e.g. `'1.0.1'`)
+2. `index.html` — update every `?v=1.0.0` query param on `<script>` and `<link>` tags to match
+
+Use [semver](https://semver.org/) conventions:
+- Patch (`1.0.x`): bug fixes, minor tweaks
+- Minor (`1.x.0`): new features, gameplay changes
+- Major (`x.0.0`): breaking changes or major rewrites
+
+Both values must stay in sync. Bumping `VERSION` in `sw.js` causes the service worker to install fresh and purge the old offline cache. Bumping `?v=` in `index.html` forces browsers to re-fetch JS/CSS files that may be cached at the HTTP level.
+
 ## Documentation Maintenance
 
 **When modifying code, always update the relevant docs:**
