@@ -37,6 +37,9 @@ const SQUASH_X = 0.20;
 const STRETCH_Y = 0.28;
 const LAND_SQUASH_DURATION = 0.25;
 
+// Particle system cap (prevents memory growth on low-end devices)
+const MAX_PARTICLES = 500;
+
 // Trail marks
 const TRAIL_FADE_RATE = 0.12;
 
@@ -129,14 +132,14 @@ const STAR_THREE_THRESHOLD = 0.8;
 
 // Characters
 const CHARACTERS = [
-  { id: 'tortoise', emoji: '\u{1F422}', name: 'Tortoise', color: '#66aa44' },
-  { id: 'wizard', emoji: '\u{1F9D9}', name: 'Wizard', color: '#aa44ff' },
-  { id: 'koala', emoji: '\u{1F428}', name: 'Koala', color: '#aaaaaa' },
-  { id: 'ninja',  emoji: '\u{1F977}', name: 'Ninja', color: '#888888' },
-  { id: 'princess', emoji: '\u{1F478}', name: 'Princess', color: '#ff66aa' },
-  { id: 'prince', emoji: '\u{1F934}', name: 'Prince', color: '#6688ff' },
-  { id: 'cat', emoji: '\u{1F431}', name: 'Cat', color: '#ffaa44' },
-  { id: 'dog', emoji: '\u{1F436}', name: 'Dog', color: '#cc8844' },
-  { id: 'witch', emoji: '\u{1F9D9}\u200D\u2640\uFE0F', name: 'Witch', color: '#8844aa' },
-  { id: 'dolphin', emoji: '\u{1F42C}', name: 'Dolphin', color: '#4499dd' },
+  { id: 'tortoise', emoji: '\u{1F422}', name: 'Tortoise' },
+  { id: 'wizard', emoji: '\u{1F9D9}', name: 'Wizard' },
+  { id: 'koala', emoji: '\u{1F428}', name: 'Koala' },
+  { id: 'ninja',  emoji: '\u{1F977}', name: 'Ninja' },
+  { id: 'princess', emoji: '\u{1F478}', name: 'Princess' },
+  { id: 'prince', emoji: '\u{1F934}', name: 'Prince' },
+  { id: 'cat', emoji: '\u{1F431}', name: 'Cat' },
+  { id: 'dog', emoji: '\u{1F436}', name: 'Dog' },
+  { id: 'witch', emoji: '\u{1F9D9}\u200D\u2640\uFE0F', name: 'Witch' },
+  { id: 'dolphin', emoji: '\u{1F42C}', name: 'Dolphin' },
 ];

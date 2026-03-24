@@ -5,9 +5,18 @@ function haptic(pattern) {
 
 // ─── AUDIO ENGINE ───────────────────────────────────────────────
 function initAudio() {
-  if (G.audioCtx) return;
+  if (G.audioCtx) {
+    // Resume suspended context (browser autoplay policy)
+    if (G.audioCtx.state === 'suspended') {
+      G.audioCtx.resume().catch(function () {});
+    }
+    return;
+  }
   try {
     G.audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    if (G.audioCtx.state === 'suspended') {
+      G.audioCtx.resume().catch(function () {});
+    }
   } catch (e) {
     G.audioCtx = null;
   }

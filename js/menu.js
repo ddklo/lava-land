@@ -5,7 +5,15 @@ function saveSettings() {
     localStorage.setItem('ll_difficulty', G.difficulty);
     localStorage.setItem('ll_size', G.selectedSize);
     localStorage.setItem('ll_memtime', G.selectedMemTime);
-  } catch (e) { /* storage unavailable */ }
+  } catch (e) {
+    // Briefly show a non-blocking warning if storage is unavailable
+    var summary = document.getElementById('settings-summary');
+    if (summary) {
+      var orig = summary.textContent;
+      summary.textContent = 'Settings could not be saved (storage unavailable)';
+      setTimeout(function () { summary.textContent = orig; }, 2000);
+    }
+  }
 }
 
 function loadSettings() {
