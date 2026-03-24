@@ -580,10 +580,18 @@ function drawPlayer() {
     scaleY *= 1 - squashAmt * 0.6;
   }
 
+  // Lean rotation during jump based on horizontal travel direction
+  let jumpRotation = 0;
+  if (G.jumpAnim.active) {
+    const dx = G.jumpAnim.endX - G.jumpAnim.startX;
+    jumpRotation = (dx !== 0 ? Math.sign(dx) : 0) * 0.22 * Math.sin(G.jumpAnim.t * Math.PI);
+  }
+
   // Player emoji — large, fully opaque, centered on platform face
   ctx.save();
   ctx.globalAlpha = 1;
   ctx.translate(px, py + drawOffsetY + bob);
+  ctx.rotate(jumpRotation);
   if (G.player.facing === 'left') ctx.scale(-1, 1);
   ctx.scale(scaleX, scaleY);
   drawEmoji(ctx, G.heroChar.emoji, 0, 0, EMOJI_SIZE);
