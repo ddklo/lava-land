@@ -105,6 +105,7 @@ function setupInput() {
     if (G.gameState === 'playing') {
       longPressTimer = setTimeout(() => {
         longPressTimer = null;
+        if (G.gameState !== 'playing') return; // guard against scene change
         longPressTriggered = true;
         G.revealRoute = true;
         G.revealRouteTimer = 3;

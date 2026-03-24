@@ -10,12 +10,16 @@ Lava Land is a browser-based memory-platformer. The player memorizes a grid of p
 
 ```
 lava-land/
-  index.html              HTML markup + <link> + 17 <script> tags
+  index.html              HTML markup + <link> + 17 <script> tags + SW registration
+  manifest.json           PWA web app manifest (name, icons, display, orientation)
+  sw.js                   Service worker — cache-first offline support
   css/
     theme.css             CSS custom properties (colors, fonts) — the design token file
     style.css             All CSS (responsive, mobile-friendly), uses theme.css variables
   images/
     background.svg        Volcanic cave background (referenced by style.css)
+    icon-192.png          App icon 192×192 (PWA / Android)
+    icon-512.png          App icon 512×512 (PWA / splash)
   js/
     config.js             Constants, physics tuning, CHARACTERS, LEVELS, getLevelConfig(), scoring constants
     state.js              Shared mutable state object (G)
@@ -121,6 +125,7 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `SPRING_STIFFNESS` | 280 | Platform bob spring constant |
 | `SPRING_DAMPING` | 14 | Platform bob damping |
 | `CAMERA_SMOOTHING` | 0.08 | Camera follow smoothing factor |
+| `MAX_PARTICLES` | 500 | Particle array cap (prevents memory growth) |
 | `TRAIL_FADE_RATE` | 0.12 | Trail mark fade speed |
 | `PLAT_DEPTH` | 7 | 3D platform depth face height |
 | `EMOJI_SIZE` | 48 | Character emoji font size |
@@ -256,7 +261,8 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `drawLevelPreview()` - Level name/info card overlay
 - `drawTutorialArrow()` / `drawTutorialHint(ctx, tx, ty, text)` - Tutorial arrow pointing at first safe platform
 
-### effects.js (7 functions)
+### effects.js (8 functions)
+- `pushParticle(p)` - Adds particle to array if below MAX_PARTICLES cap
 - `spawnPlatformExplosion(plat)` - 18 stone debris particles on departure
 - `spawnLandDust(plat)` - Radial dust cloud on landing
 - `spawnCrumbleParticles(plat)` - Debris when fake platform breaks
@@ -287,9 +293,10 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `findTappedPlatform(canvasX, canvasY)` - Hit-test canvas coordinates against adjacent platforms for touch input
 - `setupInput()` - Register keyboard + touch event listeners
 
-### loop.js (1 function + 1 constant)
+### loop.js (1 function + 2 variables)
 - `TICK` - Fixed timestep interval (1/60 seconds)
-- `gameLoop(timestamp)` - RAF loop
+- `_loopPaused` - Boolean flag set by visibilitychange handler
+- `gameLoop(timestamp)` - RAF loop (pauses when tab hidden)
 
 ### menu.js (7 functions)
 - `setupMenu()` - Build character cards, wire selectors + buttons
@@ -349,6 +356,10 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - `getLevelConfig()` table and formula ranges
 - `calculateScore()` basic, perfect, speed, floor at zero, route reveal penalty, difficulty bonus scaling
 - `calculateStars()` thresholds (1/2/3 stars)
+- Particle cap enforcement (`MAX_PARTICLES`, `pushParticle()`)
+- Loop pause variable (`_loopPaused` existence and default)
+- Audio double-init safety
+- Canvas/context init validation
 - Backward compatibility (custom mode with null levelConfig)
 - New state fields (level, levelConfig, gameMode, scoring fields, routeRevealed)
 
@@ -357,10 +368,9 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 ## Still Open
 
 1. **God object (G)** - All state in one flat mutable bag. Could be split into namespaced sub-objects (e.g. `G.score`, `G.board`, `G.fx`).
-2. **No object pool for particles** - Particles use push/splice. Could use pre-allocated pool.
+2. **No object pool for particles** - Particles use push/splice (now capped at MAX_PARTICLES). Could use pre-allocated pool for GC optimization.
 3. **DOM manipulation in scenes** - Scenes directly show/hide HTML elements. Could use a UI manager.
-4. **Dead data** - `CHARACTERS[*].color` defined but never read.
-5. **Audio setTimeout** - Music loop scheduling in audio.js still uses `setTimeout`. Acceptable since music timing is independent of game logic.
+4. **Audio setTimeout** - Music loop scheduling in audio.js still uses `setTimeout`. Acceptable since music timing is independent of game logic.
 
 ## Future Improvements
 
@@ -384,3 +394,12 @@ Convert to `<script type="module">` with import/export. Requires HTTP server.
 - ~~START button not debounced~~ — disabled immediately in `startGame()`
 - ~~Missing bounds check~~ in sideways jump — added row bounds guard
 - ~~Speech synthesis wrong voice~~ — now explicitly requests English voice via `getEnglishVoice()`
+- ~~Dead data `CHARACTERS[*].color`~~ — removed (never read)
+- ~~No offline support~~ — added PWA manifest + service worker
+- ~~No tab backgrounding handling~~ — loop pauses on `visibilitychange`, resets accumulator on resume
+- ~~Unbounded particle array~~ — capped at `MAX_PARTICLES` via `pushParticle()` helper
+- ~~No canvas null checks~~ — init.js now guards canvas/context creation with error messages
+- ~~AudioContext autoplay blocked~~ — `initAudio()` now resumes suspended context
+- ~~Touch long-press race condition~~ — callback now guards against scene state changes
+- ~~No accessibility labels~~ — added `aria-label` to buttons and canvas
+- ~~No resize handling~~ — lava cache invalidated on window resize

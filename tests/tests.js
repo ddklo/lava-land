@@ -1694,6 +1694,83 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // PARTICLE CAP TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Particle Cap — MAX_PARTICLES Enforced', () => {
+    G.particles = [];
+    G.gridCols = 6;
+    G.gridRows = 12;
+    generatePlatforms();
+    const plat = G.platforms[0][0];
+
+    // Spam particles well beyond the cap
+    for (let i = 0; i < 40; i++) {
+      spawnFirework(100, 100);
+    }
+    assert(G.particles.length <= MAX_PARTICLES,
+      'Particles capped at MAX_PARTICLES (' + G.particles.length + ' <= ' + MAX_PARTICLES + ')');
+    G.particles = [];
+  });
+
+  suite('pushParticle — Respects Cap', () => {
+    G.particles = [];
+    for (let i = 0; i < MAX_PARTICLES; i++) {
+      G.particles.push({ x: 0, y: 0, vx: 0, vy: 0, size: 1, color: '#fff', life: 1 });
+    }
+    assertEqual(G.particles.length, MAX_PARTICLES, 'Array at cap');
+
+    pushParticle({ x: 0, y: 0, vx: 0, vy: 0, size: 1, color: '#fff', life: 1 });
+    assertEqual(G.particles.length, MAX_PARTICLES, 'pushParticle rejects when at cap');
+    G.particles = [];
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // VISIBILITY CHANGE / LOOP PAUSE TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Loop Pause Variable', () => {
+    assertEqual(typeof _loopPaused, 'boolean', '_loopPaused variable exists');
+    assertEqual(_loopPaused, false, '_loopPaused defaults to false');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // AUDIO CONTEXT RESUME TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Audio — initAudio Does Not Crash Twice', () => {
+    const savedCtx = G.audioCtx;
+    G.audioCtx = null;
+
+    let threw = false;
+    try {
+      initAudio();
+      initAudio(); // second call should be safe
+    } catch (e) {
+      threw = true;
+    }
+    assert(!threw, 'Calling initAudio twice does not throw');
+
+    G.audioCtx = savedCtx;
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // INIT ERROR HANDLING
+  // ═══════════════════════════════════════════════════════════════
+  suite('Canvas Init — Canvas and Context Present', () => {
+    assert(G.canvas !== null, 'G.canvas is not null after init');
+    assert(G.ctx !== null, 'G.ctx is not null after init');
+    assertEqual(G.canvas.width, CANVAS_W, 'Canvas width matches CANVAS_W');
+    assertEqual(G.canvas.height, CANVAS_H, 'Canvas height matches CANVAS_H');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // MAX_PARTICLES CONFIG
+  // ═══════════════════════════════════════════════════════════════
+  suite('Config — MAX_PARTICLES', () => {
+    assertEqual(typeof MAX_PARTICLES, 'number', 'MAX_PARTICLES is a number');
+    assert(MAX_PARTICLES > 0, 'MAX_PARTICLES is positive');
+    assert(MAX_PARTICLES <= 1000, 'MAX_PARTICLES is reasonable (<=1000)');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
   // RENDER RESULTS
   // ═══════════════════════════════════════════════════════════════
   const container = document.getElementById('results');

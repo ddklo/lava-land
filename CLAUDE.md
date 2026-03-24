@@ -23,11 +23,15 @@ See [docs/rules.md](docs/rules.md) for complete game rules documentation.
 ### File Layout
 
 ```
-index.html          HTML + 17 script tags (entry point)
+index.html          HTML + 17 script tags + service worker registration (entry point)
+manifest.json       PWA web app manifest (name, icons, display, orientation)
+sw.js               Service worker — cache-first offline support
 css/theme.css       CSS custom properties (colors, fonts) — design tokens
 css/style.css       All styles (responsive, mobile-friendly), references theme.css
 images/             Static assets
   background.svg    Volcanic cave background (referenced by css/style.css)
+  icon-192.png      App icon 192×192 (PWA / Android)
+  icon-512.png      App icon 512×512 (PWA / splash)
 js/config.js        Constants, physics tuning, LEVELS array, getLevelConfig(), scoring constants
 js/state.js         Shared mutable state object: const G = {}
 js/timers.js        Managed timer system (addTimer, updateTimers, clearTimers)
@@ -87,7 +91,7 @@ MenuScene -> MemorizeScene -> PlayingScene -> WonScene (score + next level)
 
 ### Running
 
-Open `index.html` in a browser. No server needed.
+Open `index.html` in a browser. No server needed. For PWA/service worker testing, serve via HTTP (e.g. `python3 -m http.server`).
 
 ### Testing
 
@@ -122,6 +126,8 @@ Open `tests/test.html` in a browser. Tests cover: config, state, platform genera
 | New path generation rule | `js/pathgen.js` |
 | New state field | `js/state.js` (add to `G`) |
 | New test | `tests/tests.js` |
+| Cached assets for offline | `sw.js` (ASSETS array) |
+| PWA metadata | `manifest.json` |
 
 ## Documentation Maintenance
 

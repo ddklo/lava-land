@@ -1,11 +1,15 @@
 // ─── PARTICLE EFFECTS ──────────────────────────────────────────
 // All particle spawners live here. Drawing.js handles rendering only.
 
+function pushParticle(p) {
+  if (G.particles.length < MAX_PARTICLES) G.particles.push(p);
+}
+
 function spawnPlatformExplosion(plat) {
   for (let i = 0; i < 18; i++) {
     const angle = (i / 18) * Math.PI * 2 + Math.random() * 0.3;
     const speed = 2 + Math.random() * 4;
-    G.particles.push({
+    pushParticle({
       x: plat.x + Math.random() * plat.w,
       y: plat.y + Math.random() * plat.h,
       vx: Math.cos(angle) * speed,
@@ -24,7 +28,7 @@ function spawnLandDust(plat) {
   // Stone dust from top
   for (let i = 0; i < 8; i++) {
     const angle = (i / 8) * Math.PI * 2;
-    G.particles.push({
+    pushParticle({
       x: cx + (Math.random() - 0.5) * 16,
       y: topY + Math.random() * 2,
       vx: Math.cos(angle) * (1.2 + Math.random() * 1.5),
@@ -41,7 +45,7 @@ function spawnLandDust(plat) {
   for (let i = 0; i < 6; i++) {
     const side = i < 3 ? -1 : 1;
     const edgeX = side < 0 ? plat.x : plat.x + plat.w;
-    G.particles.push({
+    pushParticle({
       x: edgeX + side * (Math.random() * 4),
       y: bottomY + Math.random() * 4,
       vx: side * (1.5 + Math.random() * 2),
@@ -57,7 +61,7 @@ function spawnLandDust(plat) {
 
 function spawnCrumbleParticles(plat) {
   for (let i = 0; i < 12; i++) {
-    G.particles.push({
+    pushParticle({
       x: plat.x + Math.random() * plat.w,
       y: plat.y + Math.random() * plat.h,
       vx: (Math.random() - 0.5) * 3,
@@ -71,7 +75,7 @@ function spawnCrumbleParticles(plat) {
 
 function spawnLavaSplash(x, y) {
   for (let i = 0; i < 20; i++) {
-    G.particles.push({
+    pushParticle({
       x: x, y: y,
       vx: (Math.random() - 0.5) * 6,
       vy: -Math.random() * 5 - 2,
@@ -88,7 +92,7 @@ function spawnFirework(x, y) {
   for (let i = 0; i < 30; i++) {
     const angle = (Math.PI * 2 / 30) * i + Math.random() * 0.3;
     const speed = 2 + Math.random() * 4;
-    G.particles.push({
+    pushParticle({
       x: x, y: y,
       vx: Math.cos(angle) * speed,
       vy: Math.sin(angle) * speed,
@@ -109,7 +113,7 @@ function spawnFirework(x, y) {
 function spawnJumpTrail(x, y) {
   const colors = ['#ffdd88', '#ffaa44'];
   for (let i = 0; i < 2; i++) {
-    G.particles.push({
+    pushParticle({
       x: x + (Math.random() - 0.5) * 8,
       y: y + Math.random() * 4,
       vx: (Math.random() - 0.5) * 0.8,
@@ -146,7 +150,7 @@ function spawnConfetti() {
     const r = Math.random();
     const isCircle = r < 0.25;
     const isStreamer = !isCircle && r < 0.45;
-    G.particles.push({
+    pushParticle({
       x: Math.random() * CANVAS_W,
       y: G.camera.y - 5 - Math.random() * CANVAS_H * 0.4,
       vx: (Math.random() - 0.5) * 8,
