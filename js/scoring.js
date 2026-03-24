@@ -22,8 +22,8 @@ function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTim
   const timeScore = Math.max(0, SCORE_TIME_BASE - Math.floor(timeSec * SCORE_TIME_PENALTY));
   const jumpScore = Math.max(0, SCORE_JUMP_BASE - excessJumps * SCORE_JUMP_PENALTY);
   const levelBonus = levelNum * SCORE_LEVEL_MULT;
-  const perfectBonus = perfect ? SCORE_PERFECT_BONUS : 0;
-  const speedBonus = fast ? SCORE_SPEED_BONUS : 0;
+  const perfectBonus = perfect ? SCORE_PERFECT_BASE + levelNum * SCORE_PERFECT_LEVEL_MULT : 0;
+  const speedBonus = fast ? SCORE_SPEED_BASE + levelNum * SCORE_SPEED_LEVEL_MULT : 0;
   const earlyMemBonus = Math.round((memTimeSaved || 0) * SCORE_EARLY_MEM_MULT);
   const streakBonusVal = streakBonus || 0;
 
@@ -40,15 +40,19 @@ function calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTim
 
 function calculateStars(score, levelNum) {
   const cfg = getLevelConfig(levelNum);
-  // Max possible: perfect path, zero time, all bonuses + full early mem + max streak + difficulty
-  const maxStreakBonus = ((cfg.rows - 1) * cfg.rows / 2) * SCORE_STREAK_MULT;
+  // Realistic max: use a fraction of theoretical max streak (perfect streaks are
+  // impossible on large grids with multi-hop paths and backtracks)
+  const theoreticalMaxStreak = ((cfg.rows - 1) * cfg.rows / 2) * SCORE_STREAK_MULT;
+  const realisticMaxStreak = Math.round(theoreticalMaxStreak * STREAK_REALISM_FACTOR);
   const gridCells = cfg.cols * cfg.rows;
   const fakePct = cfg.fake || 0;
   const maxDifficultyBonus = Math.round(gridCells * SCORE_DIFFICULTY_MULT * (1 + fakePct))
                            + Math.round(fakePct * SCORE_FAKE_MULT);
+  const maxPerfectBonus = SCORE_PERFECT_BASE + levelNum * SCORE_PERFECT_LEVEL_MULT;
+  const maxSpeedBonus = SCORE_SPEED_BASE + levelNum * SCORE_SPEED_LEVEL_MULT;
   const maxScore = SCORE_TIME_BASE + SCORE_JUMP_BASE + levelNum * SCORE_LEVEL_MULT
-                 + SCORE_PERFECT_BONUS + SCORE_SPEED_BONUS
-                 + cfg.memTime * SCORE_EARLY_MEM_MULT + maxStreakBonus + maxDifficultyBonus;
+                 + maxPerfectBonus + maxSpeedBonus
+                 + cfg.memTime * SCORE_EARLY_MEM_MULT + realisticMaxStreak + maxDifficultyBonus;
   if (score >= maxScore * STAR_THREE_THRESHOLD) return 3;
   if (score >= maxScore * STAR_TWO_THRESHOLD) return 2;
   return 1;

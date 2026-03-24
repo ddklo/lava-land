@@ -1067,8 +1067,8 @@
     const result = calculateScore(1, 10, 4, 5, 10);
     assertEqual(result.timeScore, 5000 - 10 * 50, 'Time score = 5000 - 500 = 4500');
     assertEqual(result.jumpScore, 3000, 'Jump score = 3000 (no excess)');
-    assertEqual(result.levelBonus, 200, 'Level bonus = 1 * 200');
-    assertEqual(result.perfectBonus, 1000, 'Perfect bonus awarded');
+    assertEqual(result.levelBonus, 300, 'Level bonus = 1 * 300');
+    assertEqual(result.perfectBonus, SCORE_PERFECT_BASE + 1 * SCORE_PERFECT_LEVEL_MULT, 'Perfect bonus awarded');
     assertEqual(result.speedBonus, 0, 'No speed bonus (10s >= 10 * 0.5)');
     assertEqual(result.streakBonus, 0, 'No streak bonus (not passed)');
     assert(result.perfect === true, 'Perfect flag set');
@@ -1077,14 +1077,14 @@
     // difficultyBonus = 0 when no opts passed (totalCols defaults to 5, fakeChance defaults to 0)
     const expectedDiff = Math.round(5 * 5 * SCORE_DIFFICULTY_MULT * 1) + 0;
     assertEqual(result.difficultyBonus, expectedDiff, 'Difficulty bonus with defaults');
-    assertEqual(result.totalScore, 4500 + 3000 + 200 + 1000 + expectedDiff, 'Total includes difficulty bonus');
+    assertEqual(result.totalScore, 4500 + 3000 + 300 + (SCORE_PERFECT_BASE + 1 * SCORE_PERFECT_LEVEL_MULT) + expectedDiff, 'Total includes difficulty bonus');
   });
 
   suite('calculateScore — Speed Bonus', () => {
     // Level 5, 2s (< 9 * 0.5 = 4.5s), 9 jumps for 10 rows
     const result = calculateScore(5, 2, 9, 10, 9);
     assert(result.fast === true, 'Fast flag set');
-    assertEqual(result.speedBonus, 500, 'Speed bonus = 500');
+    assertEqual(result.speedBonus, SCORE_SPEED_BASE + 5 * SCORE_SPEED_LEVEL_MULT, 'Speed bonus scales with level');
   });
 
   suite('calculateScore — Excess Jumps', () => {
@@ -1107,22 +1107,25 @@
     const result = calculateScore(1, 10, 4, 5, 10, 0, 250);
     assertEqual(result.streakBonus, 250, 'Streak bonus included in result');
     const expectedDiff = Math.round(5 * 5 * SCORE_DIFFICULTY_MULT * 1) + 0;
-    assertEqual(result.totalScore, (5000 - 500) + 3000 + 200 + 1000 + 250 + expectedDiff, 'Streak bonus added to total');
+    assertEqual(result.totalScore, (5000 - 500) + 3000 + 300 + (SCORE_PERFECT_BASE + 1 * SCORE_PERFECT_LEVEL_MULT) + 250 + expectedDiff, 'Streak bonus added to total');
   });
 
   suite('calculateStars — Thresholds', () => {
     const cfg1 = getLevelConfig(1);
-    const maxStreakBonus = ((cfg1.rows - 1) * cfg1.rows / 2) * SCORE_STREAK_MULT;
+    const theoreticalMaxStreak = ((cfg1.rows - 1) * cfg1.rows / 2) * SCORE_STREAK_MULT;
+    const realisticMaxStreak = Math.round(theoreticalMaxStreak * STREAK_REALISM_FACTOR);
     const gridCells = cfg1.cols * cfg1.rows;
     const fakePct = cfg1.fake || 0;
     const maxDiffBonus = Math.round(gridCells * SCORE_DIFFICULTY_MULT * (1 + fakePct))
                        + Math.round(fakePct * SCORE_FAKE_MULT);
-    const maxScore = 5000 + 3000 + 200 + 1000 + 500 + cfg1.memTime * 80 + maxStreakBonus + maxDiffBonus;
-    const stars3 = calculateStars(Math.ceil(maxScore * 0.8), 1);
-    assertEqual(stars3, 3, '3 stars at 80% of max');
+    const maxPerfect = SCORE_PERFECT_BASE + 1 * SCORE_PERFECT_LEVEL_MULT;
+    const maxSpeed = SCORE_SPEED_BASE + 1 * SCORE_SPEED_LEVEL_MULT;
+    const maxScore = 5000 + 3000 + 300 + maxPerfect + maxSpeed + cfg1.memTime * 80 + realisticMaxStreak + maxDiffBonus;
+    const stars3 = calculateStars(Math.ceil(maxScore * STAR_THREE_THRESHOLD), 1);
+    assertEqual(stars3, 3, '3 stars at threshold');
 
-    const stars2 = calculateStars(Math.ceil(maxScore * 0.5), 1);
-    assertEqual(stars2, 2, '2 stars at 50% of max');
+    const stars2 = calculateStars(Math.ceil(maxScore * STAR_TWO_THRESHOLD), 1);
+    assertEqual(stars2, 2, '2 stars at threshold');
 
     const stars1 = calculateStars(Math.floor(maxScore * 0.3), 1);
     assertEqual(stars1, 1, '1 star below 50% of max');
@@ -1156,6 +1159,31 @@
     const expectedDiff = Math.round(6 * 5 * SCORE_DIFFICULTY_MULT * (1 + 0.5))
                        + Math.round(0.5 * SCORE_FAKE_MULT);
     assertEqual(result.difficultyBonus, expectedDiff, 'Difficulty bonus matches formula');
+  });
+
+  suite('calculateScore — Perfect Bonus Scales With Level', () => {
+    const low = calculateScore(1, 5, 4, 5, 10, 0, 0, { totalCols: 5, fakeChance: 0.35 });
+    const high = calculateScore(15, 5, 15, 16, 6, 0, 0, { totalCols: 7, fakeChance: 0.72 });
+    assert(high.perfectBonus > low.perfectBonus,
+      `Level 15 perfect (${high.perfectBonus}) > Level 1 perfect (${low.perfectBonus})`);
+    assertEqual(low.perfectBonus, SCORE_PERFECT_BASE + 1 * SCORE_PERFECT_LEVEL_MULT, 'Level 1 perfect bonus');
+    assertEqual(high.perfectBonus, SCORE_PERFECT_BASE + 15 * SCORE_PERFECT_LEVEL_MULT, 'Level 15 perfect bonus');
+  });
+
+  suite('calculateScore — Speed Bonus Scales With Level', () => {
+    const low = calculateScore(1, 2, 4, 5, 10, 0, 0, { totalCols: 5, fakeChance: 0.35 });
+    const high = calculateScore(15, 2, 15, 16, 6, 0, 0, { totalCols: 7, fakeChance: 0.72 });
+    assert(high.speedBonus > low.speedBonus,
+      `Level 15 speed (${high.speedBonus}) > Level 1 speed (${low.speedBonus})`);
+    assertEqual(low.speedBonus, SCORE_SPEED_BASE + 1 * SCORE_SPEED_LEVEL_MULT, 'Level 1 speed bonus');
+    assertEqual(high.speedBonus, SCORE_SPEED_BASE + 15 * SCORE_SPEED_LEVEL_MULT, 'Level 15 speed bonus');
+  });
+
+  suite('calculateStars — 3 Stars Achievable on Level 15', () => {
+    // Simulate an excellent level 15 run: fast (4s), perfect path, good streak
+    const result = calculateScore(15, 4, 15, 16, 6, 3, 1500, { totalCols: 7, fakeChance: 0.72 });
+    const stars = calculateStars(result.totalScore, 15);
+    assertEqual(stars, 3, '3 stars achievable on level 15 with excellent play');
   });
 
   // ═══════════════════════════════════════════════════════════════
