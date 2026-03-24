@@ -133,9 +133,13 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `SCORE_TIME_PENALTY` | 50 | Points lost per second |
 | `SCORE_JUMP_BASE` | 3000 | Base jump efficiency score |
 | `SCORE_JUMP_PENALTY` | 100 | Points lost per excess jump |
-| `SCORE_LEVEL_MULT` | 200 | Points per level number |
-| `SCORE_PERFECT_BONUS` | 1000 | Bonus for zero excess jumps |
-| `SCORE_SPEED_BONUS` | 500 | Bonus for fast completion |
+| `SCORE_LEVEL_MULT` | 300 | Points per level number |
+| `SCORE_PERFECT_BASE` | 500 | Base perfect-path bonus (scales with level) |
+| `SCORE_PERFECT_LEVEL_MULT` | 100 | Additional perfect bonus per level |
+| `SCORE_SPEED_BASE` | 300 | Base speed bonus (scales with level) |
+| `SCORE_SPEED_LEVEL_MULT` | 60 | Additional speed bonus per level |
+| `STREAK_REALISM_FACTOR` | 0.35 | Fraction of theoretical max streak for star thresholds |
+| `STAR_THREE_THRESHOLD` | 0.75 | Score fraction needed for 3 stars |
 | `SCORE_DIFFICULTY_MULT` | 30 | Bonus points per grid cell, scaled by fake density |
 | `SCORE_FAKE_MULT` | 2000 | Bonus multiplied by fake chance for harder boards |
 | `BOARD_RULES.maxConsecutiveStraight` | 1 | Max consecutive straight-down rows |

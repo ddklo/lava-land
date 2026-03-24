@@ -130,16 +130,19 @@ const SCORE_TIME_BASE = 5000;
 const SCORE_TIME_PENALTY = 50;
 const SCORE_JUMP_BASE = 3000;
 const SCORE_JUMP_PENALTY = 100;
-const SCORE_LEVEL_MULT = 200;
-const SCORE_PERFECT_BONUS = 1000;
-const SCORE_SPEED_BONUS = 500;
+const SCORE_LEVEL_MULT = 300;
+const SCORE_PERFECT_BASE = 500;          // base perfect-path bonus (scales with level)
+const SCORE_PERFECT_LEVEL_MULT = 100;    // perfect bonus = base + level × this
+const SCORE_SPEED_BASE = 300;            // base speed bonus (scales with level)
+const SCORE_SPEED_LEVEL_MULT = 60;       // speed bonus = base + level × this
 const SCORE_EARLY_MEM_MULT = 80; // points per second of memorize time saved
 const SCORE_STREAK_MULT = 50;    // points per streak-level per clean forward row
 const SCORE_DIFFICULTY_MULT = 30;  // bonus points per grid cell (rows * cols) to reward harder grids
 const SCORE_FAKE_MULT = 2000;      // bonus multiplied by fake chance to reward denser fake boards
 const SPEED_BONUS_THRESHOLD = 0.5;
 const STAR_TWO_THRESHOLD = 0.5;
-const STAR_THREE_THRESHOLD = 0.8;
+const STAR_THREE_THRESHOLD = 0.75;
+const STREAK_REALISM_FACTOR = 0.35; // fraction of theoretical max streak used for star thresholds
 
 // Characters
 const CHARACTERS = [
