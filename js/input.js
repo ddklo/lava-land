@@ -1,7 +1,6 @@
 // ─── INPUT ──────────────────────────────────────────────────────
-function findTappedPlatform(canvasX, canvasY) {
+function findNearestReachablePlatform(canvasX, canvasY) {
   const currentRow = G.player.row;
-  const TOUCH_PAD = 18; // extra px around each platform for easier tapping
   // Check current row (left/right), next row (forward), and previous row (backward)
   const rowsToCheck = [currentRow - 1, currentRow, currentRow + 1];
   let best = null;
@@ -11,16 +10,16 @@ function findTappedPlatform(canvasX, canvasY) {
     for (let col = 0; col < G.platforms[row].length; col++) {
       const plat = G.platforms[row][col];
       if (plat.destroyed) continue;
-      if (canvasX >= plat.x - TOUCH_PAD && canvasX <= plat.x + plat.w + TOUCH_PAD &&
-          canvasY >= plat.y - TOUCH_PAD && canvasY <= plat.y + plat.h + TOUCH_PAD) {
-        // Pick closest platform center if pads overlap
-        const cx = plat.x + plat.w / 2;
-        const cy = plat.y + plat.h / 2;
-        const dist = (canvasX - cx) * (canvasX - cx) + (canvasY - cy) * (canvasY - cy);
-        if (dist < bestDist) {
-          bestDist = dist;
-          best = { row: row, col: col, plat: plat };
-        }
+      // Skip the platform the player is already on
+      if (row === currentRow && col === G.player.col) continue;
+      // Only allow left/right neighbors on the same row
+      if (row === currentRow && Math.abs(col - G.player.col) !== 1) continue;
+      const cx = plat.x + plat.w / 2;
+      const cy = plat.y + plat.h / 2;
+      const dist = (canvasX - cx) * (canvasX - cx) + (canvasY - cy) * (canvasY - cy);
+      if (dist < bestDist) {
+        bestDist = dist;
+        best = { row: row, col: col, plat: plat };
       }
     }
   }
@@ -171,14 +170,14 @@ function setupInput() {
         tryJump(dy > 0 ? 'forward' : 'backward');
       }
     } else {
-      // Tap — check if tapping on a specific platform
+      // Tap — find the nearest reachable platform to the tap point
       const rect = G.canvas.getBoundingClientRect();
       const scaleX = CANVAS_W / rect.width;
       const scaleY = CANVAS_H / rect.height;
       const canvasX = (found.clientX - rect.left) * scaleX;
       const canvasY = (found.clientY - rect.top) * scaleY + G.camera.y;
 
-      const tapped = findTappedPlatform(canvasX, canvasY);
+      const tapped = findNearestReachablePlatform(canvasX, canvasY);
       if (tapped) {
         const rowDiff = tapped.row - G.player.row;
         const colDiff = tapped.col - G.player.col;
@@ -190,15 +189,6 @@ function setupInput() {
           tryJump('left');
         } else if (rowDiff === 0 && colDiff === 1) {
           tryJump('right');
-        }
-      } else {
-        // Tap on empty area → infer direction from tap position relative to player
-        const tapDx = canvasX - G.player.x;
-        const tapDy = canvasY - G.player.y;
-        if (Math.abs(tapDx) > Math.abs(tapDy)) {
-          tryJump(tapDx < 0 ? 'left' : 'right');
-        } else {
-          tryJump(tapDy > 0 ? 'forward' : 'backward');
         }
       }
     }
