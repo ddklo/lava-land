@@ -103,9 +103,26 @@ function generatePlatforms() {
   if (numBacktracks > 0 && G.gridRows >= 8) {
     insertBacktracks(G.safePath, G.gridCols, G.gridRows, numBacktracks);
   } else {
-    // No backtracks — safeRoute is just the forward path
+    // No backtracks — build safeRoute with each individual move:
+    // a forward jump always lands at the player's current column in the next row,
+    // then hops bring the player to the destination column.
     for (let r = 0; r < G.gridRows; r++) {
-      G.safeRoute.push({ row: r, col: G.safePath[r] });
+      const destCol = G.safePath[r];
+      if (r === 0) {
+        G.safeRoute.push({ row: 0, col: destCol });
+      } else {
+        const prevCol = G.safePath[r - 1];
+        // Forward jump lands at prevCol in this row (nearest column by x-position).
+        // The bridge guarantees all columns [min(prevCol,destCol)..max(prevCol,destCol)]
+        // in row r are real, so this landing spot is always safe.
+        G.safeRoute.push({ row: r, col: prevCol });
+        if (destCol !== prevCol) {
+          const dir = destCol > prevCol ? 1 : -1;
+          for (let c = prevCol + dir; c !== destCol + dir; c += dir) {
+            G.safeRoute.push({ row: r, col: c });
+          }
+        }
+      }
     }
   }
 
