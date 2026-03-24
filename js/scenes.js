@@ -269,7 +269,7 @@ function startPlayingEarly() {
   if (G.gameState !== 'memorize') return;
   G.memTimeSaved = Math.max(0, G.memorizeTimer);
   G.memorizeTimer = 0;
-  SceneManager.replace(PlayingScene); // instant — same level, no fade needed
+  transitionTo(PlayingScene);
 }
 
 // ═══════════════════════════════════════════════════════════════
@@ -364,9 +364,9 @@ const PlayingScene = {
     if (G.jumpAnim.active) {
       G.jumpAnim.t += dt * JUMP_SPEED;
 
-      // Spawn jump trail particles every ~3 frames
+      // Spawn jump trail particles every ~2 frames
       this._trailFrameCount++;
-      if (this._trailFrameCount % 3 === 0) {
+      if (this._trailFrameCount % 2 === 0) {
         const t = G.jumpAnim.t;
         const px = G.jumpAnim.startX + (G.jumpAnim.endX - G.jumpAnim.startX) * t;
         const linearY = G.jumpAnim.startY + (G.jumpAnim.endY - G.jumpAnim.startY) * t;
@@ -450,7 +450,7 @@ const PlayingScene = {
       ctx.font = 'bold 16px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`\uD83D\uDDFA\uFE0F Hemmelig rute (${secs}s) — gr\xF8nn = trygg, r\xF8d = farlig`, CANVAS_W / 2, 18);
+      ctx.fillText(`\uD83D\uDDFA\uFE0F Secret Route (${secs}s) \u2014 green\u00A0=\u00A0safe, red\u00A0=\u00A0danger`, CANVAS_W / 2, 18);
       ctx.restore();
     }
 
@@ -543,11 +543,16 @@ const FallingScene = {
     drawRescueCharacter();
     drawParticles();
 
-    // Falling player emoji — shrinks as it drops into lava
+    // Falling player emoji — shrinks and tumbles as it drops into lava
     const fallDist = Math.max(0, G.fallY - G.player.y);
-    const shrink = Math.max(0, 1 - fallDist / 80);
+    const shrink = Math.max(0, 1 - fallDist / 150);
+    const tumble = fallDist * 0.05;
+    ctx.save();
     ctx.globalAlpha = 1;
-    drawEmoji(ctx, G.heroChar.emoji, G.player.x, G.fallY - G.camera.y, EMOJI_SIZE * shrink);
+    ctx.translate(G.player.x, G.fallY - G.camera.y);
+    ctx.rotate(tumble);
+    drawEmoji(ctx, G.heroChar.emoji, 0, 0, EMOJI_SIZE * shrink);
+    ctx.restore();
 
     ctx.restore();
     drawTransition();

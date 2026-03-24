@@ -29,12 +29,12 @@ const SPRING_REST_THRESHOLD = 0.15;
 const SPRING_VEL_THRESHOLD = 0.5;
 
 // Landing impact
-const LAND_BOB_OFFSET = 7;
+const LAND_BOB_OFFSET = 11;
 const LAND_BOB_VEL = 80;
 
 // Jump squash/stretch
-const SQUASH_X = 0.12;
-const STRETCH_Y = 0.18;
+const SQUASH_X = 0.20;
+const STRETCH_Y = 0.28;
 const LAND_SQUASH_DURATION = 0.25;
 
 // Trail marks

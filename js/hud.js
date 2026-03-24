@@ -214,23 +214,30 @@ function drawTutorialArrow() {
 
 function drawTutorialHint(ctx, tx, ty, text) {
   ctx.save();
-  ctx.globalAlpha = 0.9;
-  ctx.fillStyle = '#44ff88';
+
+  // Pulsing green glow for text and arrow
+  const pulse = 8 + Math.sin(G.lavaTime * 4) * 4;
+  ctx.shadowColor = '#44ff88';
+  ctx.shadowBlur = pulse;
+
+  // Text
+  ctx.globalAlpha = 0.95;
+  ctx.fillStyle = '#ffffff';
   ctx.font = 'bold 16px sans-serif';
   ctx.textAlign = 'center';
-  ctx.shadowColor = 'rgba(0,0,0,0.8)';
-  ctx.shadowBlur = 4;
-  ctx.fillText(text, tx, ty - 30);
+  ctx.fillText(text, tx, ty - 34);
 
-  // Arrow pointing down
+  // Gradient arrow pointing down (larger than before)
+  const grad = ctx.createLinearGradient(tx, ty - 20, tx, ty);
+  grad.addColorStop(0, '#44ff88');
+  grad.addColorStop(1, '#ffffff');
+  ctx.fillStyle = grad;
   ctx.beginPath();
   ctx.moveTo(tx, ty);
-  ctx.lineTo(tx - 10, ty - 15);
-  ctx.lineTo(tx + 10, ty - 15);
+  ctx.lineTo(tx - 14, ty - 20);
+  ctx.lineTo(tx + 14, ty - 20);
   ctx.closePath();
   ctx.fill();
 
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
   ctx.restore();
 }
