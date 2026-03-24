@@ -834,17 +834,18 @@ function drawRouteSteps() {
 }
 
 // ─── PATH REVEAL (memorize phase) ───────────────────────────────────────────
-// Highlights the first `revealCount` steps of safeRoute one at a time.
+// Highlights the first `revealCount` steps of optimalRoute one at a time.
 // The latest step pulses; earlier steps are dimmer. Called from MemorizeScene.
 function drawPathReveal(revealCount) {
   if (!revealCount || revealCount <= 0) return;
-  if (!G.safeRoute || G.safeRoute.length === 0) return;
+  const route = G.optimalRoute && G.optimalRoute.length > 0 ? G.optimalRoute : G.safeRoute;
+  if (!route || route.length === 0) return;
 
   const ctx = G.ctx;
-  const count = Math.min(revealCount, G.safeRoute.length);
+  const count = Math.min(revealCount, route.length);
 
   for (let i = 0; i < count; i++) {
-    const step = G.safeRoute[i];
+    const step = route[i];
     const plat = G.platforms[step.row] && G.platforms[step.row][step.col];
     if (!plat) continue;
 
@@ -871,7 +872,7 @@ function drawPathReveal(revealCount) {
 
     // Arrow from previous step
     if (i > 0) {
-      const prev     = G.safeRoute[i - 1];
+      const prev     = route[i - 1];
       const prevPlat = G.platforms[prev.row] && G.platforms[prev.row][prev.col];
       if (!prevPlat) continue;
       const fromX = prevPlat.x + prevPlat.w / 2;

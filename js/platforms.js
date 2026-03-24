@@ -285,4 +285,73 @@ function generatePlatforms() {
       G.platforms[pick][c].fake = true;
     }
   }
+
+  // Compute the true shortest safe route via BFS and store as G.optimalRoute.
+  G.optimalRoute = computeOptimalRoute();
+}
+
+// ─── OPTIMAL ROUTE (BFS shortest path) ──────────────────────
+// Finds the minimum-step path from (row 0, safePath[0]) to
+// (gridRows-1, safePath[gridRows-1]) through non-fake platforms.
+// Movement: hop left/right (same row) or jump fwd/back (same col).
+// Returns an array of {row, col} steps, or falls back to safeRoute.
+function computeOptimalRoute() {
+  const gridRows = G.gridRows;
+  const gridCols = G.gridCols;
+  const startCol = G.safePath[0];
+  const goalRow  = gridRows - 1;
+  const goalCol  = G.safePath[goalRow];
+
+  const size = gridRows * gridCols;
+  const visited = new Uint8Array(size);
+  const parent  = new Int32Array(size).fill(-1);
+  const queue   = [];
+
+  const startIdx = startCol; // row 0 * gridCols + startCol
+  visited[startIdx] = 1;
+  queue.push(startIdx);
+
+  const goalIdx = goalRow * gridCols + goalCol;
+
+  let found = false;
+  let qi = 0;
+
+  while (qi < queue.length) {
+    const idx = queue[qi++];
+    if (idx === goalIdx) { found = true; break; }
+
+    const row = Math.floor(idx / gridCols);
+    const col = idx % gridCols;
+
+    // Neighbors: left, right, forward (down), backward (up)
+    const moves = [
+      [row,     col - 1],
+      [row,     col + 1],
+      [row + 1, col    ],
+      [row - 1, col    ],
+    ];
+
+    for (let m = 0; m < moves.length; m++) {
+      const nr = moves[m][0], nc = moves[m][1];
+      if (nr < 0 || nr >= gridRows || nc < 0 || nc >= gridCols) continue;
+      const nIdx = nr * gridCols + nc;
+      if (visited[nIdx]) continue;
+      const plat = G.platforms[nr][nc];
+      if (!plat || plat.fake) continue;
+      visited[nIdx] = 1;
+      parent[nIdx] = idx;
+      queue.push(nIdx);
+    }
+  }
+
+  if (!found) return G.safeRoute.slice(); // fallback: BFS failed (shouldn't happen)
+
+  // Reconstruct path by walking parent pointers back from goal
+  const path = [];
+  let idx = goalIdx;
+  while (idx !== -1) {
+    path.unshift({ row: Math.floor(idx / gridCols), col: idx % gridCols });
+    idx = parent[idx];
+  }
+  return path;
 }

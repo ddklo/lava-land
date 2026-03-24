@@ -157,7 +157,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Canvas | `canvas`, `ctx` | init.js (write-once) |
 | Selections | `heroChoice`, `rescueChoice`, `heroChar`, `rescueChar` | menu.js (startGame caches lookups) |
 | Game mode | `gameState` | scenes (set in onEnter) |
-| Entities | `platforms`, `player`, `safePath`, `safeRoute`, `extraSafeCols` | platforms.js, player.js, logic.js |
+| Entities | `platforms`, `player`, `safePath`, `safeRoute`, `optimalRoute`, `extraSafeCols` | platforms.js, player.js, logic.js |
 | Camera | `camera` | player.js, PlayingScene |
 | Effects | `particles`, `lavaTime`, `shakeTimer`, `fallY`, `trailMarks` | scenes, drawing.js |
 | Animation | `jumpAnim` | logic.js, PlayingScene |
@@ -229,8 +229,9 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `applyMaxConsecutiveDirectionRule(safePath, gridCols)` - Enforce max consecutive same-direction moves on a path
 - `insertBacktracks(safePath, gridCols, gridRows, numBacktracks)` - Insert backward-jump sections into the safe path for late-level difficulty
 
-### platforms.js (1 function)
-- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES via pathgen.js), insert backtracks, mark fakes, block straight-down exploits
+### platforms.js (2 functions)
+- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES via pathgen.js), insert backtracks, mark fakes, block straight-down exploits, then calls computeOptimalRoute()
+- `computeOptimalRoute()` - BFS through non-fake platforms to find the shortest step-count path from (row 0, safePath[0]) to (gridRows-1, safePath[last]); stored as G.optimalRoute; falls back to safeRoute if unreachable
 
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
@@ -244,7 +245,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `updateParticles(dt)` / `drawParticles()` - Particle physics and rendering
 - `updateTrailMarks(dt)` / `drawTrailMarks()` - Trail breadcrumb system
 - `drawRouteSteps()` - Draw numbered step markers and arrows on safeRoute during memorize (only when backtracks exist; no longer called from MemorizeScene)
-- `drawPathReveal(revealCount)` - Sequential path reveal during memorize: highlights first `revealCount` safeRoute steps with gold glow, border, step number badge, and arrows; replaces column indicator
+- `drawPathReveal(revealCount)` - Sequential path reveal during memorize: highlights first `revealCount` optimalRoute steps with gold glow, border, step number badge, and arrows; replaces column indicator
 - `formatTime(seconds)` - Timer display formatter
 
 ### hud.js (9 functions)
