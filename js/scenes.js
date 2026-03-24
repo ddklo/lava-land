@@ -195,7 +195,8 @@ const MemorizeScene = {
     const _half  = _initT / 2;
     const _elapsed = _initT - G.memorizeTimer;
     if (_elapsed < _half && _half > 0) {
-      const _totalSteps = G.safeRoute.length;
+      const _route = G.optimalRoute && G.optimalRoute.length > 0 ? G.optimalRoute : G.safeRoute;
+      const _totalSteps = _route.length;
       G.pathRevealCount = Math.min(_totalSteps, Math.floor(_elapsed / (_half / _totalSteps)) + 1);
     } else {
       G.pathRevealCount = 0;
