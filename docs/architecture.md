@@ -289,8 +289,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `tryJump(direction)` - Handle left/right/forward/backward jump; uses destroyDeparturePlatform
 - `landOnPlatform(plat, row, col)` - Process landing; check win/fake/destroyed
 
-### input.js (2 functions)
-- `findNearestReachablePlatform(canvasX, canvasY)` - Find the nearest reachable platform to canvas coordinates for touch input
+### input.js (1 function)
 - `setupInput()` - Register keyboard + touch event listeners
 
 ### loop.js (1 function + 2 variables)
