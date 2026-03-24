@@ -141,6 +141,7 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `BOARD_RULES.maxConsecutiveStraight` | 1 | Max consecutive straight-down rows |
 | `BOARD_RULES.maxConsecutiveSameDirection` | 5 | Max consecutive same lateral direction |
 | `BOARD_RULES.minLateralMoveFraction` | 0.4 | Min fraction of rows with lateral moves |
+| `BOARD_RULES.minColumnSpreadFraction` | 0.6 | Min fraction of columns the safe path must visit |
 
 ### 6. Audio Error Handling (audio.js)
 
@@ -361,6 +362,8 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - Canvas/context init validation
 - Backward compatibility (custom mode with null levelConfig)
 - New state fields (level, levelConfig, gameMode, scoring fields, routeRevealed)
+- Level difficulty balance (monotonic progression, no excessive fake jumps, endless continuity)
+- Statistical board generation (column spread, lateral move fraction, fake density tolerance, per-level validity)
 
 ---
 
