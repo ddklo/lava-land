@@ -151,14 +151,15 @@ function drawTutorialArrow() {
   const curRow = G.player.row;
   const curCol = G.player.col;
 
-  // Determine the next target step using safeRoute (handles backtracks) or
-  // fall back to the next row's safe column from safePath.
+  // Determine the next target step using optimalRoute (BFS shortest path) or
+  // safeRoute (handles backtracks), falling back to safePath.
   let nextStepRow, nextStepCol;
-  if (G.safeRoute && G.safeRoute.length > 0) {
-    for (let i = 0; i < G.safeRoute.length - 1; i++) {
-      if (G.safeRoute[i].row === curRow && G.safeRoute[i].col === curCol) {
-        nextStepRow = G.safeRoute[i + 1].row;
-        nextStepCol = G.safeRoute[i + 1].col;
+  const route = (G.optimalRoute && G.optimalRoute.length > 0) ? G.optimalRoute : G.safeRoute;
+  if (route && route.length > 0) {
+    for (let i = 0; i < route.length - 1; i++) {
+      if (route[i].row === curRow && route[i].col === curCol) {
+        nextStepRow = route[i + 1].row;
+        nextStepCol = route[i + 1].col;
         break;
       }
     }
