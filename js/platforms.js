@@ -6,7 +6,8 @@ function generatePlatforms() {
   const platW = Math.min(70, (CANVAS_W - (G.gridCols + 1) * 20) / G.gridCols);
   const totalGap = CANVAS_W - G.gridCols * platW;
   const gap = totalGap / (G.gridCols + 1);
-  const rowSpacing = Math.max(PLAT_H + 28, Math.min(90, (CANVAS_H - 100) / G.gridRows));
+  const maxRowSpacing = Math.round(90 * (CANVAS_H / 700));
+  const rowSpacing = Math.max(PLAT_H + 28, Math.min(maxRowSpacing, (CANVAS_H - 100) / G.gridRows));
 
   for (let row = 0; row < G.gridRows; row++) {
     const rowPlatforms = [];

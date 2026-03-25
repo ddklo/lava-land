@@ -4,7 +4,7 @@ const GAME_AUTHOR = 'made by Ellie Hellesvik Kloven';
 
 // Canvas dimensions
 const CANVAS_W = 800;
-const CANVAS_H = 700;
+let CANVAS_H = 700;
 
 // Platform appearance
 const PLATFORM_REAL_COLOR = '#665544';
