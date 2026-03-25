@@ -432,12 +432,12 @@ canvas {
 }
 
 #hud-stats .stat-item {
-  display: inline-block;
+  display: inline-flex;
+  align-items: baseline;
   color: var(--accent-light);
   font-size: 18px;
   font-weight: bold;
   line-height: 1.2;
-  vertical-align: middle;
 }
 
 #hud-stats .stat-label {
@@ -644,6 +644,16 @@ canvas {
 
 .opt-card.selected .opt-desc { color: #ddbb99; }
 
+/* ─── HUD memorize mode — timer spans full width, centered ─── */
+.hud-memorize-mode #hud-left { display: none; }
+.hud-memorize-mode #hud-stats {
+  right: 0;
+  left: 0;
+  width: 100%;
+  align-items: center;
+}
+.hud-memorize-mode #hud-actions { display: none; }
+
 /* ─── Mobile responsive ──────────────────────────────────── */
 
 @media (max-width: 600px) {
@@ -671,24 +681,24 @@ canvas {
   }
 
   .menu-screen {
-    padding: 24px 18px;
+    padding: 20px 14px;
     border-radius: 12px;
     max-height: 100%;
     overflow-y: auto;
   }
 
   .menu-screen h1 { font-size: 38px; margin-bottom: 4px; }
-  .menu-screen h2 { font-size: 16px; margin-bottom: 16px; }
-  .menu-screen h3 { font-size: 18px; margin: 14px 0 10px; }
+  .menu-screen h2 { font-size: 16px; margin-bottom: 12px; }
+  .menu-screen h3 { font-size: 16px; margin: 10px 0 6px; }
 
-  .character-grid { gap: 10px; margin-bottom: 14px; }
+  .character-grid { gap: 8px; margin-bottom: 10px; }
   .char-card {
-    width: 76px;
-    height: 94px;
+    width: 56px;
+    height: 68px;
     border-radius: 8px;
   }
-  .char-card .emoji { font-size: 32px; margin-bottom: 4px; }
-  .char-card .name { font-size: 12px; }
+  .char-card .emoji { font-size: 24px; margin-bottom: 2px; }
+  .char-card .name { font-size: 10px; }
 
   .option-row { gap: 8px; }
   .opt-card {
@@ -723,18 +733,20 @@ canvas {
   #hud-left { height: 44px; left: 8px; }
   #hud-stats { height: 44px; right: 96px; }
   #hud-actions { height: 44px; }
+  .hud-progress-dots { display: none; }
   #hud-left .hud-level-line {
-    font-size: 14px;
+    font-size: 12px;
+    line-height: 1.2;
     max-width: 42vw;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  #hud-left .hud-total-score { font-size: 12px; }
-  #hud-stats .stat-item { font-size: 18px; }
-  #hud-stats .stat-label { font-size: 11px; }
-  #hud-stats .stat-row { gap: 10px; }
-  #hud-stats .timer-warn { font-size: 22px; }
-  #hud-stats .timer-hint { font-size: 12px; }
+  #hud-left .hud-total-score { font-size: 10px; line-height: 1.2; }
+  #hud-stats .stat-item { font-size: 14px; }
+  #hud-stats .stat-label { font-size: 9px; }
+  #hud-stats .stat-row { gap: 8px; }
+  #hud-stats .timer-warn { font-size: 20px; }
+  #hud-stats .timer-hint { font-size: 11px; }
 
   #win-screen h1 { font-size: 42px; }
   .win-emojis { font-size: 36px; }
@@ -757,10 +769,10 @@ canvas {
   .menu-screen h1 { font-size: 28px; }
   .menu-screen h2 { font-size: 14px; margin-bottom: 8px; }
   .menu-screen h3 { font-size: 16px; margin: 8px 0 6px; }
-  .character-grid { gap: 6px; margin-bottom: 8px; }
-  .char-card { width: 62px; height: 76px; }
-  .char-card .emoji { font-size: 26px; }
-  .char-card .name { font-size: 10px; }
+  .character-grid { gap: 6px; margin-bottom: 6px; }
+  .char-card { width: 50px; height: 60px; }
+  .char-card .emoji { font-size: 22px; }
+  .char-card .name { font-size: 9px; }
 
   .opt-card .opt-label { font-size: 14px; }
   .opt-card .opt-desc { font-size: 11px; }
@@ -768,6 +780,7 @@ canvas {
   .instructions { font-size: 12px; }
 
   /* Compact HUD for landscape phones — canvas is height-constrained */
+  .hud-progress-dots { display: none; }
   #hud-center { display: none; }
   #game-hud { height: 44px; }
   #hud-left, #hud-stats, #hud-actions { height: 44px; }
