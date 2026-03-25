@@ -671,98 +671,112 @@ canvas {
   }
 
   .menu-screen {
-    padding: 20px 14px;
+    padding: 24px 18px;
     border-radius: 12px;
     max-height: 100%;
     overflow-y: auto;
   }
 
-  .menu-screen h1 { font-size: 32px; margin-bottom: 4px; }
-  .menu-screen h2 { font-size: 14px; margin-bottom: 16px; }
-  .menu-screen h3 { font-size: 16px; margin: 12px 0 8px; }
+  .menu-screen h1 { font-size: 38px; margin-bottom: 4px; }
+  .menu-screen h2 { font-size: 16px; margin-bottom: 16px; }
+  .menu-screen h3 { font-size: 18px; margin: 14px 0 10px; }
 
-  .character-grid { gap: 8px; margin-bottom: 12px; }
+  .character-grid { gap: 10px; margin-bottom: 14px; }
   .char-card {
-    width: 72px;
-    height: 88px;
+    width: 76px;
+    height: 94px;
     border-radius: 8px;
   }
-  .char-card .emoji { font-size: 30px; margin-bottom: 3px; }
-  .char-card .name { font-size: 10px; }
+  .char-card .emoji { font-size: 32px; margin-bottom: 4px; }
+  .char-card .name { font-size: 12px; }
 
   .option-row { gap: 8px; }
   .opt-card {
     padding: 10px 14px;
-    min-width: 88px;
+    min-width: 92px;
     border-radius: 8px;
   }
-  .opt-card .opt-label { font-size: 14px; }
-  .opt-card .opt-desc { font-size: 10px; }
+  .opt-card .opt-label { font-size: 16px; }
+  .opt-card .opt-desc { font-size: 12px; }
 
   .btn {
     padding: 14px 30px;
-    font-size: 18px;
+    font-size: 20px;
   }
 
-  .btn-adventure { font-size: 18px; padding: 16px 30px; }
+  .btn-adventure { font-size: 22px; padding: 16px 30px; }
 
-  .instructions { font-size: 12px; margin-top: 12px; }
+  .menu-secondary .btn { font-size: 15px; padding: 10px 22px; }
+
+  .instructions { font-size: 14px; margin-top: 12px; }
+  .settings-summary { font-size: 13px; }
+
+  #settings-screen h1 { font-size: 32px; }
+
+  #pause-inner { padding: 28px 32px; }
+  #pause-inner h1 { font-size: 1.8rem; }
 
   /* HUD: hide center title — prevents overlap with stats on narrow screens */
   #hud-center { display: none; }
 
-  #game-hud { height: 40px; }
-  #hud-left { height: 40px; left: 8px; }
-  #hud-stats { height: 40px; right: 96px; }
-  #hud-actions { height: 40px; }
+  #game-hud { height: 44px; }
+  #hud-left { height: 44px; left: 8px; }
+  #hud-stats { height: 44px; right: 96px; }
+  #hud-actions { height: 44px; }
   #hud-left .hud-level-line {
-    font-size: 13px;
+    font-size: 14px;
     max-width: 42vw;
     overflow: hidden;
     text-overflow: ellipsis;
   }
   #hud-left .hud-total-score { font-size: 12px; }
-  #hud-stats .stat-item { font-size: 16px; }
-  #hud-stats .stat-label { font-size: 10px; }
-  #hud-stats .stat-row { gap: 8px; }
-  #hud-stats .timer-warn { font-size: 20px; }
-  #hud-stats .timer-hint { font-size: 11px; }
+  #hud-stats .stat-item { font-size: 18px; }
+  #hud-stats .stat-label { font-size: 11px; }
+  #hud-stats .stat-row { gap: 10px; }
+  #hud-stats .timer-warn { font-size: 22px; }
+  #hud-stats .timer-hint { font-size: 12px; }
 
-  #win-screen h1 { font-size: 36px; }
-  .win-emojis { font-size: 32px; }
+  #win-screen h1 { font-size: 42px; }
+  .win-emojis { font-size: 36px; }
 
   /* Lose screen: match win screen sizes */
-  #lose-screen h1 { font-size: 36px; }
-  #lose-screen h2 { font-size: 14px; }
-  .lose-emoji { font-size: 36px; margin: 6px 0; }
+  #lose-screen h1 { font-size: 42px; }
+  #lose-screen h2 { font-size: 16px; }
+  .lose-emoji { font-size: 40px; margin: 8px 0; }
 
-  .level-info { font-size: 13px; }
-  .score-section { padding: 10px 14px; max-width: 280px; }
-  .score-stars { font-size: 28px; }
-  .score-row { font-size: 12px; }
-  .score-total { font-size: 15px; }
+  .level-info { font-size: 15px; }
+  .score-section { padding: 12px 16px; max-width: 300px; }
+  .score-stars { font-size: 32px; }
+  .score-row { font-size: 14px; }
+  .score-total { font-size: 17px; }
+  .score-cumulative { font-size: 13px; }
 }
 
 @media (max-height: 500px) {
   .menu-screen { padding: 12px 10px; }
-  .menu-screen h1 { font-size: 26px; }
-  .menu-screen h2 { font-size: 12px; margin-bottom: 8px; }
-  .menu-screen h3 { font-size: 14px; margin: 8px 0 6px; }
+  .menu-screen h1 { font-size: 28px; }
+  .menu-screen h2 { font-size: 14px; margin-bottom: 8px; }
+  .menu-screen h3 { font-size: 16px; margin: 8px 0 6px; }
   .character-grid { gap: 6px; margin-bottom: 8px; }
-  .char-card { width: 58px; height: 72px; }
-  .char-card .emoji { font-size: 24px; }
-  .char-card .name { font-size: 9px; }
+  .char-card { width: 62px; height: 76px; }
+  .char-card .emoji { font-size: 26px; }
+  .char-card .name { font-size: 10px; }
+
+  .opt-card .opt-label { font-size: 14px; }
+  .opt-card .opt-desc { font-size: 11px; }
+  .btn { font-size: 16px; }
+  .instructions { font-size: 12px; }
 
   /* Compact HUD for landscape phones — canvas is height-constrained */
   #hud-center { display: none; }
   #game-hud { height: 44px; }
   #hud-left, #hud-stats, #hud-actions { height: 44px; }
   canvas { margin-top: 0; }
-  #hud-left .hud-level-line { font-size: 12px; }
+  #hud-left .hud-level-line { font-size: 13px; }
   #hud-left .hud-total-score { font-size: 11px; }
-  #hud-stats .stat-item { font-size: 14px; }
-  #hud-stats .stat-label { font-size: 9px; }
-  #hud-stats .stat-row { gap: 6px; }
-  #hud-stats .timer-warn { font-size: 18px; }
-  #hud-stats .timer-hint { font-size: 10px; }
+  #hud-stats .stat-item { font-size: 16px; }
+  #hud-stats .stat-label { font-size: 10px; }
+  #hud-stats .stat-row { gap: 8px; }
+  #hud-stats .timer-warn { font-size: 20px; }
+  #hud-stats .timer-hint { font-size: 11px; }
 }
