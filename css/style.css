@@ -378,31 +378,37 @@ canvas {
   text-align: center;
 }
 
-/* HUD action buttons (forfeit + pause) — far right */
+/* Floating action buttons (forfeit + pause) — bottom-right of game area */
 #hud-actions {
   position: absolute;
-  right: 8px;
-  top: 0; height: 48px;
+  bottom: 12px;
+  right: 12px;
   display: flex;
-  align-items: center;
-  gap: 6px;
+  flex-direction: column;
+  gap: 8px;
   pointer-events: auto;
+  z-index: 10;
 }
 
 .btn-forfeit, .btn-pause {
-  background: rgba(80, 20, 0, 0.75);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: rgba(80, 20, 0, 0.8);
   border: 1px solid rgba(255, 100, 30, 0.4);
   color: #ff8855;
-  font-size: 14px;
-  padding: 4px 10px;
-  border-radius: 8px;
+  font-size: 16px;
+  padding: 0;
   cursor: pointer;
-  line-height: 1;
-  margin-top: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   min-width: unset;
   letter-spacing: 0;
-  opacity: 0.75;
+  opacity: 0.7;
   transition: opacity 0.15s;
+  margin-top: 0;
+  line-height: 1;
 }
 
 .btn-forfeit:hover, .btn-pause:hover {
@@ -415,7 +421,7 @@ canvas {
 /* Right: pinned to right edge */
 #hud-stats {
   position: absolute;
-  right: 96px;
+  right: 8px;
   top: 0; height: 48px;
   display: flex;
   flex-direction: column;
@@ -652,7 +658,6 @@ canvas {
   width: 100%;
   align-items: center;
 }
-.hud-memorize-mode #hud-actions { display: none; }
 
 /* ─── Mobile responsive ──────────────────────────────────── */
 
@@ -731,8 +736,7 @@ canvas {
 
   #game-hud { height: 44px; }
   #hud-left { height: 44px; left: 8px; }
-  #hud-stats { height: 44px; right: 96px; }
-  #hud-actions { height: 44px; }
+  #hud-stats { height: 44px; right: 8px; }
   .hud-progress-dots { display: none; }
   #hud-left .hud-level-line {
     font-size: 12px;
@@ -783,7 +787,7 @@ canvas {
   .hud-progress-dots { display: none; }
   #hud-center { display: none; }
   #game-hud { height: 44px; }
-  #hud-left, #hud-stats, #hud-actions { height: 44px; }
+  #hud-left, #hud-stats { height: 44px; }
   canvas { margin-top: 0; }
   #hud-left .hud-level-line { font-size: 13px; }
   #hud-left .hud-total-score { font-size: 11px; }
