@@ -145,6 +145,7 @@ const MemorizeScene = {
     G.memorizeInitialTime = G.memorizeTimer;
     G.pathRevealCount = 0;
     document.getElementById('game-hud').style.display = 'block';
+    document.getElementById('game-hud').classList.add('hud-memorize-mode');
     document.getElementById('lose-screen').style.display = 'none';
 
     // Level preview (adventure mode only)
@@ -296,6 +297,7 @@ const PlayingScene = {
     this._lastJumps = -1;
     this._lastStreak = -1;
     this._trailFrameCount = 0;
+    document.getElementById('game-hud').classList.remove('hud-memorize-mode');
     playActionMusic();
 
     // Tutorial on level 1 adventure mode
