@@ -239,7 +239,7 @@ const MemorizeScene = {
       if (secs <= COUNTDOWN_TICK_START && secs > 0 && !G.countdownTicksPlayed[secs]) {
         G.countdownTicksPlayed[secs] = true;
         playCountdownTick(secs);
-        haptic(secs === 1 ? [40, 20, 60] : [30]);
+        haptic(secs === 1 ? [80, 30, 100] : [55]);
       }
     }
     if (G.memorizeTimer <= 0) {
@@ -302,7 +302,7 @@ function showStreakFlash(n) {
   el.textContent = callout ? callout + ' ' + t('playing.streak', { n: n }) : t('playing.streak', { n: n });
   el.style.display = 'block';
   // Haptic feedback for combo milestones
-  if (callout) haptic([30, 20, 50, 20, 30]);
+  if (callout) haptic([60, 30, 80, 30, 60]);
   addTimer(1.8, () => { el.style.display = 'none'; });
 }
 
@@ -446,7 +446,7 @@ const PlayingScene = {
         G.almostThereShown = true;
         G.almostThereTimer = 2.5;
         playAlmostThereSound();
-        haptic([20, 30, 20, 30, 40]);
+        haptic([40, 30, 40, 30, 70]);
       }
     }
     if (G.almostThereTimer > 0) {
