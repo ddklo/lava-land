@@ -2073,6 +2073,132 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // PERFORMANCE TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Performance: FPS Tracking', () => {
+    // Test rolling FPS calculation
+    const perf = { fps: 0, avgFps: 0, minFps: 60, frameTimes: [], showFps: false };
+
+    // Simulate 60 frames at 60fps (16.67ms each)
+    for (let i = 0; i < 60; i++) {
+      const frameDt = 1 / 60;
+      perf.frameTimes.push(frameDt);
+      if (perf.frameTimes.length > FPS_SAMPLE_SIZE) perf.frameTimes.shift();
+    }
+    let sum = 0, worst = 0;
+    for (let i = 0; i < perf.frameTimes.length; i++) {
+      sum += perf.frameTimes[i];
+      if (perf.frameTimes[i] > worst) worst = perf.frameTimes[i];
+    }
+    perf.avgFps = Math.round(perf.frameTimes.length / sum);
+    perf.minFps = Math.round(1 / worst);
+    assertEqual(perf.avgFps, 60, 'Average FPS computed correctly for 60fps frames');
+    assertEqual(perf.minFps, 60, 'Min FPS computed correctly for 60fps frames');
+
+    // Simulate a dropped frame (100ms)
+    perf.frameTimes.push(0.1);
+    if (perf.frameTimes.length > FPS_SAMPLE_SIZE) perf.frameTimes.shift();
+    sum = 0; worst = 0;
+    for (let i = 0; i < perf.frameTimes.length; i++) {
+      sum += perf.frameTimes[i];
+      if (perf.frameTimes[i] > worst) worst = perf.frameTimes[i];
+    }
+    perf.minFps = Math.round(1 / worst);
+    assertEqual(perf.minFps, 10, 'Min FPS drops after a 100ms frame');
+    assert(perf.frameTimes.length <= FPS_SAMPLE_SIZE, 'Frame time buffer respects sample size cap');
+
+    assertEqual(typeof FPS_SAMPLE_SIZE, 'number', 'FPS_SAMPLE_SIZE constant exists');
+    assert(FPS_SAMPLE_SIZE >= 30 && FPS_SAMPLE_SIZE <= 120, 'FPS_SAMPLE_SIZE in reasonable range');
+  });
+
+  suite('Performance: Particle Cap', () => {
+    assertEqual(typeof MAX_PARTICLES, 'number', 'MAX_PARTICLES constant exists');
+    assertEqual(typeof MAX_PARTICLES_LOW, 'number', 'MAX_PARTICLES_LOW constant exists');
+    assert(MAX_PARTICLES_LOW < MAX_PARTICLES, 'Low perf cap is lower than default');
+    assert(MAX_PARTICLES_LOW >= 100, 'Low perf cap is at least 100');
+
+    // Test that pushParticle respects cap
+    const savedParticles = G.particles;
+    const savedPerfMode = G.perfMode;
+
+    G.particles = [];
+    G.perfMode = 'low';
+    for (let i = 0; i < MAX_PARTICLES; i++) {
+      pushParticle({ x: 0, y: 0, vx: 0, vy: 0, size: 1, color: '#fff', life: 1 });
+    }
+    assertEqual(G.particles.length, MAX_PARTICLES_LOW, 'Particle count capped at MAX_PARTICLES_LOW in low perf mode');
+
+    G.particles = [];
+    G.perfMode = 'high';
+    for (let i = 0; i < MAX_PARTICLES + 50; i++) {
+      pushParticle({ x: 0, y: 0, vx: 0, vy: 0, size: 1, color: '#fff', life: 1 });
+    }
+    assertEqual(G.particles.length, MAX_PARTICLES, 'Particle count capped at MAX_PARTICLES in high perf mode');
+
+    G.particles = savedParticles;
+    G.perfMode = savedPerfMode;
+  });
+
+  suite('Performance: Trail Marks', () => {
+    assertEqual(typeof MAX_TRAIL_MARKS, 'number', 'MAX_TRAIL_MARKS constant exists');
+    assert(MAX_TRAIL_MARKS >= 20 && MAX_TRAIL_MARKS <= 100, 'MAX_TRAIL_MARKS in reasonable range');
+
+    // Test cap enforcement
+    const savedTrails = G.trailMarks;
+    G.trailMarks = [];
+    for (let i = 0; i < MAX_TRAIL_MARKS + 20; i++) {
+      G.trailMarks.push({ x: i, y: 0, life: 1.0 });
+    }
+    updateTrailMarks(0);
+    assert(G.trailMarks.length <= MAX_TRAIL_MARKS, 'Trail marks capped at MAX_TRAIL_MARKS after update');
+
+    // Test swap-and-pop removal (dead marks removed)
+    G.trailMarks = [
+      { x: 0, y: 0, life: 0.01 },
+      { x: 1, y: 0, life: 1.0 },
+      { x: 2, y: 0, life: 0.01 },
+    ];
+    updateTrailMarks(1);  // dt=1 should drain life of low-life marks
+    assert(G.trailMarks.length <= 1, 'Dead trail marks removed via swap-and-pop');
+
+    G.trailMarks = savedTrails;
+  });
+
+  suite('Performance: State Fields', () => {
+    assert(G.perf !== undefined, 'G.perf exists');
+    assertEqual(typeof G.perf.fps, 'number', 'G.perf.fps is a number');
+    assertEqual(typeof G.perf.avgFps, 'number', 'G.perf.avgFps is a number');
+    assertEqual(typeof G.perf.minFps, 'number', 'G.perf.minFps is a number');
+    assert(Array.isArray(G.perf.frameTimes), 'G.perf.frameTimes is an array');
+    assertEqual(typeof G.perf.showFps, 'boolean', 'G.perf.showFps is boolean');
+    assert(['high', 'low'].includes(G.perfMode), 'G.perfMode is valid');
+  });
+
+  suite('Performance: Vignette Cache', () => {
+    // Test that drawUrgencyVignette doesn't throw and uses cache
+    assert(typeof drawUrgencyVignette === 'function', 'drawUrgencyVignette exists');
+    assert(typeof _getVignetteCache === 'function', '_getVignetteCache exists');
+    const cache1 = _getVignetteCache();
+    const cache2 = _getVignetteCache();
+    assert(cache1 === cache2, 'Vignette cache returns same canvas on subsequent calls');
+    assert(cache1 instanceof HTMLCanvasElement, 'Vignette cache is an offscreen canvas');
+  });
+
+  suite('Performance: FPS Counter', () => {
+    assert(typeof drawFpsCounter === 'function', 'drawFpsCounter function exists');
+    // Should not throw when called
+    G.perf.fps = 60;
+    G.perf.avgFps = 58;
+    G.perf.minFps = 45;
+    try {
+      drawFpsCounter();
+      assert(true, 'drawFpsCounter runs without error');
+    } catch (e) {
+      assert(false, 'drawFpsCounter threw: ' + e.message);
+    }
+  });
+
+  // ═══════════════════════════════════════════════════════════════
   // RENDER RESULTS
   // ═══════════════════════════════════════════════════════════════
   const container = document.getElementById('results');

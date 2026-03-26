@@ -130,7 +130,10 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `SPRING_DAMPING` | 14 | Platform bob damping |
 | `CAMERA_SMOOTHING` | 0.08 | Camera follow smoothing factor |
 | `MAX_PARTICLES` | 500 | Particle array cap (prevents memory growth) |
+| `MAX_PARTICLES_LOW` | 200 | Particle cap in low perf mode (mobile) |
 | `TRAIL_FADE_RATE` | 0.12 | Trail mark fade speed |
+| `MAX_TRAIL_MARKS` | 50 | Trail marks array cap |
+| `FPS_SAMPLE_SIZE` | 60 | Rolling window size for FPS averaging |
 | `PLAT_DEPTH` | 7 | 3D platform depth face height |
 | `EMOJI_SIZE` | 48 | Character emoji font size |
 | `SCORE_TIME_BASE` | 5000 | Base time score |
@@ -184,6 +187,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Timers | `timers` | timers.js |
 | Input | `keys`, `isTouchDevice` | input.js |
 | Loop | `lastTime`, `accumulator` | loop.js |
+| Performance | `perfMode`, `perf` (fps, avgFps, minFps, frameTimes, showFps), `lastParallaxY` | loop.js, init.js, drawing.js |
 
 ---
 
@@ -250,23 +254,25 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
 
-### drawing.js (11 functions)
-- `drawEmoji(ctx, emoji, x, y, size)` - Shared emoji renderer with shadow pass
-- `drawLava(offsetY, height)` - 7-layer animated lava background
-- `drawPlatform(p, reveal)` - 3D stone block with brick texture + glow (memorize) + heat (lava proximity)
+### drawing.js (12 functions)
+- `drawEmoji(ctx, emoji, x, y, size)` - Shared emoji renderer with shadow pass (reduced in low perf mode)
+- `drawLava(offsetY, height)` - 7-layer animated lava background (layers 4-6 skipped in low perf mode)
+- `drawPlatform(p, reveal)` - 3D stone block with brick texture + glow (memorize) + heat (lava proximity); decorative details (noise, bricks, cracks, moss) skipped in low perf mode
 - `drawPlayer()` - Player emoji with squash/stretch and shadow
 - `drawRescueCharacter()` - Floating rescue target with SOS rings, sparkles, and "Help!"
 - `updateParticles(dt)` / `drawParticles()` - Particle physics and rendering
-- `updateTrailMarks(dt)` / `drawTrailMarks()` - Trail breadcrumb system
+- `updateTrailMarks(dt)` / `drawTrailMarks()` - Trail breadcrumb system (swap-and-pop removal, capped at MAX_TRAIL_MARKS)
 - `drawRouteSteps()` - Draw numbered step markers and arrows on safeRoute during memorize (only when backtracks exist; no longer called from MemorizeScene)
 - `drawPathReveal(revealCount)` - Sequential path reveal during memorize: highlights first `revealCount` optimalRoute steps with gold glow, border, step number badge, and arrows; replaces column indicator
 - `formatTime(seconds)` - Timer display formatter
+- `drawFpsCounter()` - FPS/avg/min overlay (toggle via F3 key)
 
 ### hud.js (9 functions)
 - `transitionTo(scene)` - Scene fade transition (DOM overlay with CSS transitions)
 - `updateTransition(dt)` / `drawTransition()` - No-ops kept for backward compat
 - `updateStreakPopups(dt)` / `drawStreakPopups()` - Combo streak counter display
-- `drawUrgencyVignette(intensity)` - Red vignette pulse for memorize countdown
+- `drawUrgencyVignette(intensity)` - Red vignette pulse for memorize countdown (cached offscreen canvas)
+- `_getVignetteCache()` - Creates/returns cached vignette offscreen canvas
 - `drawLevelPreview()` - Level name/info card overlay
 - `drawTutorialArrow()` / `drawTutorialHint(ctx, tx, ty, text)` - Tutorial arrow pointing at first safe platform
 
@@ -364,7 +370,13 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - `getLevelConfig()` table and formula ranges
 - `calculateScore()` basic, perfect, speed, floor at zero, route reveal penalty, difficulty bonus scaling
 - `calculateStars()` thresholds (1/2/3 stars)
-- Particle cap enforcement (`MAX_PARTICLES`, `pushParticle()`)
+- Particle cap enforcement (`MAX_PARTICLES`, `MAX_PARTICLES_LOW`, `pushParticle()`)
+- Performance: FPS tracking (rolling average, min FPS, sample size)
+- Performance: Particle cap in low/high perf modes
+- Performance: Trail marks cap and swap-and-pop removal
+- Performance: State fields (`G.perf`, `G.perfMode`)
+- Performance: Vignette cache (offscreen canvas reuse)
+- Performance: FPS counter rendering
 - Loop pause variable (`_loopPaused` existence and default)
 - Audio double-init safety
 - Canvas/context init validation
@@ -378,7 +390,7 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 ## Still Open
 
 1. **God object (G)** - All state in one flat mutable bag. Could be split into namespaced sub-objects (e.g. `G.score`, `G.board`, `G.fx`).
-2. **No object pool for particles** - Particles use push/splice (now capped at MAX_PARTICLES). Could use pre-allocated pool for GC optimization.
+2. **No object pool for particles** - Particles use push/swap-and-pop (capped at MAX_PARTICLES/MAX_PARTICLES_LOW). Trail marks also use swap-and-pop with MAX_TRAIL_MARKS cap. Could use pre-allocated pool for GC optimization.
 3. **DOM manipulation in scenes** - Scenes directly show/hide HTML elements. Could use a UI manager.
 4. **Audio setTimeout** - Music loop scheduling in audio.js still uses `setTimeout`. Acceptable since music timing is independent of game logic.
 

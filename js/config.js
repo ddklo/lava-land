@@ -39,9 +39,14 @@ const LAND_SQUASH_DURATION = 0.25;
 
 // Particle system cap (prevents memory growth on low-end devices)
 const MAX_PARTICLES = 500;
+const MAX_PARTICLES_LOW = 200;
 
 // Trail marks
 const TRAIL_FADE_RATE = 0.12;
+const MAX_TRAIL_MARKS = 50;
+
+// Performance monitoring
+const FPS_SAMPLE_SIZE = 60;
 
 // Memorize times (seconds)
 const MEMORIZE_TIMES = {

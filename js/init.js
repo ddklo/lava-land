@@ -48,6 +48,11 @@ window.addEventListener('resize', function () {
   G.lavaCacheCtx = null;
 });
 
+// ─── PERFORMANCE MODE ──────────────────────────────────────────
+// Auto-detect mobile/low-end devices and reduce rendering complexity.
+G.perfMode = (window.innerWidth <= 600 || ('ontouchstart' in window && navigator.maxTouchPoints > 0))
+  ? 'low' : 'high';
+
 setupInput();
 setupMenu();
 SceneManager.push(MenuScene);
