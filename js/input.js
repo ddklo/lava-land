@@ -5,6 +5,13 @@ function setupInput() {
     if (G.keys[e.code]) return;
     G.keys[e.code] = true;
 
+    // FPS counter toggle (works in any state)
+    if (e.code === 'F3') {
+      G.perf.showFps = !G.perf.showFps;
+      e.preventDefault();
+      return;
+    }
+
     if (G.gameState === 'playing') {
       if (e.code === 'KeyP' || e.code === 'Escape') {
         SceneManager.push(PauseScene);

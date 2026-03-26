@@ -91,17 +91,35 @@ function drawStreakPopups() {
 }
 
 // ─── URGENCY VIGNETTE (memorize countdown) ────────────────────
-function drawUrgencyVignette(intensity) {
-  if (intensity <= 0) return;
-  const ctx = G.ctx;
-  const gradient = ctx.createRadialGradient(
+// Cached to an offscreen canvas to avoid creating a radial gradient every frame.
+let _vignetteCache = null;
+let _vignetteCacheH = 0;
+
+function _getVignetteCache() {
+  if (_vignetteCache && _vignetteCacheH === CANVAS_H) return _vignetteCache;
+  _vignetteCache = document.createElement('canvas');
+  _vignetteCache.width = CANVAS_W;
+  _vignetteCache.height = CANVAS_H;
+  _vignetteCacheH = CANVAS_H;
+  const vctx = _vignetteCache.getContext('2d');
+  const gradient = vctx.createRadialGradient(
     CANVAS_W / 2, CANVAS_H / 2, CANVAS_H * 0.2,
     CANVAS_W / 2, CANVAS_H / 2, CANVAS_H * 0.8
   );
   gradient.addColorStop(0, 'transparent');
-  gradient.addColorStop(1, `rgba(180,0,0,${intensity * 0.35})`);
-  ctx.fillStyle = gradient;
-  ctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+  gradient.addColorStop(1, 'rgba(180,0,0,1)');
+  vctx.fillStyle = gradient;
+  vctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
+  return _vignetteCache;
+}
+
+function drawUrgencyVignette(intensity) {
+  if (intensity <= 0) return;
+  const ctx = G.ctx;
+  ctx.save();
+  ctx.globalAlpha = intensity * 0.35;
+  ctx.drawImage(_getVignetteCache(), 0, 0);
+  ctx.restore();
 }
 
 // ─── LEVEL PREVIEW CARD ──────────────────────────────────────

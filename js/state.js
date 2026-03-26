@@ -98,4 +98,9 @@ const G = {
   // Loop
   lastTime: 0,
   accumulator: 0,
+
+  // Performance
+  perfMode: 'high',  // 'high' (desktop) or 'low' (mobile)
+  perf: { fps: 0, avgFps: 0, minFps: 60, frameTimes: [], showFps: false },
+  lastParallaxY: -999,
 };

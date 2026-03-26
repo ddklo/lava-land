@@ -5,14 +5,22 @@ function drawEmoji(ctx, emoji, x, y, size) {
   ctx.font = size + 'px serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(0,0,0,0.85)';
-  ctx.shadowBlur = 8;
-  ctx.fillText(emoji, x, y);
-  ctx.shadowColor = 'transparent';
-  ctx.shadowBlur = 0;
-  // Double draw for stronger/crisper appearance
-  ctx.fillText(emoji, x, y);
-  ctx.fillText(emoji, x, y);
+  if (G.perfMode === 'low') {
+    ctx.shadowColor = 'rgba(0,0,0,0.7)';
+    ctx.shadowBlur = 2;
+    ctx.fillText(emoji, x, y);
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+  } else {
+    ctx.shadowColor = 'rgba(0,0,0,0.85)';
+    ctx.shadowBlur = 8;
+    ctx.fillText(emoji, x, y);
+    ctx.shadowColor = 'transparent';
+    ctx.shadowBlur = 0;
+    // Double draw for stronger/crisper appearance
+    ctx.fillText(emoji, x, y);
+    ctx.fillText(emoji, x, y);
+  }
 }
 
 // Internal: render all lava layers to the given context.
@@ -120,6 +128,17 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
       cx = nx;
       cy = ny;
     }
+  }
+
+  // Layers 4-6 skipped in low perf mode (keep base + rivers + cracks)
+  if (G.perfMode === 'low') {
+    // Layer 7 only: Heat haze shimmer overlay (cheap)
+    ctx.fillStyle = p.lavaHaze;
+    for (let y = 0; y < drawH; y += 12) {
+      const wobble = Math.sin(y * 0.05 + t * 2) * 8;
+      ctx.fillRect(wobble, y, CANVAS_W, 6);
+    }
+    return;
   }
 
   // Layer 4: Lava spurts — small eruptions from crack points
@@ -295,7 +314,9 @@ function drawPlatform(plat, reveal) {
 
   } else if (!plat.fake && reveal) {
     // Revealed safe platform — green-tinted stone block with pulsing glow
-    const glowPulse = 8 + Math.sin(G.lavaTime * 4 + plat.x * 0.01) * 5;
+    const glowPulse = G.perfMode === 'low'
+      ? 3 + Math.sin(G.lavaTime * 4 + plat.x * 0.01) * 2
+      : 8 + Math.sin(G.lavaTime * 4 + plat.x * 0.01) * 5;
     ctx.shadowColor = tp.safeGlow;
     ctx.shadowBlur = glowPulse;
 
@@ -369,69 +390,72 @@ function drawPlatform(plat, reveal) {
     ctx.fillStyle = mainGrad;
     ctx.fillRect(x, screenY, w, faceH);
 
-    // Rough stone noise texture — deterministic patches
-    for (let i = 0; i < 6; i++) {
-      const ns = Math.sin(seed + i * 47.3) * 0.5 + 0.5;
-      const nx = x + ns * (w - 10) + 2;
-      const ny = screenY + (Math.cos(seed + i * 23.7) * 0.5 + 0.5) * (faceH - 8) + 2;
-      const nw = 6 + ns * 10;
-      const nh = 4 + Math.sin(seed + i * 11) * 3;
-      const dark = Math.sin(seed + i * 31) > 0;
-      ctx.fillStyle = dark ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.04)';
-      ctx.fillRect(nx, ny, nw, nh);
-    }
+    // Decorative details skipped in low perf mode
+    if (G.perfMode !== 'low') {
+      // Rough stone noise texture — deterministic patches
+      for (let i = 0; i < 6; i++) {
+        const ns = Math.sin(seed + i * 47.3) * 0.5 + 0.5;
+        const nx = x + ns * (w - 10) + 2;
+        const ny = screenY + (Math.cos(seed + i * 23.7) * 0.5 + 0.5) * (faceH - 8) + 2;
+        const nw = 6 + ns * 10;
+        const nh = 4 + Math.sin(seed + i * 11) * 3;
+        const dark = Math.sin(seed + i * 31) > 0;
+        ctx.fillStyle = dark ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.04)';
+        ctx.fillRect(nx, ny, nw, nh);
+      }
 
-    // Brick mortar lines
-    ctx.strokeStyle = 'rgba(0,0,0,0.14)';
-    ctx.lineWidth = 1;
+      // Brick mortar lines
+      ctx.strokeStyle = 'rgba(0,0,0,0.14)';
+      ctx.lineWidth = 1;
 
-    if (faceH > 20) {
-      const mortarY = screenY + Math.floor(faceH * 0.45);
-      ctx.beginPath();
-      ctx.moveTo(x + 3, mortarY);
-      ctx.lineTo(x + w - 3, mortarY);
-      ctx.stroke();
-
-      // Top row brick dividers
-      for (let bx = x + 20; bx < x + w - 8; bx += 24) {
+      if (faceH > 20) {
+        const mortarY = screenY + Math.floor(faceH * 0.45);
         ctx.beginPath();
-        ctx.moveTo(bx, screenY + 4);
-        ctx.lineTo(bx, mortarY);
+        ctx.moveTo(x + 3, mortarY);
+        ctx.lineTo(x + w - 3, mortarY);
+        ctx.stroke();
+
+        // Top row brick dividers
+        for (let bx = x + 20; bx < x + w - 8; bx += 24) {
+          ctx.beginPath();
+          ctx.moveTo(bx, screenY + 4);
+          ctx.lineTo(bx, mortarY);
+          ctx.stroke();
+        }
+        // Bottom row brick dividers (offset)
+        for (let bx = x + 10; bx < x + w - 8; bx += 24) {
+          ctx.beginPath();
+          ctx.moveTo(bx, mortarY);
+          ctx.lineTo(bx, screenY + faceH - 2);
+          ctx.stroke();
+        }
+      }
+
+      // Weathering cracks — thin dark lines for worn stone look
+      for (let i = 0; i < 3; i++) {
+        const cs = Math.sin(seed + i * 67.1);
+        if (cs < 0.1) continue; // skip some cracks
+        const cx1 = x + (cs * 0.5 + 0.5) * w;
+        const cy1 = screenY + Math.abs(Math.cos(seed + i * 41)) * faceH * 0.3 + 4;
+        const cx2 = cx1 + Math.sin(seed + i * 19) * 12;
+        const cy2 = cy1 + 6 + Math.abs(Math.cos(seed + i * 53)) * 10;
+        ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+        ctx.lineWidth = 0.5;
+        ctx.beginPath();
+        ctx.moveTo(cx1, cy1);
+        ctx.lineTo(cx2, cy2);
         ctx.stroke();
       }
-      // Bottom row brick dividers (offset)
-      for (let bx = x + 10; bx < x + w - 8; bx += 24) {
+
+      // Small moss/lichen patches on some platforms
+      if (Math.sin(seed * 3.7) > 0.3) {
+        const mx = x + (Math.sin(seed * 5.1) * 0.5 + 0.5) * (w - 14) + 4;
+        const my = screenY + 3 + Math.abs(Math.cos(seed * 2.3)) * 6;
+        ctx.fillStyle = tp.platMoss;
         ctx.beginPath();
-        ctx.moveTo(bx, mortarY);
-        ctx.lineTo(bx, screenY + faceH - 2);
-        ctx.stroke();
+        ctx.ellipse(mx, my, 5 + Math.sin(seed) * 2, 3, 0, 0, Math.PI * 2);
+        ctx.fill();
       }
-    }
-
-    // Weathering cracks — thin dark lines for worn stone look
-    for (let i = 0; i < 3; i++) {
-      const cs = Math.sin(seed + i * 67.1);
-      if (cs < 0.1) continue; // skip some cracks
-      const cx1 = x + (cs * 0.5 + 0.5) * w;
-      const cy1 = screenY + Math.abs(Math.cos(seed + i * 41)) * faceH * 0.3 + 4;
-      const cx2 = cx1 + Math.sin(seed + i * 19) * 12;
-      const cy2 = cy1 + 6 + Math.abs(Math.cos(seed + i * 53)) * 10;
-      ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-      ctx.lineWidth = 0.5;
-      ctx.beginPath();
-      ctx.moveTo(cx1, cy1);
-      ctx.lineTo(cx2, cy2);
-      ctx.stroke();
-    }
-
-    // Small moss/lichen patches on some platforms
-    if (Math.sin(seed * 3.7) > 0.3) {
-      const mx = x + (Math.sin(seed * 5.1) * 0.5 + 0.5) * (w - 14) + 4;
-      const my = screenY + 3 + Math.abs(Math.cos(seed * 2.3)) * 6;
-      ctx.fillStyle = tp.platMoss;
-      ctx.beginPath();
-      ctx.ellipse(mx, my, 5 + Math.sin(seed) * 2, 3, 0, 0, Math.PI * 2);
-      ctx.fill();
     }
 
     // Top edge highlight — bright rim light
@@ -729,9 +753,20 @@ function drawParticles() {
 }
 
 function updateTrailMarks(dt) {
-  for (let i = G.trailMarks.length - 1; i >= 0; i--) {
+  // Cap trail marks to prevent unbounded growth
+  while (G.trailMarks.length > MAX_TRAIL_MARKS) {
+    G.trailMarks.shift();
+  }
+  // Swap-and-pop removal (O(1) per removal vs O(n) splice)
+  let i = 0;
+  while (i < G.trailMarks.length) {
     G.trailMarks[i].life -= dt * TRAIL_FADE_RATE;
-    if (G.trailMarks[i].life <= 0) G.trailMarks.splice(i, 1);
+    if (G.trailMarks[i].life <= 0) {
+      G.trailMarks[i] = G.trailMarks[G.trailMarks.length - 1];
+      G.trailMarks.pop();
+    } else {
+      i++;
+    }
   }
 }
 
@@ -937,5 +972,25 @@ function formatTime(seconds) {
   const m = Math.floor(seconds / 60);
   const s = Math.floor(seconds % 60);
   return m > 0 ? `${m}:${s.toString().padStart(2, '0')}` : `${s}s`;
+}
+
+// ─── FPS COUNTER ──────────────────────────────────────────────
+function drawFpsCounter() {
+  const ctx = G.ctx;
+  const p = G.perf;
+  ctx.save();
+  ctx.globalAlpha = 0.8;
+  ctx.fillStyle = '#000';
+  ctx.fillRect(4, 4, 110, 48);
+  ctx.globalAlpha = 1;
+  ctx.font = '11px monospace';
+  ctx.textAlign = 'left';
+  ctx.textBaseline = 'top';
+  ctx.fillStyle = p.fps >= 50 ? '#44ff44' : p.fps >= 30 ? '#ffcc00' : '#ff4444';
+  ctx.fillText('FPS: ' + p.fps, 10, 9);
+  ctx.fillStyle = '#cccccc';
+  ctx.fillText('AVG: ' + p.avgFps, 10, 23);
+  ctx.fillText('MIN: ' + p.minFps, 10, 37);
+  ctx.restore();
 }
 

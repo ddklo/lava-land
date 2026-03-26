@@ -52,8 +52,7 @@ const PauseScene = {
   },
   update() { /* frozen */ },
   render() {
-    // Re-render the playing scene underneath so the canvas isn't blank
-    PlayingScene.render();
+    // No-op: pause overlay covers canvas, no need to re-render
   }
 };
 
@@ -392,8 +391,12 @@ const PlayingScene = {
     G.camera.y += (targetCamY - G.camera.y) * CAMERA_SMOOTHING;
     G.camera.y = Math.max(0, G.camera.y);
 
-    // Parallax background scrolling
-    document.body.style.backgroundPositionY = -(G.camera.y * 0.15) + 'px';
+    // Parallax background scrolling (throttled: only update DOM when >1px change)
+    const parallaxY = -(G.camera.y * 0.15);
+    if (Math.abs(parallaxY - G.lastParallaxY) > 1) {
+      G.lastParallaxY = parallaxY;
+      document.body.style.backgroundPositionY = parallaxY + 'px';
+    }
 
     // Shake decay
     if (G.shakeTimer > 0) G.shakeTimer -= 1;
@@ -535,8 +538,12 @@ const FallingScene = {
     G.fallY += 1.2;
     if (G.shakeTimer > 0) G.shakeTimer -= 1;
 
-    // Parallax
-    document.body.style.backgroundPositionY = -(G.camera.y * 0.15) + 'px';
+    // Parallax (throttled)
+    const fallParallaxY = -(G.camera.y * 0.15);
+    if (Math.abs(fallParallaxY - G.lastParallaxY) > 1) {
+      G.lastParallaxY = fallParallaxY;
+      document.body.style.backgroundPositionY = fallParallaxY + 'px';
+    }
   },
   render() {
     const ctx = G.ctx;

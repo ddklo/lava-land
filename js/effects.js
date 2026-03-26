@@ -2,7 +2,8 @@
 // All particle spawners live here. Drawing.js handles rendering only.
 
 function pushParticle(p) {
-  if (G.particles.length < MAX_PARTICLES) G.particles.push(p);
+  const cap = G.perfMode === 'low' ? MAX_PARTICLES_LOW : MAX_PARTICLES;
+  if (G.particles.length < cap) G.particles.push(p);
 }
 
 function spawnPlatformExplosion(plat) {
@@ -91,8 +92,9 @@ function spawnLavaSplash(x, y) {
 function spawnFirework(x, y) {
   const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff', '#44ffff', '#ffaa00', '#ff66aa'];
   const color = colors[Math.floor(Math.random() * colors.length)];
-  for (let i = 0; i < 30; i++) {
-    const angle = (Math.PI * 2 / 30) * i + Math.random() * 0.3;
+  const fwCount = G.perfMode === 'low' ? 15 : 30;
+  for (let i = 0; i < fwCount; i++) {
+    const angle = (Math.PI * 2 / fwCount) * i + Math.random() * 0.3;
     const speed = 2 + Math.random() * 4;
     pushParticle({
       x: x, y: y,
@@ -147,7 +149,8 @@ function spawnConfetti() {
   const colors = ['#ff0000', '#00ff00', '#0088ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff', '#ffaa00',
                   '#ff6699', '#66ccff', '#ffcc00', '#cc44ff', '#ff4400', '#44ff88', '#ff88cc', '#88ff44',
                   '#ff3399', '#33ccff', '#ffee00', '#cc00ff', '#00ffcc', '#ff8800'];
-  for (let i = 0; i < 35; i++) {
+  const confettiCount = G.perfMode === 'low' ? 15 : 35;
+  for (let i = 0; i < confettiCount; i++) {
     const color = colors[Math.floor(Math.random() * colors.length)];
     const r = Math.random();
     const isCircle = r < 0.25;
