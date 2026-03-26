@@ -46,7 +46,7 @@ const PauseScene = {
     document.getElementById('pause-screen').style.display = 'none';
     if (G.gameState === 'paused') {
       // Resuming — restore gameState and music
-      G.gameState = 'playing';
+      G.gameState = GAME_STATE.PLAYING;
       playActionMusic();
     }
   },
@@ -108,7 +108,7 @@ function updateCrumbleTimers(dt) {
 // ═══════════════════════════════════════════════════════════════
 const MenuScene = {
   onEnter() {
-    G.gameState = 'menu';
+    G.gameState = GAME_STATE.MENU;
     document.getElementById('menu-screen').style.display = 'block';
     document.getElementById('settings-screen').style.display = 'none';
     document.getElementById('win-screen').style.display = 'none';
@@ -139,7 +139,7 @@ const MemorizeScene = {
   _lastSecs: -1,
 
   onEnter() {
-    G.gameState = 'memorize';
+    G.gameState = GAME_STATE.MEMORIZE;
     G.camera.y = 0;
     this._lastSecs = -1;
     G.memorizeInitialTime = G.memorizeTimer;
@@ -268,7 +268,7 @@ function showStreakFlash(n) {
 }
 
 function startPlayingEarly() {
-  if (G.gameState !== 'memorize') return;
+  if (G.gameState !== GAME_STATE.MEMORIZE) return;
   G.memTimeSaved = Math.max(0, G.memorizeTimer);
   G.memorizeTimer = 0;
   SceneManager.replace(PlayingScene);
@@ -286,7 +286,7 @@ const PlayingScene = {
   _trailFrameCount: 0,
 
   onEnter() {
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     G.playTimer = 0;
     G.streak = 0;
     G.streakPopups = [];
@@ -469,7 +469,7 @@ const FallingScene = {
   _spoken: false,
 
   onEnter() {
-    G.gameState = 'falling';
+    G.gameState = GAME_STATE.FALLING;
     G.shakeTimer = 15;
     G.fallY = G.player.y;
     G.streak = 0;
@@ -582,7 +582,7 @@ const WonScene = {
   _angle1: 0, _angle2: 0,
 
   onEnter() {
-    G.gameState = 'won';
+    G.gameState = GAME_STATE.WON;
     G.winTimer = 0;
     this._fwCount = 0;
     this._fwTimer = 0;

@@ -10,9 +10,9 @@ function saveSettings() {
     localStorage.setItem('ll_theme', G.theme);
   } catch (e) {
     // Briefly show a non-blocking warning if storage is unavailable
-    var summary = document.getElementById('settings-summary');
+    const summary = document.getElementById('settings-summary');
     if (summary) {
-      var orig = summary.textContent;
+      const orig = summary.textContent;
       summary.textContent = t('error.storage');
       setTimeout(function () { summary.textContent = orig; }, 2000);
     }
@@ -48,9 +48,9 @@ function applyLanguage() {
     el.textContent = t('char.' + el.dataset.rawName);
   });
   // Update instruction blocks (contain HTML so use innerHTML)
-  var kb = document.getElementById('instructions-keyboard');
+  const kb = document.getElementById('instructions-keyboard');
   if (kb) kb.innerHTML = '<kbd>&larr;</kbd> <kbd>&rarr;</kbd> ' + t('instructions.keyboard.1') + '<br><kbd>&darr;</kbd> / <kbd>Space</kbd> ' + t('instructions.keyboard.2') + '<br><kbd>&uarr;</kbd> ' + t('instructions.keyboard.3') + '<br>' + t('instructions.keyboard.4');
-  var touch = document.getElementById('instructions-touch');
+  const touch = document.getElementById('instructions-touch');
   if (touch) touch.innerHTML = t('instructions.touch.1') + '<br>' + t('instructions.touch.2') + '<br>' + t('instructions.touch.3') + '<br>' + t('instructions.touch.4');
   updateSettingsSummary();
 }
@@ -58,7 +58,7 @@ function applyLanguage() {
 function applyTheme() {
   // Remove old theme classes, add new one
   document.body.classList.remove('theme-volcano', 'theme-ocean', 'theme-forest');
-  var p = THEME_PALETTES[G.theme];
+  const p = THEME_PALETTES[G.theme];
   if (p && p.cssClass) document.body.classList.add(p.cssClass);
   // Invalidate lava cache so it re-renders with new colors
   G.lavaCache = null;
@@ -179,67 +179,24 @@ function setupMenu() {
   applyLanguage();
   applyTheme();
 
-  // Difficulty selector
-  document.querySelectorAll('#diff-row .opt-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('#diff-row .opt-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      G.difficulty = card.dataset.diff;
-      saveSettings();
+  // Option selectors — each row selects one card and updates state
+  function setupOptionSelector(rowId, dataAttr, stateKey, onChange) {
+    document.querySelectorAll(`#${rowId} .opt-card`).forEach(card => {
+      card.addEventListener('click', () => {
+        document.querySelectorAll(`#${rowId} .opt-card`).forEach(c => c.classList.remove('selected'));
+        card.classList.add('selected');
+        G[stateKey] = card.dataset[dataAttr];
+        if (onChange) onChange();
+        saveSettings();
+      });
     });
-  });
-
-  // Grid size selector
-  document.querySelectorAll('#size-row .opt-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('#size-row .opt-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      G.selectedSize = card.dataset.size;
-      saveSettings();
-    });
-  });
-
-  // Memorize time selector
-  document.querySelectorAll('#memtime-row .opt-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('#memtime-row .opt-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      G.selectedMemTime = card.dataset.memtime;
-      saveSettings();
-    });
-  });
-
-  // Language selector
-  document.querySelectorAll('#lang-row .opt-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('#lang-row .opt-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      G.language = card.dataset.lang;
-      applyLanguage();
-      saveSettings();
-    });
-  });
-
-  // Soundtrack selector
-  document.querySelectorAll('#soundtrack-row .opt-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('#soundtrack-row .opt-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      G.soundtrack = card.dataset.soundtrack;
-      saveSettings();
-    });
-  });
-
-  // Theme selector
-  document.querySelectorAll('#theme-row .opt-card').forEach(card => {
-    card.addEventListener('click', () => {
-      document.querySelectorAll('#theme-row .opt-card').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      G.theme = card.dataset.theme;
-      applyTheme();
-      saveSettings();
-    });
-  });
+  }
+  setupOptionSelector('diff-row', 'diff', 'difficulty');
+  setupOptionSelector('size-row', 'size', 'selectedSize');
+  setupOptionSelector('memtime-row', 'memtime', 'selectedMemTime');
+  setupOptionSelector('lang-row', 'lang', 'language', applyLanguage);
+  setupOptionSelector('soundtrack-row', 'soundtrack', 'soundtrack');
+  setupOptionSelector('theme-row', 'theme', 'theme', applyTheme);
 
   // Settings button — open settings screen
   document.getElementById('settings-btn').addEventListener('click', () => {
@@ -281,12 +238,12 @@ function setupMenu() {
 
   // Forfeit button (playing HUD)
   document.getElementById('forfeit-btn').addEventListener('click', () => {
-    if (G.gameState === 'playing') SceneManager.replace(FallingScene);
+    if (G.gameState === GAME_STATE.PLAYING) SceneManager.replace(FallingScene);
   });
 
   // Pause button (playing HUD)
   document.getElementById('pause-btn').addEventListener('click', () => {
-    if (G.gameState === 'playing') SceneManager.push(PauseScene);
+    if (G.gameState === GAME_STATE.PLAYING) SceneManager.push(PauseScene);
   });
 
   // Resume button (pause screen)

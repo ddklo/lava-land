@@ -392,7 +392,7 @@ function t(key, params) {
   const lang = (typeof G !== 'undefined' && G.language) || 'en';
   let str = (TRANSLATIONS[lang] && TRANSLATIONS[lang][key]) || TRANSLATIONS.en[key] || key;
   if (params) {
-    for (var k in params) {
+    for (const k in params) {
       if (params.hasOwnProperty(k)) {
         str = str.split('{' + k + '}').join(params[k]);
       }

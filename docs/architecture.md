@@ -225,17 +225,18 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `updateTimers(dt)` - Tick all timers, fire expired ones
 - `clearTimers()` - Cancel all pending timers
 
-### audio.js (17 functions)
+### audio.js (19 functions)
+- `haptic(pattern)` - Vibration feedback (mobile devices)
 - `initAudio()` - Lazy-create AudioContext (with try-catch)
 - `hasAudio()` - Guard: returns true if AudioContext is available
 - `stopMusic()` - Fade out + disconnect current music
-- `playMemorizeMusic()` - Procedural tense chord loop + ticking clock
-- `playActionMusic()` - Procedural 80s synth-funk 4-bar loops
+- `playMemorizeMusic()` / `playClassicMemorize()` - Memorize phase music dispatcher + classic variant
+- `playActionMusic()` / `playClassicAction()` - Action phase music dispatcher + classic variant
 - `playJumpSound()` / `playHopSound()` - Jump SFX
 - `playLandSound()` / `playCrumbleSound()` / `playFallSound()` - Impact SFX
 - `playWinSound()` - 10-second procedural victory fanfare
 - `playLoseSound()` - Sad descending trombone
-- `getEnglishVoice()` - Cached English voice lookup for speech synthesis
+- `getSpeechVoice()` - Cached voice lookup for speech synthesis
 - `speakText(text, rate, pitch)` - Shared speech helper with English voice selection
 - `speakCongrats()` / `speakLose()` - Speech synthesis (via speakText)
 
@@ -403,7 +404,7 @@ Convert to `<script type="module">` with import/export. Requires HTTP server.
 - ~~Hero === rescue allowed~~ — prevented in menu selection handlers
 - ~~START button not debounced~~ — disabled immediately in `startGame()`
 - ~~Missing bounds check~~ in sideways jump — added row bounds guard
-- ~~Speech synthesis wrong voice~~ — now explicitly requests English voice via `getEnglishVoice()`
+- ~~Speech synthesis wrong voice~~ — now explicitly requests voice via `getSpeechVoice()`
 - ~~Dead data `CHARACTERS[*].color`~~ — removed (never read)
 - ~~No offline support~~ — added PWA manifest + service worker
 - ~~No tab backgrounding handling~~ — loop pauses on `visibilitychange`, resets accumulator on resume

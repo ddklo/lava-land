@@ -2,6 +2,15 @@
 const GAME_TITLE = 'LAVA LAND';
 const GAME_AUTHOR = 'made by Ellie Hellesvik Kloven';
 
+// Game states — use these instead of string literals
+const GAME_STATE = {
+  MENU: 'menu',
+  MEMORIZE: 'memorize',
+  PLAYING: 'playing',
+  FALLING: 'falling',
+  WON: 'won',
+};
+
 // Canvas dimensions
 const CANVAS_W = 800;
 let CANVAS_H = 700;

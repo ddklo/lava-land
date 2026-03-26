@@ -41,7 +41,7 @@ const G = {
   levelScoreBreakdown: null,
 
   // Game state
-  gameState: 'menu',
+  gameState: GAME_STATE.MENU,
   platforms: [],
   player: {},
   camera: { y: 0 },

@@ -7,105 +7,22 @@ function destroyDeparturePlatform() {
   }
 }
 
-function tryJump(direction) {
-  if (G.jumpAnim.active) return;
-  if (G.gameState !== 'playing') return;
-
-  const currentRow = G.player.row;
-  const currentCol = G.player.col;
-
-  if (direction === 'left' || direction === 'right') {
-    // Stay in same row, move to adjacent platform
-    if (currentRow >= G.platforms.length) return;
-    const row = G.platforms[currentRow];
-    let targetCol = currentCol;
-    if (direction === 'left') { targetCol = Math.max(0, currentCol - 1); G.player.facing = 'left'; }
-    if (direction === 'right') { targetCol = Math.min(row.length - 1, currentCol + 1); G.player.facing = 'right'; }
-    if (targetCol === currentCol) return;
-
-    const targetPlat = row[targetCol];
-    G.jumpCount++;
-    G.hopsThisRow++;
-    playHopSound();
-    haptic(20);
-    destroyDeparturePlatform();
-
-    G.jumpAnim = {
-      active: true,
-      startX: G.player.x,
-      startY: G.player.y,
-      endX: targetPlat.x + targetPlat.w / 2,
-      endY: targetPlat.y - PLAYER_Y_OFFSET,
-      t: 0,
-      targetRow: currentRow,
-      targetCol: targetCol,
-      targetPlat: targetPlat,
-    };
-    return;
-  }
-
-  // Backward jump — go back one row
-  if (direction === 'backward') {
-    const targetRow = currentRow - 1;
-    if (targetRow < 0) return;
-
-    const prevRowPlats = G.platforms[targetRow];
-    let nearest = 0;
-    let nearestDist = Infinity;
-    for (let i = 0; i < prevRowPlats.length; i++) {
-      const platCenter = prevRowPlats[i].x + prevRowPlats[i].w / 2;
-      const dist = Math.abs(platCenter - G.player.x);
-      if (dist < nearestDist) {
-        nearestDist = dist;
-        nearest = i;
-      }
-    }
-
-    const targetPlat = prevRowPlats[nearest];
-    G.jumpCount++;
-    playJumpSound();
-    haptic(25);
-    destroyDeparturePlatform();
-
-    G.jumpAnim = {
-      active: true,
-      startX: G.player.x,
-      startY: G.player.y,
-      endX: targetPlat.x + targetPlat.w / 2,
-      endY: targetPlat.y - PLAYER_Y_OFFSET,
-      t: 0,
-      targetRow: targetRow,
-      targetCol: nearest,
-      targetPlat: targetPlat,
-    };
-    return;
-  }
-
-  // Forward jump — advance one row
-  const targetRow = currentRow + 1;
-  if (targetRow >= G.platforms.length) {
-    // Can't jump past the last row
-    return;
-  }
-
-  const nextRowPlats = G.platforms[targetRow];
+function findNearestPlatformIndex(rowPlats, playerX) {
   let nearest = 0;
   let nearestDist = Infinity;
-  for (let i = 0; i < nextRowPlats.length; i++) {
-    const platCenter = nextRowPlats[i].x + nextRowPlats[i].w / 2;
-    const dist = Math.abs(platCenter - G.player.x);
+  for (let i = 0; i < rowPlats.length; i++) {
+    const platCenter = rowPlats[i].x + rowPlats[i].w / 2;
+    const dist = Math.abs(platCenter - playerX);
     if (dist < nearestDist) {
       nearestDist = dist;
       nearest = i;
     }
   }
+  return nearest;
+}
 
-  const targetPlat = nextRowPlats[nearest];
-  G.jumpCount++;
-  playJumpSound();
-  haptic(25);
+function startJumpAnim(targetPlat, targetRow, targetCol) {
   destroyDeparturePlatform();
-
   G.jumpAnim = {
     active: true,
     startX: G.player.x,
@@ -114,9 +31,58 @@ function tryJump(direction) {
     endY: targetPlat.y - PLAYER_Y_OFFSET,
     t: 0,
     targetRow: targetRow,
-    targetCol: nearest,
+    targetCol: targetCol,
     targetPlat: targetPlat,
   };
+}
+
+function tryJump(direction) {
+  if (G.jumpAnim.active) return;
+  if (G.gameState !== GAME_STATE.PLAYING) return;
+
+  const currentRow = G.player.row;
+  const currentCol = G.player.col;
+
+  if (direction === 'left' || direction === 'right') {
+    if (currentRow >= G.platforms.length) return;
+    const row = G.platforms[currentRow];
+    let targetCol = currentCol;
+    if (direction === 'left') { targetCol = Math.max(0, currentCol - 1); G.player.facing = 'left'; }
+    if (direction === 'right') { targetCol = Math.min(row.length - 1, currentCol + 1); G.player.facing = 'right'; }
+    if (targetCol === currentCol) return;
+
+    G.jumpCount++;
+    G.hopsThisRow++;
+    playHopSound();
+    haptic(20);
+    startJumpAnim(row[targetCol], currentRow, targetCol);
+    return;
+  }
+
+  // Backward jump — go back one row
+  if (direction === 'backward') {
+    const targetRow = currentRow - 1;
+    if (targetRow < 0) return;
+
+    const rowPlats = G.platforms[targetRow];
+    const nearest = findNearestPlatformIndex(rowPlats, G.player.x);
+    G.jumpCount++;
+    playJumpSound();
+    haptic(25);
+    startJumpAnim(rowPlats[nearest], targetRow, nearest);
+    return;
+  }
+
+  // Forward jump — advance one row
+  const targetRow = currentRow + 1;
+  if (targetRow >= G.platforms.length) return;
+
+  const rowPlats = G.platforms[targetRow];
+  const nearest = findNearestPlatformIndex(rowPlats, G.player.x);
+  G.jumpCount++;
+  playJumpSound();
+  haptic(25);
+  startJumpAnim(rowPlats[nearest], targetRow, nearest);
 }
 
 function landOnPlatform(plat, row, col) {

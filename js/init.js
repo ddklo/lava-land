@@ -9,10 +9,10 @@ if (!G.canvas) {
 // On mobile portrait screens, expand canvas height to match the
 // viewport aspect ratio so platforms use the full vertical space.
 function resizeCanvas() {
-  var isMobile = window.innerWidth <= 600;
-  var hudH = isMobile ? 40 : 48;
-  var availW = window.innerWidth;
-  var availH = (window.visualViewport ? window.visualViewport.height : window.innerHeight) - hudH;
+  const isMobile = window.innerWidth <= 600;
+  const hudH = isMobile ? 40 : 48;
+  const availW = window.innerWidth;
+  const availH = (window.visualViewport ? window.visualViewport.height : window.innerHeight) - hudH;
 
   if (isMobile && availW > 0 && availH > 0) {
     // Scale canvas height to match viewport aspect ratio

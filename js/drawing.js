@@ -519,7 +519,7 @@ function drawPlatform(plat, reveal) {
 
 function drawPlayer() {
   const ctx = G.ctx;
-  if (G.gameState === 'falling') return;
+  if (G.gameState === GAME_STATE.FALLING) return;
 
   const drawOffsetY = (PLAT_H - PLAT_DEPTH) / 2 + PLAYER_Y_OFFSET;
 

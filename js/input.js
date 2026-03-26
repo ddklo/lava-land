@@ -5,7 +5,7 @@ function setupInput() {
     if (G.keys[e.code]) return;
     G.keys[e.code] = true;
 
-    if (G.gameState === 'playing') {
+    if (G.gameState === GAME_STATE.PLAYING) {
       if (e.code === 'KeyP' || e.code === 'Escape') {
         SceneManager.push(PauseScene);
         e.preventDefault();
@@ -28,11 +28,11 @@ function setupInput() {
         e.preventDefault();
       }
     }
-    if (G.gameState === 'memorize') {
+    if (G.gameState === GAME_STATE.MEMORIZE) {
       startPlayingEarly();
       e.preventDefault();
     }
-    if (G.gameState === 'won') {
+    if (G.gameState === GAME_STATE.WON) {
       if (e.code === 'Enter' || e.code === 'Space') {
         if (document.getElementById('win-screen').style.display === 'block') {
           if (G.gameMode === 'adventure') advanceLevel();
@@ -74,10 +74,10 @@ function setupInput() {
     touchStartY = t.clientY;
     longPressTriggered = false;
 
-    if (G.gameState === 'playing') {
+    if (G.gameState === GAME_STATE.PLAYING) {
       longPressTimer = setTimeout(() => {
         longPressTimer = null;
-        if (G.gameState !== 'playing') return; // guard against scene change
+        if (G.gameState !== GAME_STATE.PLAYING) return; // guard against scene change
         longPressTriggered = true;
         G.revealRoute = true;
         G.revealRouteTimer = 3;
@@ -107,12 +107,12 @@ function setupInput() {
       return;
     }
 
-    if (G.gameState === 'memorize') {
+    if (G.gameState === GAME_STATE.MEMORIZE) {
       startPlayingEarly();
       e.preventDefault();
       return;
     }
-    if (G.gameState === 'won') {
+    if (G.gameState === GAME_STATE.WON) {
       if (document.getElementById('win-screen').style.display === 'block') {
         if (G.gameMode === 'adventure') advanceLevel();
         else returnToMenu();
@@ -122,7 +122,7 @@ function setupInput() {
       e.preventDefault();
       return;
     }
-    if (G.gameState !== 'playing') return;
+    if (G.gameState !== GAME_STATE.PLAYING) return;
 
     const dx = found.clientX - touchStartX;
     const dy = found.clientY - touchStartY;
@@ -187,6 +187,11 @@ function setupInput() {
     }
     e.preventDefault();
   }, { passive: false });
+
+  G.canvas.addEventListener('touchcancel', () => {
+    cancelLongPress();
+    touchId = null;
+  });
 
   // Show correct instructions based on input type
   G.isTouchDevice = ('ontouchstart' in window || navigator.maxTouchPoints > 0);

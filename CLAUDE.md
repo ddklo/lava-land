@@ -33,9 +33,11 @@ images/             Static assets
   icon-192.png      App icon 192×192 (PWA / Android)
   icon-512.png      App icon 512×512 (PWA / splash)
 js/config.js        Constants, physics tuning, LEVELS array, getLevelConfig(), scoring constants
+js/i18n.js          Internationalization — translation strings + t() lookup + applyLanguage()
 js/state.js         Shared mutable state object: const G = {}
 js/timers.js        Managed timer system (addTimer, updateTimers, clearTimers)
 js/audio.js         Procedural music + sound effects (Web Audio API, with error guards)
+js/soundtracks.js   Soundtrack variants (classic, retro, chill music generators)
 js/pathgen.js       Safe-path shaping algorithms (applyMaxConsecutiveDirectionRule, insertBacktracks)
 js/platforms.js     Grid generation + fake seeding (uses pathgen.js for path algorithms)
 js/player.js        resetPlayer()
@@ -57,7 +59,7 @@ docs/rules.md       Game rules documentation
 
 ### Script Load Order
 
-`config -> state -> timers -> audio -> pathgen -> platforms -> player -> drawing -> hud -> effects -> scenes -> scoring -> logic -> input -> loop -> menu -> init`
+`config -> i18n -> state -> timers -> audio -> soundtracks -> pathgen -> platforms -> player -> drawing -> hud -> effects -> scenes -> scoring -> logic -> input -> loop -> menu -> init`
 
 Only `init.js` executes code at parse time. All other files only define functions/objects.
 

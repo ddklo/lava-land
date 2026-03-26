@@ -90,7 +90,7 @@
     assert(Array.isArray(G.trailMarks), 'G.trailMarks is an array');
     assertEqual(typeof G.player, 'object', 'G.player is an object');
     assertEqual(typeof G.camera, 'object', 'G.camera has y property');
-    assertEqual(G.gameState, 'menu', 'Initial gameState is menu');
+    assertEqual(G.gameState, GAME_STATE.MENU, 'Initial gameState is menu');
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -389,7 +389,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -405,7 +405,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -422,7 +422,7 @@
   });
 
   suite('Jump Logic — Cannot Jump While Animating', () => {
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     G.jumpAnim.active = true;
     const prevTarget = G.jumpAnim.targetRow;
 
@@ -433,13 +433,13 @@
   });
 
   suite('Jump Logic — Cannot Jump in Wrong State', () => {
-    G.gameState = 'menu';
+    G.gameState = GAME_STATE.MENU;
     G.jumpAnim.active = false;
 
     tryJump('forward');
     assertEqual(G.jumpAnim.active, false, 'No jump from menu state');
 
-    G.gameState = 'memorize';
+    G.gameState = GAME_STATE.MEMORIZE;
     tryJump('forward');
     assertEqual(G.jumpAnim.active, false, 'No jump from memorize state');
   });
@@ -448,7 +448,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -467,7 +467,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -492,7 +492,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
     clearTimers();
@@ -515,7 +515,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -527,7 +527,7 @@
 
     landOnPlatform(plat, 1, 0);
 
-    assertEqual(G.gameState, 'falling', 'Landing on destroyed platform triggers fall');
+    assertEqual(G.gameState, GAME_STATE.FALLING, 'Landing on destroyed platform triggers fall');
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -537,7 +537,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -557,14 +557,14 @@
 
     landOnPlatform(plat, lastRow, rescueCol);
 
-    assertEqual(G.gameState, 'won', 'Landing on rescue column on last row wins');
+    assertEqual(G.gameState, GAME_STATE.WON, 'Landing on rescue column on last row wins');
   });
 
   suite('Win Condition — Wrong Column', () => {
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -580,7 +580,7 @@
 
     landOnPlatform(plat, lastRow, wrongCol);
 
-    assertEqual(G.gameState, 'playing', 'Landing on wrong column on last row does not win');
+    assertEqual(G.gameState, GAME_STATE.PLAYING, 'Landing on wrong column on last row does not win');
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -700,16 +700,16 @@
     G.audioCtx = savedCtx;
   });
 
-  suite('Speech Synthesis — English Voice Lookup', () => {
-    // getEnglishVoice should not crash even without speechSynthesis
+  suite('Speech Synthesis — Voice Lookup', () => {
+    // getSpeechVoice should not crash even without speechSynthesis
     let threw = false;
     try {
-      const voice = getEnglishVoice();
-      assert(voice === null || typeof voice === 'object', 'getEnglishVoice returns voice or null');
+      const voice = getSpeechVoice();
+      assert(voice === null || typeof voice === 'object', 'getSpeechVoice returns voice or null');
     } catch (e) {
       threw = true;
     }
-    assert(!threw, 'getEnglishVoice does not throw');
+    assert(!threw, 'getSpeechVoice does not throw');
   });
 
   suite('Speech Synthesis — speakText Safety', () => {
@@ -777,7 +777,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -795,7 +795,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -813,7 +813,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -832,7 +832,7 @@
     G.gridCols = 1;
     G.gridRows = 4;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -859,7 +859,7 @@
     G.gridCols = 5;
     G.gridRows = 8;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -878,7 +878,7 @@
     plat.destroyed = false;
 
     landOnPlatform(plat, lastRow, rescueCol);
-    assertEqual(G.gameState, 'won', 'Win on small grid (5x8)');
+    assertEqual(G.gameState, GAME_STATE.WON, 'Win on small grid (5x8)');
 
     // Clean up
     G.heroChar = null;
@@ -889,7 +889,7 @@
     G.gridCols = 7;
     G.gridRows = 16;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -908,7 +908,7 @@
     plat.destroyed = false;
 
     landOnPlatform(plat, lastRow, rescueCol);
-    assertEqual(G.gameState, 'won', 'Win on large grid (7x16)');
+    assertEqual(G.gameState, GAME_STATE.WON, 'Win on large grid (7x16)');
 
     // Clean up
     G.heroChar = null;
@@ -922,7 +922,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -941,7 +941,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -1224,7 +1224,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
     G.jumpStreak = 0;
@@ -1253,7 +1253,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
     G.jumpStreak = 3;
@@ -1280,7 +1280,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
     G.hopsThisRow = 0;
@@ -1305,7 +1305,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     generatePlatforms();
     resetPlayer();
 
@@ -1527,7 +1527,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     G.levelConfig = null;
     generatePlatforms();
     resetPlayer();
@@ -1546,7 +1546,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     G.levelConfig = null;
     generatePlatforms();
     resetPlayer();
@@ -1575,7 +1575,7 @@
     G.gridCols = 6;
     G.gridRows = 12;
     G.difficulty = 'easy';
-    G.gameState = 'playing';
+    G.gameState = GAME_STATE.PLAYING;
     G.levelConfig = null;
     generatePlatforms();
     resetPlayer();
@@ -2102,5 +2102,5 @@
 
   // Reset game state for clean state
   SceneManager.stack = [];
-  G.gameState = 'menu';
+  G.gameState = GAME_STATE.MENU;
 })();
