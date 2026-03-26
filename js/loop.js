@@ -19,20 +19,20 @@ function gameLoop(timestamp) {
 
   SceneManager.render();
 
-  // FPS tracking (rolling window)
+  // FPS tracking (circular buffer — no push/shift allocations)
   if (frameDt > 0) {
     const perf = G.perf;
-    const instantFps = 1 / frameDt;
-    perf.frameTimes.push(frameDt);
-    if (perf.frameTimes.length > FPS_SAMPLE_SIZE) perf.frameTimes.shift();
-    perf.fps = Math.round(instantFps);
+    perf.fps = Math.round(1 / frameDt);
+    perf.frameTimes[perf.frameIdx] = frameDt;
+    perf.frameIdx = (perf.frameIdx + 1) % FPS_SAMPLE_SIZE;
+    if (perf.frameCount < FPS_SAMPLE_SIZE) perf.frameCount++;
     let sum = 0;
     let worst = 0;
-    for (let i = 0; i < perf.frameTimes.length; i++) {
+    for (let i = 0; i < perf.frameCount; i++) {
       sum += perf.frameTimes[i];
       if (perf.frameTimes[i] > worst) worst = perf.frameTimes[i];
     }
-    perf.avgFps = Math.round(perf.frameTimes.length / sum);
+    perf.avgFps = Math.round(perf.frameCount / sum);
     perf.minFps = Math.round(1 / worst);
     if (perf.showFps) drawFpsCounter();
   }

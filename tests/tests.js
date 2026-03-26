@@ -2076,36 +2076,38 @@
   // PERFORMANCE TESTS
   // ═══════════════════════════════════════════════════════════════
   suite('Performance: FPS Tracking', () => {
-    // Test rolling FPS calculation
-    const perf = { fps: 0, avgFps: 0, minFps: 60, frameTimes: [], showFps: false };
+    // Test rolling FPS calculation using circular buffer
+    const perf = { fps: 0, avgFps: 0, minFps: 60, frameTimes: new Float64Array(FPS_SAMPLE_SIZE), frameIdx: 0, frameCount: 0, showFps: false };
 
     // Simulate 60 frames at 60fps (16.67ms each)
     for (let i = 0; i < 60; i++) {
       const frameDt = 1 / 60;
-      perf.frameTimes.push(frameDt);
-      if (perf.frameTimes.length > FPS_SAMPLE_SIZE) perf.frameTimes.shift();
+      perf.frameTimes[perf.frameIdx] = frameDt;
+      perf.frameIdx = (perf.frameIdx + 1) % FPS_SAMPLE_SIZE;
+      if (perf.frameCount < FPS_SAMPLE_SIZE) perf.frameCount++;
     }
     let sum = 0, worst = 0;
-    for (let i = 0; i < perf.frameTimes.length; i++) {
+    for (let i = 0; i < perf.frameCount; i++) {
       sum += perf.frameTimes[i];
       if (perf.frameTimes[i] > worst) worst = perf.frameTimes[i];
     }
-    perf.avgFps = Math.round(perf.frameTimes.length / sum);
+    perf.avgFps = Math.round(perf.frameCount / sum);
     perf.minFps = Math.round(1 / worst);
     assertEqual(perf.avgFps, 60, 'Average FPS computed correctly for 60fps frames');
     assertEqual(perf.minFps, 60, 'Min FPS computed correctly for 60fps frames');
 
     // Simulate a dropped frame (100ms)
-    perf.frameTimes.push(0.1);
-    if (perf.frameTimes.length > FPS_SAMPLE_SIZE) perf.frameTimes.shift();
+    perf.frameTimes[perf.frameIdx] = 0.1;
+    perf.frameIdx = (perf.frameIdx + 1) % FPS_SAMPLE_SIZE;
+    if (perf.frameCount < FPS_SAMPLE_SIZE) perf.frameCount++;
     sum = 0; worst = 0;
-    for (let i = 0; i < perf.frameTimes.length; i++) {
+    for (let i = 0; i < perf.frameCount; i++) {
       sum += perf.frameTimes[i];
       if (perf.frameTimes[i] > worst) worst = perf.frameTimes[i];
     }
     perf.minFps = Math.round(1 / worst);
     assertEqual(perf.minFps, 10, 'Min FPS drops after a 100ms frame');
-    assert(perf.frameTimes.length <= FPS_SAMPLE_SIZE, 'Frame time buffer respects sample size cap');
+    assert(perf.frameCount <= FPS_SAMPLE_SIZE, 'Frame time buffer respects sample size cap');
 
     assertEqual(typeof FPS_SAMPLE_SIZE, 'number', 'FPS_SAMPLE_SIZE constant exists');
     assert(FPS_SAMPLE_SIZE >= 30 && FPS_SAMPLE_SIZE <= 120, 'FPS_SAMPLE_SIZE in reasonable range');
@@ -2169,7 +2171,7 @@
     assertEqual(typeof G.perf.fps, 'number', 'G.perf.fps is a number');
     assertEqual(typeof G.perf.avgFps, 'number', 'G.perf.avgFps is a number');
     assertEqual(typeof G.perf.minFps, 'number', 'G.perf.minFps is a number');
-    assert(Array.isArray(G.perf.frameTimes), 'G.perf.frameTimes is an array');
+    assert(G.perf.frameTimes instanceof Float64Array, 'G.perf.frameTimes is a Float64Array');
     assertEqual(typeof G.perf.showFps, 'boolean', 'G.perf.showFps is boolean');
     assert(['high', 'low'].includes(G.perfMode), 'G.perfMode is valid');
   });

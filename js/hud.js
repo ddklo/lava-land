@@ -59,9 +59,15 @@ function drawTransition() {}
 
 // ─── STREAK POPUPS ────────────────────────────────────────────
 function updateStreakPopups(dt) {
-  for (let i = G.streakPopups.length - 1; i >= 0; i--) {
+  let i = 0;
+  while (i < G.streakPopups.length) {
     G.streakPopups[i].timer -= dt;
-    if (G.streakPopups[i].timer <= 0) G.streakPopups.splice(i, 1);
+    if (G.streakPopups[i].timer <= 0) {
+      G.streakPopups[i] = G.streakPopups[G.streakPopups.length - 1];
+      G.streakPopups.pop();
+    } else {
+      i++;
+    }
   }
 }
 
@@ -148,39 +154,49 @@ function drawLevelPreview() {
   ctx.shadowBlur = 0;
   ctx.fillText(G.levelConfig ? t('level.' + G.levelConfig.name, { n: G.level }) : '', CANVAS_W / 2, CANVAS_H / 2 + 15);
 
-  // Grid size + difficulty indicator
+  // Grid size + difficulty indicator (cache fire string)
   if (G.levelConfig) {
-    const fires = Math.min(5, Math.ceil(G.levelConfig.fake * 7));
-    const fireStr = '\uD83D\uDD25'.repeat(fires);
+    if (!G.levelPreview._diffStr || G.levelPreview._diffLevel !== G.level) {
+      const fires = Math.min(5, Math.ceil(G.levelConfig.fake * 7));
+      G.levelPreview._diffStr = `${G.levelConfig.cols}\u00D7${G.levelConfig.rows}  ${'\uD83D\uDD25'.repeat(fires)}`;
+      G.levelPreview._diffLevel = G.level;
+    }
     ctx.font = '18px sans-serif';
     ctx.fillStyle = '#cc8855';
-    ctx.fillText(`${G.levelConfig.cols}\u00D7${G.levelConfig.rows}  ${fireStr}`, CANVAS_W / 2, CANVAS_H / 2 + 55);
+    ctx.fillText(G.levelPreview._diffStr, CANVAS_W / 2, CANVAS_H / 2 + 55);
   }
 
-  // Level story blurb
+  // Level story blurb (word-wrap cached to avoid per-frame measureText)
   if (G.level <= LEVEL_STORIES.length && G.heroChar && G.rescueChar) {
-    const heroName = t('char.' + G.heroChar.name);
-    const rescueName = t('char.' + G.rescueChar.name);
-    const story = t(LEVEL_STORIES[G.level - 1], { hero: heroName, rescue: rescueName });
     ctx.font = 'italic 15px sans-serif';
     ctx.fillStyle = '#ffddaa';
     ctx.shadowBlur = 0;
-    // Word wrap the story text
-    const maxW = CANVAS_W * 0.7;
-    const words = story.split(' ');
-    let line = '';
-    let lineY = CANVAS_H / 2 + 85;
-    for (let i = 0; i < words.length; i++) {
-      const test = line + (line ? ' ' : '') + words[i];
-      if (ctx.measureText(test).width > maxW && line) {
-        ctx.fillText(line, CANVAS_W / 2, lineY);
-        line = words[i];
-        lineY += 20;
-      } else {
-        line = test;
+    if (!G.levelPreview._wrappedLines || G.levelPreview._wrappedLevel !== G.level) {
+      const heroName = t('char.' + G.heroChar.name);
+      const rescueName = t('char.' + G.rescueChar.name);
+      const story = t(LEVEL_STORIES[G.level - 1], { hero: heroName, rescue: rescueName });
+      const maxW = CANVAS_W * 0.7;
+      const words = story.split(' ');
+      const lines = [];
+      let line = '';
+      for (let i = 0; i < words.length; i++) {
+        const test = line + (line ? ' ' : '') + words[i];
+        if (ctx.measureText(test).width > maxW && line) {
+          lines.push(line);
+          line = words[i];
+        } else {
+          line = test;
+        }
       }
+      if (line) lines.push(line);
+      G.levelPreview._wrappedLines = lines;
+      G.levelPreview._wrappedLevel = G.level;
     }
-    if (line) ctx.fillText(line, CANVAS_W / 2, lineY);
+    let lineY = CANVAS_H / 2 + 85;
+    for (const ln of G.levelPreview._wrappedLines) {
+      ctx.fillText(ln, CANVAS_W / 2, lineY);
+      lineY += 20;
+    }
   }
 
   ctx.restore();

@@ -1,6 +1,22 @@
 // ─── DRAWING ────────────────────────────────────────────────────
 // Pure rendering functions — no state mutation, no particle spawning.
 
+// ─── COLOR STRING CACHES ────────────────────────────────────────
+// Pre-built rgba/rgb strings to avoid per-frame string concatenation
+// in hot rendering loops (lava layers, platform glow).
+const _rgbCache = new Array(65536);
+function _rgb(r, g) {
+  const key = (r << 8) | g;
+  return _rgbCache[key] || (_rgbCache[key] = `rgb(${r},${g},0)`);
+}
+const _rgbaCache = {};
+function _rgba(r, g, b, a) {
+  const key = `${r},${g},${b},${a}`;
+  return _rgbaCache[key] || (_rgbaCache[key] = `rgba(${r},${g},${b},${a})`);
+}
+// Platform gradient cache — keyed by platform identity + screenY
+const _platGradCache = new WeakMap();
+
 function drawEmoji(ctx, emoji, x, y, size) {
   ctx.font = size + 'px serif';
   ctx.textAlign = 'center';
@@ -29,9 +45,9 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
 
   // Layer 1: Deep dark base
   for (let y = 0; y < drawH; y += 3) {
-    const r = p.lavaBaseR + Math.sin(y * 0.01 + t * 0.3) * 15;
-    const g = p.lavaBaseG + Math.sin(y * 0.015 + t * 0.2) * 5;
-    ctx.fillStyle = `rgb(${Math.floor(r)},${Math.floor(g)},0)`;
+    const r = Math.floor(p.lavaBaseR + Math.sin(y * 0.01 + t * 0.3) * 15);
+    const g = Math.floor(p.lavaBaseG + Math.sin(y * 0.015 + t * 0.2) * 5);
+    ctx.fillStyle = _rgb(r, g);
     ctx.fillRect(0, y, CANVAS_W, 4);
   }
 
@@ -53,13 +69,13 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
         const r = Math.floor(p.lavaFlowHotR + intensity * 55);
         const g = Math.floor(p.lavaFlowHotG + intensity * 140);
         const b = Math.floor(p.lavaFlowHotB + intensity * 30);
-        const a = 0.4 + intensity * 0.6;
-        ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
+        const a = (0.4 + intensity * 0.6).toFixed(2);
+        ctx.fillStyle = _rgba(r, g, b, a);
         ctx.fillRect(x, y, 9, 4);
       } else if (combined > -0.1) {
         const edge = (combined + 0.1) / 0.2;
         const r = Math.floor(p.lavaFlowEdgeR + edge * 60);
-        ctx.fillStyle = `rgba(${r},${p.lavaFlowEdgeG},${p.lavaFlowEdgeB},0.5)`;
+        ctx.fillStyle = _rgba(r, p.lavaFlowEdgeG, p.lavaFlowEdgeB, 0.5);
         ctx.fillRect(x, y, 9, 4);
       }
     }
@@ -91,7 +107,7 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
       const width = 1.5 + bright * 3;
 
       // Outer glow
-      ctx.strokeStyle = `rgba(${p.lavaCrackOuter},${bright * 0.4})`;
+      ctx.strokeStyle = `rgba(${p.lavaCrackOuter},${(bright * 0.4).toFixed(2)})`;
       ctx.lineWidth = width + 4;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
@@ -99,7 +115,7 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
       ctx.stroke();
 
       // Hot core
-      ctx.strokeStyle = `rgba(${p.lavaCrackCore},${Math.floor(200 + bright * 55)},${Math.floor(bright * 80)},${bright * 0.7})`;
+      ctx.strokeStyle = `rgba(${p.lavaCrackCore},${Math.floor(200 + bright * 55)},${Math.floor(bright * 80)},${(bright * 0.7).toFixed(2)})`;
       ctx.lineWidth = width;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
@@ -114,7 +130,7 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
           const bnx = bx + Math.cos(branchDir + Math.sin(b * 1.2 + seed) * 0.6) * 3.5;
           const bny = by + Math.sin(branchDir + Math.cos(b * 0.8 + seed) * 0.6) * 3.5;
           const bb = bright * (1 - b / 8) * 0.6;
-          ctx.strokeStyle = `rgba(${p.lavaBranch},${bb * 0.5})`;
+          ctx.strokeStyle = `rgba(${p.lavaBranch},${(bb * 0.5).toFixed(2)})`;
           ctx.lineWidth = 1 + bb * 2;
           ctx.beginPath();
           ctx.moveTo(bx, by);
@@ -153,12 +169,13 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
 
     // Spurt glow
     const glowR = 15 + intensity * 20;
-    ctx.fillStyle = `rgba(${p.lavaSpurtGlow},${intensity * 0.15})`;
+    ctx.fillStyle = `rgba(${p.lavaSpurtGlow},${(intensity * 0.15).toFixed(2)})`;
     ctx.beginPath();
     ctx.arc(sx, sy, glowR, 0, Math.PI * 2);
     ctx.fill();
 
     // Rising droplets from spurt
+    const _db = p.lavaDropletBase;
     for (let d = 0; d < 6; d++) {
       const dSeed = d * 37.1 + seed;
       const angle = Math.sin(dSeed) * 0.8 - Math.PI / 2;
@@ -166,8 +183,7 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
       const dx = sx + Math.cos(angle + Math.sin(dSeed * 0.5) * 0.5) * dist * 0.6;
       const dy = sy + Math.sin(angle) * dist + dist * dist * 0.02; // gravity arc
       const dAlpha = intensity * (1 - d / 6);
-      const _db = p.lavaDropletBase;
-      ctx.fillStyle = `rgba(${_db[0]},${Math.floor(_db[1] + d * 10)},${Math.floor(_db[2] + d * 8)},${dAlpha * 0.8})`;
+      ctx.fillStyle = _rgba(_db[0], Math.floor(_db[1] + d * 10), Math.floor(_db[2] + d * 8), (dAlpha * 0.8).toFixed(2));
       ctx.beginPath();
       ctx.arc(dx, dy, 1.5 + intensity * 2, 0, Math.PI * 2);
       ctx.fill();
@@ -183,12 +199,12 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
     const flicker = 0.5 + Math.sin(t * 8 + i * 5) * 0.5;
     const sz = 1.5 + flicker * 2;
     // Glow
-    ctx.fillStyle = `rgba(${p.lavaEmberGlow},${flicker * 0.3})`;
+    ctx.fillStyle = `rgba(${p.lavaEmberGlow},${(flicker * 0.3).toFixed(2)})`;
     ctx.beginPath();
     ctx.arc(ex, ey - offsetY * 0.3, sz + 3, 0, Math.PI * 2);
     ctx.fill();
     // Core
-    ctx.fillStyle = `rgba(${p.lavaEmberCore},${flicker * 0.8})`;
+    ctx.fillStyle = `rgba(${p.lavaEmberCore},${(flicker * 0.8).toFixed(2)})`;
     ctx.beginPath();
     ctx.arc(ex, ey - offsetY * 0.3, sz, 0, Math.PI * 2);
     ctx.fill();
@@ -205,19 +221,19 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
     const br = 4 + growPhase * 12;
     const alpha = growPhase < 0.8 ? growPhase : (1 - growPhase) * 5;
     // Bubble body
-    ctx.strokeStyle = `rgba(${p.lavaBubbleStroke},${alpha * 0.4})`;
+    ctx.strokeStyle = `rgba(${p.lavaBubbleStroke},${(alpha * 0.4).toFixed(2)})`;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(bx, by - offsetY * 0.2, br, 0, Math.PI * 2);
     ctx.stroke();
     // Bright center
-    ctx.fillStyle = `rgba(${p.lavaBubbleFill},${alpha * 0.25})`;
+    ctx.fillStyle = `rgba(${p.lavaBubbleFill},${(alpha * 0.25).toFixed(2)})`;
     ctx.beginPath();
     ctx.arc(bx, by - offsetY * 0.2, br * 0.5, 0, Math.PI * 2);
     ctx.fill();
     // Pop flash at end
     if (growPhase > 0.85) {
-      ctx.fillStyle = `rgba(${p.lavaBubblePop},${(growPhase - 0.85) * 6})`;
+      ctx.fillStyle = `rgba(${p.lavaBubblePop},${((growPhase - 0.85) * 6).toFixed(2)})`;
       ctx.beginPath();
       ctx.arc(bx, by - offsetY * 0.2, br * 1.5, 0, Math.PI * 2);
       ctx.fill();
@@ -363,10 +379,10 @@ function drawPlatform(plat, reveal) {
     const seed = plat.x * 7.3 + plat.y * 13.1;
 
     // Lava glow from underneath — platform is floating in lava
-    const underGlow = 0.15 + Math.sin(G.lavaTime * 2 + seed * 0.01) * 0.08;
-    ctx.fillStyle = `rgba(${tp.platUnderGlowR},${tp.platUnderGlowG},${tp.platUnderGlowB},${underGlow})`;
+    const underGlow = (0.15 + Math.sin(G.lavaTime * 2 + seed * 0.01) * 0.08).toFixed(2);
+    ctx.fillStyle = _rgba(tp.platUnderGlowR, tp.platUnderGlowG, tp.platUnderGlowB, underGlow);
     ctx.fillRect(x - 3, screenY + h - 1, w + 6, 8);
-    ctx.fillStyle = `rgba(${tp.platUnderGlowR},${tp.platUnderGlowG + 40},${tp.platUnderGlowB + 20},${underGlow * 0.5})`;
+    ctx.fillStyle = _rgba(tp.platUnderGlowR, tp.platUnderGlowG + 40, tp.platUnderGlowB + 20, (underGlow * 0.5).toFixed(2));
     ctx.fillRect(x - 5, screenY + h + 3, w + 10, 5);
 
     // Drop shadow (softened by lava glow)
@@ -495,8 +511,8 @@ function drawPlatform(plat, reveal) {
     ctx.stroke();
 
     // Molten edge glow — lava seeping along the bottom edges
-    const edgeGlow = 0.2 + Math.sin(G.lavaTime * 3 + seed * 0.02) * 0.1;
-    ctx.strokeStyle = `rgba(${tp.platEdgeGlowR},${tp.platEdgeGlowG},${tp.platEdgeGlowB},${edgeGlow})`;
+    const edgeGlow = (0.2 + Math.sin(G.lavaTime * 3 + seed * 0.02) * 0.1).toFixed(2);
+    ctx.strokeStyle = _rgba(tp.platEdgeGlowR, tp.platEdgeGlowG, tp.platEdgeGlowB, edgeGlow);
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(x, screenY + h - 0.5);
@@ -506,7 +522,7 @@ function drawPlatform(plat, reveal) {
     // Lava proximity heat glow on lower platforms
     const heatFactor = Math.max(0, 1 - (CANVAS_H - screenY) / (CANVAS_H * 0.4));
     if (heatFactor > 0) {
-      ctx.fillStyle = `rgba(${tp.heatGlowR},${tp.heatGlowG},${tp.heatGlowB},${heatFactor * 0.3})`;
+      ctx.fillStyle = _rgba(tp.heatGlowR, tp.heatGlowG, tp.heatGlowB, (heatFactor * 0.3).toFixed(2));
       ctx.fillRect(x, screenY + h - depth - 2, w, depth + 4);
     }
 
@@ -514,10 +530,10 @@ function drawPlatform(plat, reveal) {
     if (plat.crumbling) {
       const crumbleProgress = Math.min(1, plat.crumbleTimer * 3.5);
       // Danger wash
-      ctx.fillStyle = `rgba(${tp.crumbleWash},${crumbleProgress * 0.65})`;
+      ctx.fillStyle = `rgba(${tp.crumbleWash},${(crumbleProgress * 0.65).toFixed(2)})`;
       ctx.fillRect(x, screenY, w, h - depth);
       // Crack lines radiating from center
-      ctx.strokeStyle = `rgba(${tp.crumbleCrack},${crumbleProgress * 0.9})`;
+      ctx.strokeStyle = `rgba(${tp.crumbleCrack},${(crumbleProgress * 0.9).toFixed(2)})`;
       ctx.lineWidth = 1.5;
       const cx2 = x + w / 2, cy2 = screenY + (h - depth) / 2;
       for (let ci = 0; ci < 6; ci++) {
@@ -531,7 +547,7 @@ function drawPlatform(plat, reveal) {
       // Hot border glow
       ctx.shadowColor = tp.crumbleGlow;
       ctx.shadowBlur = 12 * crumbleProgress;
-      ctx.strokeStyle = `rgba(${tp.crumbleBorder},${crumbleProgress * 0.8})`;
+      ctx.strokeStyle = `rgba(${tp.crumbleBorder},${(crumbleProgress * 0.8).toFixed(2)})`;
       ctx.lineWidth = 2;
       ctx.strokeRect(x + 1, screenY + 1, w - 2, h - depth - 2);
       ctx.shadowColor = 'transparent';
@@ -695,6 +711,17 @@ function drawRescueCharacter(noClip) {
 }
 
 // ─── COIN RENDERING ─────────────────────────────────────────────
+let _coinGrad = null;
+let _coinGradCtx = null;
+function _getCoinGrad(ctx) {
+  if (_coinGrad && _coinGradCtx === ctx) return _coinGrad;
+  _coinGradCtx = ctx;
+  _coinGrad = ctx.createRadialGradient(-3, -3, 1, 0, 0, COIN_SIZE);
+  _coinGrad.addColorStop(0, '#FFF44F');
+  _coinGrad.addColorStop(0.5, '#FFD700');
+  _coinGrad.addColorStop(1, '#DAA520');
+  return _coinGrad;
+}
 function drawCoins() {
   const ctx = G.ctx;
   if (!G.coins || G.coins.length === 0) return;
@@ -723,11 +750,7 @@ function drawCoins() {
 
     // Coin body
     ctx.globalAlpha = 1;
-    const grad = ctx.createRadialGradient(-3, -3, 1, 0, 0, COIN_SIZE);
-    grad.addColorStop(0, '#FFF44F');
-    grad.addColorStop(0.5, '#FFD700');
-    grad.addColorStop(1, '#DAA520');
-    ctx.fillStyle = grad;
+    ctx.fillStyle = _getCoinGrad(ctx);
     ctx.beginPath();
     ctx.arc(0, 0, COIN_SIZE, 0, Math.PI * 2);
     ctx.fill();
