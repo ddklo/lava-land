@@ -42,8 +42,15 @@ function stopMusic() {
   }
 }
 
-// ─── MEMORIZE MUSIC: Loud ticking clock + thriller tension ─────
+// ─── MEMORIZE MUSIC ─────────────────────────────────────────────
 function playMemorizeMusic() {
+  if (G.soundtrack === 'retro') return playRetroMemorize();
+  if (G.soundtrack === 'chill') return playChillMemorize();
+  playClassicMemorize();
+}
+
+// Classic: Loud ticking clock + thriller tension
+function playClassicMemorize() {
   initAudio();
   if (!hasAudio()) return;
   stopMusic();
@@ -202,8 +209,15 @@ function playMemorizeMusic() {
   playSection();
 }
 
-// ─── ACTION MUSIC: 80s synth-funk, Beverly Hills Cop vibe ─────
+// ─── ACTION MUSIC ───────────────────────────────────────────────
 function playActionMusic() {
+  if (G.soundtrack === 'retro') return playRetroAction();
+  if (G.soundtrack === 'chill') return playChillAction();
+  playClassicAction();
+}
+
+// Classic: 80s synth-funk, Beverly Hills Cop vibe
+function playClassicAction() {
   initAudio();
   if (!hasAudio()) return;
   stopMusic();
@@ -652,28 +666,31 @@ function playWinSound() {
   });
 }
 
-// Find the best English voice available, cached after first lookup
-let _cachedEnVoice = undefined; // undefined = not searched yet, null = not found
-function getEnglishVoice() {
-  if (_cachedEnVoice !== undefined) return _cachedEnVoice;
-  if (!('speechSynthesis' in window)) { _cachedEnVoice = null; return null; }
+// Find the best voice for the current language, cached after first lookup
+let _cachedVoice = undefined; // undefined = not searched yet, null = not found
+let _cachedVoiceLang = '';
+function getSpeechVoice() {
+  const targetLang = SPEECH_LANG[G.language] || 'en-US';
+  if (_cachedVoice !== undefined && _cachedVoiceLang === targetLang) return _cachedVoice;
+  if (!('speechSynthesis' in window)) { _cachedVoice = null; _cachedVoiceLang = targetLang; return null; }
   const voices = window.speechSynthesis.getVoices();
-  // Prefer en-US, then any en-* voice
-  _cachedEnVoice = voices.find(v => v.lang === 'en-US')
-    || voices.find(v => v.lang.startsWith('en'))
+  const prefix = targetLang.split('-')[0];
+  _cachedVoice = voices.find(v => v.lang === targetLang)
+    || voices.find(v => v.lang.startsWith(prefix))
     || null;
-  return _cachedEnVoice;
+  _cachedVoiceLang = targetLang;
+  return _cachedVoice;
 }
 // Voices load async on some browsers — re-cache when ready
 if ('speechSynthesis' in window) {
-  window.speechSynthesis.onvoiceschanged = () => { _cachedEnVoice = undefined; };
+  window.speechSynthesis.onvoiceschanged = () => { _cachedVoice = undefined; _cachedVoiceLang = ''; };
 }
 
 function speakText(text, rate, pitch) {
   if (!('speechSynthesis' in window)) return;
   const msg = new SpeechSynthesisUtterance(text);
-  msg.lang = 'en-US';
-  const voice = getEnglishVoice();
+  msg.lang = SPEECH_LANG[G.language] || 'en-US';
+  const voice = getSpeechVoice();
   if (voice) msg.voice = voice;
   msg.rate = rate;
   msg.pitch = pitch;
@@ -682,7 +699,7 @@ function speakText(text, rate, pitch) {
 }
 
 function speakCongrats() {
-  speakText('You did a great job!', 0.9, 1.1);
+  speakText(t('speech.congrats'), 0.9, 1.1);
 }
 
 function playLoseSound() {
@@ -731,9 +748,9 @@ function playLoseSound() {
 
 function speakLose() {
   const phrases = [
-    'Oh no! You fell in the lava!',
-    'Oops! Try again!',
-    'Into the lava! Better luck next time!',
+    t('speech.lose.1'),
+    t('speech.lose.2'),
+    t('speech.lose.3'),
   ];
   speakText(phrases[Math.floor(Math.random() * phrases.length)], 0.9, 0.8);
 }

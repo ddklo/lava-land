@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Dark forest gradient -->
+    <linearGradient id="forestGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#020500"/>
+      <stop offset="35%"  stop-color="#050a02"/>
+      <stop offset="65%"  stop-color="#081205"/>
+      <stop offset="100%" stop-color="#0a1a08"/>
+    </linearGradient>
+
+    <!-- Swamp glow from below -->
+    <radialGradient id="swampGlow" cx="50%" cy="90%" r="70%">
+      <stop offset="0%"   stop-color="#44aa00" stop-opacity="0.15"/>
+      <stop offset="30%"  stop-color="#228800" stop-opacity="0.08"/>
+      <stop offset="60%"  stop-color="#114400" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Moonlight from above -->
+    <radialGradient id="moonlight" cx="70%" cy="8%" r="40%">
+      <stop offset="0%"   stop-color="#aaccaa" stop-opacity="0.08"/>
+      <stop offset="50%"  stop-color="#446644" stop-opacity="0.04"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Edge vignette -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+      <stop offset="0%"   stop-color="transparent"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.55"/>
+    </radialGradient>
+
+    <!-- Soft glow filter -->
+    <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="3" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background -->
+  <rect width="1920" height="1080" fill="url(#forestGrad)"/>
+  <rect width="1920" height="1080" fill="url(#swampGlow)"/>
+  <rect width="1920" height="1080" fill="url(#moonlight)"/>
+
+  <!-- Far tree silhouettes -->
+  <g opacity="0.15">
+    <!-- Pine trees background layer -->
+    <polygon points="100,400 130,200 160,400" fill="#0a2008"/>
+    <polygon points="250,380 290,150 330,380" fill="#0a2008"/>
+    <polygon points="400,420 440,220 480,420" fill="#081a06"/>
+    <polygon points="600,390 640,170 680,390" fill="#0a2008"/>
+    <polygon points="780,410 820,190 860,410" fill="#081a06"/>
+    <polygon points="1000,400 1040,180 1080,400" fill="#0a2008"/>
+    <polygon points="1200,380 1240,160 1280,380" fill="#081a06"/>
+    <polygon points="1400,420 1440,200 1480,420" fill="#0a2008"/>
+    <polygon points="1580,390 1620,170 1660,390" fill="#081a06"/>
+    <polygon points="1780,410 1820,210 1860,410" fill="#0a2008"/>
+  </g>
+
+  <!-- Mid tree silhouettes -->
+  <g opacity="0.2">
+    <polygon points="50,500 90,250 130,500" fill="#0c2a0a"/>
+    <polygon points="180,480 220,220 260,480" fill="#0e300c"/>
+    <polygon points="350,510 400,280 450,510" fill="#0c2a0a"/>
+    <polygon points="550,490 600,250 650,490" fill="#0e300c"/>
+    <polygon points="750,500 800,260 850,500" fill="#0c2a0a"/>
+    <polygon points="950,480 1000,230 1050,480" fill="#0e300c"/>
+    <polygon points="1150,510 1200,270 1250,510" fill="#0c2a0a"/>
+    <polygon points="1350,490 1400,250 1450,490" fill="#0e300c"/>
+    <polygon points="1550,500 1600,260 1650,500" fill="#0c2a0a"/>
+    <polygon points="1750,480 1800,240 1850,480" fill="#0e300c"/>
+  </g>
+
+  <!-- Near tree trunks -->
+  <g opacity="0.25">
+    <!-- Left trunk -->
+    <rect x="60" y="350" width="25" height="700" fill="#1a1208"/>
+    <ellipse cx="72" cy="350" rx="45" ry="60" fill="#0c2a0a"/>
+
+    <!-- Right trunk -->
+    <rect x="1830" y="320" width="30" height="730" fill="#1a1208"/>
+    <ellipse cx="1845" cy="320" rx="50" ry="65" fill="#0c2a0a"/>
+  </g>
+
+  <!-- Ground / swamp floor -->
+  <g opacity="0.3">
+    <path d="M0 900 Q200 850 400 880 Q600 910 800 870 Q1000 840 1200 880 Q1400 920 1600 870 Q1800 840 1920 890 L1920 1080 L0 1080Z" fill="#0a1a08"/>
+    <path d="M0 940 Q300 910 600 940 Q900 970 1200 930 Q1500 900 1920 950 L1920 1080 L0 1080Z" fill="#081508"/>
+  </g>
+
+  <!-- Moss and mushrooms -->
+  <g opacity="0.15" filter="url(#softGlow)">
+    <circle cx="200" cy="920" r="5" fill="#88cc44"/>
+    <circle cx="220" cy="925" r="4" fill="#66aa33"/>
+    <circle cx="500" cy="900" r="6" fill="#88cc44"/>
+    <circle cx="1400" cy="910" r="5" fill="#88cc44"/>
+    <circle cx="1700" cy="905" r="4" fill="#66aa33"/>
+
+    <!-- Glowing mushrooms -->
+    <ellipse cx="350" cy="935" rx="8" ry="5" fill="#aadd44" opacity="0.4"/>
+    <rect x="348" y="935" width="4" height="10" fill="#776644" opacity="0.3"/>
+    <ellipse cx="1600" cy="925" rx="7" ry="4" fill="#ccee66" opacity="0.4"/>
+    <rect x="1598" y="925" width="4" height="8" fill="#776644" opacity="0.3"/>
+  </g>
+
+  <!-- Fireflies -->
+  <g opacity="0.4" filter="url(#softGlow)">
+    <circle cx="300" cy="500" r="2" fill="#ccff44"/>
+    <circle cx="550" cy="350" r="1.5" fill="#eeff88"/>
+    <circle cx="800" cy="450" r="2" fill="#ccff44"/>
+    <circle cx="1100" cy="380" r="1.5" fill="#eeff88"/>
+    <circle cx="1350" cy="520" r="2" fill="#ccff44"/>
+    <circle cx="1650" cy="420" r="1.5" fill="#eeff88"/>
+    <circle cx="450" cy="600" r="1.5" fill="#ccff44"/>
+    <circle cx="1000" cy="580" r="2" fill="#eeff88"/>
+    <circle cx="1500" cy="650" r="1.5" fill="#ccff44"/>
+  </g>
+
+  <!-- Hanging vines -->
+  <g opacity="0.12" stroke="#2a4020" stroke-width="2" fill="none">
+    <path d="M120 0 Q130 100 115 200 Q100 300 120 350"/>
+    <path d="M140 0 Q150 80 135 160 Q120 240 145 300"/>
+    <path d="M1800 0 Q1790 120 1810 240 Q1830 350 1805 400"/>
+    <path d="M1850 0 Q1840 100 1855 200 Q1870 290 1845 350"/>
+  </g>
+
+  <!-- Vignette overlay -->
+  <rect width="1920" height="1080" fill="url(#vignette)"/>
+</svg>

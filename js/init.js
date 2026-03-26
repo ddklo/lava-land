@@ -32,12 +32,12 @@ if (!G.ctx) {
   throw new Error('2D context unavailable');
 }
 
-// Set title from constants
-document.title = GAME_TITLE + ' - Save Your Friend!';
-document.getElementById('menu-title').textContent = GAME_TITLE;
-document.getElementById('menu-credit').textContent = GAME_AUTHOR;
-document.getElementById('hud-game-title').textContent = GAME_TITLE;
-document.getElementById('hud-game-author').textContent = GAME_AUTHOR;
+// Set title from constants — applyLanguage() in menu.js will refresh these
+document.title = t('page.title');
+document.getElementById('menu-title').textContent = t('menu.title');
+document.getElementById('menu-credit').textContent = t('menu.credit');
+document.getElementById('hud-game-title').textContent = t('menu.title');
+document.getElementById('hud-game-author').textContent = t('menu.credit');
 
 // ─── RESIZE HANDLING ────────────────────────────────────────────
 // Recalculate canvas dimensions and invalidate lava cache when the

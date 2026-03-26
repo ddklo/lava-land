@@ -4,6 +4,9 @@ const G = {
   gridCols: 6,
   gridRows: 12,
   difficulty: 'easy',
+  language: 'en',
+  soundtrack: 'classic',
+  theme: 'volcano',
 
   // Audio
   audioCtx: null,
