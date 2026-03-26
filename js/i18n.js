@@ -187,6 +187,39 @@ const TRANSLATIONS = {
     // Endless level
     'level.Endless': 'Endless {n}',
 
+    // Combo callouts
+    'combo.nice': 'NICE!',
+    'combo.awesome': 'AWESOME!',
+    'combo.incredible': 'INCREDIBLE!',
+    'combo.unstoppable': 'UNSTOPPABLE!',
+    'combo.legendary': 'LEGENDARY!',
+
+    // Almost there
+    'almost.there': 'Almost there!',
+    'almost.one_more': 'One more jump!',
+    'almost.you_got_this': 'You got this!',
+    'almost.so_close': 'So close!',
+
+    // Coins
+    'win.coins_bonus': 'Coins collected',
+
+    // Level stories
+    'story.1': '{hero} spots {rescue} across a bubbling lava creek. Time to be brave!',
+    'story.2': '{hero} steps onto the ancient stepping stones. Each one might crumble!',
+    'story.3': '{rescue} is stranded beyond the lava creek. Only {hero} can help!',
+    'story.4': 'The molten path glows red. {hero} must find the safe way through!',
+    'story.5': 'Glowing embers light the trail ahead. {rescue} calls out for help!',
+    'story.6': '{hero} enters the fire walk. The heat is intense but {rescue} needs saving!',
+    'story.7': 'The inferno bridge stretches wide. {hero} must remember every safe step!',
+    'story.8': 'A scorched passage blocks the way. {hero} won\'t give up on {rescue}!',
+    'story.9': 'The magma maze twists and turns. Can {hero} find the path through?',
+    'story.10': '{hero} races across the obsidian run. {rescue} is counting on a perfect memory!',
+    'story.11': 'Deep inside the volcano\'s heart, {rescue} waits. {hero} must be fearless!',
+    'story.12': '{hero} enters the dragon\'s lair. One wrong step and it\'s over!',
+    'story.13': 'Hellfire rages all around! {hero} must sprint through the flames to reach {rescue}!',
+    'story.14': 'The core is melting down! {hero} has seconds to cross before it all collapses!',
+    'story.15': 'The final descent into the volcano! {hero} faces the ultimate challenge to save {rescue}!',
+
     // Error
     'error.canvas': 'Failed to load game: canvas element not found.',
     'error.context': 'Failed to load game: 2D context unavailable.',
@@ -376,6 +409,39 @@ const TRANSLATIONS = {
 
     // Endless level
     'level.Endless': 'Uendelig {n}',
+
+    // Combo callouts
+    'combo.nice': 'FINT!',
+    'combo.awesome': 'FANTASTISK!',
+    'combo.incredible': 'UTROLIG!',
+    'combo.unstoppable': 'USTOPPELIG!',
+    'combo.legendary': 'LEGENDARISK!',
+
+    // Almost there
+    'almost.there': 'Nesten fremme!',
+    'almost.one_more': 'Bare ett hopp til!',
+    'almost.you_got_this': 'Du klarer det!',
+    'almost.so_close': 'S\u00E5 n\u00E6r!',
+
+    // Coins
+    'win.coins_bonus': 'Mynter samlet',
+
+    // Level stories
+    'story.1': '{hero} ser {rescue} over en boblende lavabekk. P\u00E5 tide \u00E5 v\u00E6re modig!',
+    'story.2': '{hero} trer p\u00E5 de gamle kl\u00F8ppesteinene. Hver en kan smuldre!',
+    'story.3': '{rescue} er strandet bak lavabekken. Bare {hero} kan hjelpe!',
+    'story.4': 'Den smeltede stien gløder rødt. {hero} m\u00E5 finne den trygge veien!',
+    'story.5': 'Glødende gløder lyser opp sporet. {rescue} roper om hjelp!',
+    'story.6': '{hero} g\u00E5r inn i ildvandringen. Varmen er intens, men {rescue} trenger redning!',
+    'story.7': 'Infernobroen strekker seg bredt. {hero} m\u00E5 huske hvert trygge steg!',
+    'story.8': 'En svidd passasje blokkerer veien. {hero} gir ikke opp {rescue}!',
+    'story.9': 'Magmalabyrinten svinger og snur. Kan {hero} finne veien gjennom?',
+    'story.10': '{hero} løper over obsidianløpet. {rescue} regner med perfekt hukommelse!',
+    'story.11': 'Dypt inne i vulkanens hjerte venter {rescue}. {hero} m\u00E5 v\u00E6re fryktløs!',
+    'story.12': '{hero} g\u00E5r inn i dragens hule. Ett feil steg og det er over!',
+    'story.13': 'Helvedesild raser overalt! {hero} m\u00E5 sprinte gjennom flammene for \u00E5 n\u00E5 {rescue}!',
+    'story.14': 'Kjernen smelter ned! {hero} har sekunder p\u00E5 \u00E5 krysse før alt kollapser!',
+    'story.15': 'Den siste nedstigningen i vulkanen! {hero} m\u00F8ter den ultimate utfordringen for \u00E5 redde {rescue}!',
 
     // Error
     'error.canvas': 'Kunne ikke laste spillet: canvas-element ikke funnet.',

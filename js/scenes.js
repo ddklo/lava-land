@@ -143,6 +143,7 @@ const MemorizeScene = {
     this._lastSecs = -1;
     G.memorizeInitialTime = G.memorizeTimer;
     G.pathRevealCount = 0;
+    G.countdownTicksPlayed = {};
     document.getElementById('game-hud').style.display = 'block';
     document.getElementById('game-hud').classList.add('hud-memorize-mode');
     document.getElementById('lose-screen').style.display = 'none';
@@ -212,6 +213,12 @@ const MemorizeScene = {
       document.getElementById('hud-text').innerHTML =
         `<div class="timer-warn">${t('memorize.countdown', { secs: secs })}</div>` +
         `<div class="timer-hint">${hint}</div>`;
+      // Countdown tick sounds in final seconds
+      if (secs <= COUNTDOWN_TICK_START && secs > 0 && !G.countdownTicksPlayed[secs]) {
+        G.countdownTicksPlayed[secs] = true;
+        playCountdownTick(secs);
+        haptic(secs === 1 ? [40, 20, 60] : [30]);
+      }
     }
     if (G.memorizeTimer <= 0) {
       SceneManager.replace(PlayingScene);
@@ -238,6 +245,7 @@ const MemorizeScene = {
     drawLava(0, levelTotalH);
 
     renderPlatforms(true);
+    drawCoins();
     drawPathReveal(G.pathRevealCount);
     drawRescueCharacter(true);
     drawParticles();
@@ -261,9 +269,19 @@ const MemorizeScene = {
 function showStreakFlash(n) {
   const el = document.getElementById('streak-flash');
   if (!el) return;
-  el.textContent = t('playing.streak', { n: n });
+  // Check for combo milestone callouts
+  let callout = '';
+  for (let i = COMBO_MILESTONES.length - 1; i >= 0; i--) {
+    if (n >= COMBO_MILESTONES[i].streak) {
+      callout = t(COMBO_MILESTONES[i].key);
+      break;
+    }
+  }
+  el.textContent = callout ? callout + ' ' + t('playing.streak', { n: n }) : t('playing.streak', { n: n });
   el.style.display = 'block';
-  addTimer(1.5, () => { el.style.display = 'none'; });
+  // Haptic feedback for combo milestones
+  if (callout) haptic([30, 20, 50, 20, 30]);
+  addTimer(1.8, () => { el.style.display = 'none'; });
 }
 
 function startPlayingEarly() {
@@ -291,6 +309,10 @@ const PlayingScene = {
     G.streakPopups = [];
     G.revealRoute = false;
     G.revealRouteTimer = 0;
+    G.almostThereShown = false;
+    G.almostThereTimer = 0;
+    G.idleTimer = 0;
+    G.idleBobPhase = 0;
     this._lastRow = -1;
     this._lastCol = -1;
     this._lastTimerStr = '';
@@ -378,12 +400,35 @@ const PlayingScene = {
         spawnJumpTrail(px, py);
       }
 
+      // Speed lines during jump (feature 1: animated character)
+      if (this._trailFrameCount % 3 === 0) {
+        const dx = G.jumpAnim.endX - G.jumpAnim.startX;
+        const jt = G.jumpAnim.t;
+        const jpx = G.jumpAnim.startX + (G.jumpAnim.endX - G.jumpAnim.startX) * jt;
+        const jpy = G.jumpAnim.startY + (G.jumpAnim.endY - G.jumpAnim.startY) * jt + JUMP_ARC_HEIGHT * Math.sin(jt * Math.PI);
+        spawnSpeedLines(jpx, jpy, dx);
+      }
+
       if (G.jumpAnim.t >= 1) {
         G.jumpAnim.t = 1;
         G.jumpAnim.active = false;
         this._trailFrameCount = 0;
         landOnPlatform(G.jumpAnim.targetPlat, G.jumpAnim.targetRow, G.jumpAnim.targetCol);
       }
+    }
+
+    // Almost there encouragement
+    if (!G.almostThereShown && G.platforms.length > 0) {
+      const rowsFromEnd = G.platforms.length - 1 - G.player.row;
+      if (rowsFromEnd <= ALMOST_THERE_ROWS && rowsFromEnd > 0) {
+        G.almostThereShown = true;
+        G.almostThereTimer = 2.5;
+        playAlmostThereSound();
+        haptic([20, 30, 20, 30, 40]);
+      }
+    }
+    if (G.almostThereTimer > 0) {
+      G.almostThereTimer -= dt;
     }
 
     // Camera tracking
@@ -436,6 +481,7 @@ const PlayingScene = {
 
     drawLava(G.camera.y, CANVAS_H);
     renderPlatforms(G.revealRoute);
+    drawCoins();
     drawTrailMarks();
     drawRescueCharacter();
     drawParticles();
@@ -444,6 +490,9 @@ const PlayingScene = {
     drawTutorialArrow();
 
     ctx.restore();
+
+    // Almost there encouragement (drawn outside camera transform)
+    drawAlmostThere();
 
     // Route reveal overlay hint
     if (G.revealRoute) {
@@ -597,6 +646,10 @@ const WonScene = {
     this._showScreenTimer = -1;
     this._confettiTimer = 0;
 
+    // Victory dance phase
+    G.victoryDanceActive = true;
+    G.victoryDanceTimer = 0;
+
     // Start fly-away from goal platform position
     let startX = CANVAS_W / 2, startY = CANVAS_H * 0.55;
     if (G.platforms.length > 0 && G.safePath.length > 0) {
@@ -606,6 +659,8 @@ const WonScene = {
         startY = goalPlat.y - G.camera.y - 20;
       }
     }
+    this._danceX = startX;
+    this._danceY = startY;
     this._flyX1 = startX + 20;
     this._flyY1 = startY;
     this._flyX2 = startX - 20;
@@ -638,6 +693,9 @@ const WonScene = {
         totalCols: G.gridCols,
         fakeChance: G.levelConfig.fake,
       });
+      // Add coin bonus to breakdown
+      breakdown.coinBonus = G.coinScore || 0;
+      breakdown.totalScore += breakdown.coinBonus;
       const stars = calculateStars(breakdown.totalScore, G.level);
       G.levelScore = breakdown.totalScore;
       G.levelStars = stars;
@@ -675,6 +733,9 @@ const WonScene = {
         if (breakdown.streakBonus > 0) {
           scoreHtml += `<div class="score-row bonus"><span>${t('win.streak_bonus')}</span><span>+${breakdown.streakBonus}</span></div>`;
         }
+        if (breakdown.coinBonus > 0) {
+          scoreHtml += `<div class="score-row bonus"><span>${t('win.coins_bonus')} (${G.coinsCollected})</span><span>+${breakdown.coinBonus}</span></div>`;
+        }
       }
       scoreHtml += `<div class="score-total"><span>${t('win.level_score')}</span><span>${breakdown.totalScore}</span></div>`;
       scoreHtml += `<div class="score-cumulative">${t('win.total_score', { score: G.totalScore })}</div>`;
@@ -699,15 +760,34 @@ const WonScene = {
     updateTimers(dt);
     G.winTimer += dt;
 
-    // Characters fly up and off screen
-    this._flyVY1 -= 120 * dt;
-    this._flyVY2 -= 120 * dt;
-    this._flyX1 += this._flyVX1 * dt;
-    this._flyY1 += this._flyVY1 * dt;
-    this._flyX2 += this._flyVX2 * dt;
-    this._flyY2 += this._flyVY2 * dt;
-    this._angle1 += dt * 3.5;
-    this._angle2 -= dt * 2.8;
+    // Victory dance phase — characters dance before flying away
+    if (G.victoryDanceActive) {
+      G.victoryDanceTimer += dt;
+      // Spawn sparkles during dance
+      if (Math.random() < 0.3) {
+        spawnVictorySparkle(this._danceX, this._danceY);
+      }
+      if (G.victoryDanceTimer >= VICTORY_DANCE_DURATION) {
+        G.victoryDanceActive = false;
+        // Initialize fly-away from dance position
+        this._flyX1 = this._danceX + 20;
+        this._flyY1 = this._danceY;
+        this._flyX2 = this._danceX - 20;
+        this._flyY2 = this._danceY;
+      }
+    }
+
+    // Characters fly up and off screen (only after dance)
+    if (!G.victoryDanceActive) {
+      this._flyVY1 -= 120 * dt;
+      this._flyVY2 -= 120 * dt;
+      this._flyX1 += this._flyVX1 * dt;
+      this._flyY1 += this._flyVY1 * dt;
+      this._flyX2 += this._flyVX2 * dt;
+      this._flyY2 += this._flyVY2 * dt;
+      this._angle1 += dt * 3.5;
+      this._angle2 -= dt * 2.8;
+    }
 
     updateTransition(dt);
 
@@ -770,6 +850,15 @@ const WonScene = {
     drawLava(G.camera.y, CANVAS_H);
     renderPlatforms(false);
     drawParticles();
+
+    // Victory dance phase
+    if (G.victoryDanceActive) {
+      drawVictoryDance(this._danceX, this._danceY, G.victoryDanceTimer);
+      ctx.globalAlpha = 1;
+      ctx.restore();
+      drawTransition();
+      return;
+    }
 
     // Characters fly up and off screen
     const drawFlyChar = (emoji, x, y, angle, vx, vy) => {

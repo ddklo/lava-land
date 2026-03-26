@@ -317,6 +317,21 @@ function generatePlatforms() {
 
   // Compute the true shortest safe route via BFS and store as G.optimalRoute.
   G.optimalRoute = computeOptimalRoute();
+
+  // ── Place collectible coins on safe non-path platforms ───────
+  G.coins = [];
+  G.coinsCollected = 0;
+  G.coinScore = 0;
+  for (let row = 1; row < G.gridRows - 1; row++) {
+    for (let col = 0; col < G.gridCols; col++) {
+      if (col === G.safePath[row]) continue; // skip path platforms
+      const plat = G.platforms[row][col];
+      if (plat.fake) continue; // only place on safe platforms
+      if (Math.random() < COIN_CHANCE) {
+        G.coins.push({ row: row, col: col, collected: false });
+      }
+    }
+  }
 }
 
 // ─── OPTIMAL ROUTE (BFS shortest path) ──────────────────────

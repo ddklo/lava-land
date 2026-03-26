@@ -107,6 +107,10 @@ function startLevel() {
   G.hopsThisRow = 0;
   G.streakBonus = 0;
   G.routeRevealed = false;
+  G.almostThereShown = false;
+  G.almostThereTimer = 0;
+  G.victoryDanceActive = false;
+  G.victoryDanceTimer = 0;
 
   transitionTo(MemorizeScene);
 }
@@ -342,6 +346,10 @@ function startGame() {
   G.hopsThisRow = 0;
   G.streakBonus = 0;
   G.routeRevealed = false;
+  G.almostThereShown = false;
+  G.almostThereTimer = 0;
+  G.victoryDanceActive = false;
+  G.victoryDanceTimer = 0;
 
   transitionTo(MemorizeScene);
 }

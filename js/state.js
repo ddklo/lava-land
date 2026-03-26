@@ -80,6 +80,26 @@ const G = {
   streak: 0,
   streakPopups: [],
 
+  // Collectible coins
+  coins: [],             // [{row, col, collected}] placed during generation
+  coinsCollected: 0,     // count collected this level
+  coinScore: 0,          // total coin points this level
+
+  // Character animation
+  idleTimer: 0,          // accumulator for idle animations
+  idleBobPhase: 0,       // phase for idle micro-hops
+
+  // Almost there encouragement
+  almostThereShown: false,
+  almostThereTimer: 0,
+
+  // Victory dance
+  victoryDanceTimer: 0,
+  victoryDanceActive: false,
+
+  // Countdown ticks played (memorize phase)
+  countdownTicksPlayed: {},
+
   // Level preview
   levelPreview: null,
 

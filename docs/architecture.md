@@ -23,8 +23,8 @@ lava-land/
     icon-192.png          App icon 192×192 (PWA / Android)
     icon-512.png          App icon 512×512 (PWA / splash)
   js/
-    config.js             Constants, physics tuning, CHARACTERS, LEVELS, getLevelConfig(), scoring constants, THEME_PALETTES
-    i18n.js               Translation dictionary (en/no) + t() helper + SPEECH_LANG
+    config.js             Constants, physics tuning, CHARACTERS (with color/soundPitch/soundType), LEVELS, getLevelConfig(), scoring constants, THEME_PALETTES, coin/combo/almost-there/victory-dance/story constants
+    i18n.js               Translation dictionary (en/no) + t() helper + SPEECH_LANG (includes combo callout, almost-there, coin, and level story keys)
     state.js              Shared mutable state object (G)
     timers.js             Managed timer system (replaces setTimeout in game logic)
     audio.js              Procedural music dispatchers + sound effects + speech synthesis
@@ -153,6 +153,17 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `BOARD_RULES.maxConsecutiveSameDirection` | 5 | Max consecutive same lateral direction |
 | `BOARD_RULES.minLateralMoveFraction` | 0.4 | Min fraction of rows with lateral moves |
 | `BOARD_RULES.minColumnSpreadFraction` | 0.6 | Min fraction of columns the safe path must visit |
+| `COIN_CHANCE` | — | Probability of spawning a coin on a safe platform |
+| `COIN_POINTS` | — | Points awarded per collected coin |
+| `COIN_SIZE` | — | Coin sprite size |
+| `COIN_BOB_SPEED` | — | Coin floating bob animation speed |
+| `COIN_BOB_HEIGHT` | — | Coin floating bob amplitude |
+| `COIN_SPIN_SPEED` | — | Coin spin animation speed |
+| `COMBO_MILESTONES` | — | Streak thresholds that trigger combo callout text |
+| `ALMOST_THERE_ROWS` | — | Rows from goal to trigger "almost there" prompt |
+| `COUNTDOWN_TICK_START` | — | Seconds remaining when countdown ticks begin |
+| `VICTORY_DANCE_DURATION` | — | Duration of victory dance phase (seconds) |
+| `LEVEL_STORIES` | — | Per-level story blurb strings |
 
 ### 6. Audio Error Handling (audio.js)
 
@@ -187,6 +198,11 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Timers | `timers` | timers.js |
 | Input | `keys`, `isTouchDevice` | input.js |
 | Loop | `lastTime`, `accumulator` | loop.js |
+| Coins | `coins`, `coinsCollected`, `coinScore` | platforms.js, logic.js |
+| Idle | `idleTimer`, `idleBobPhase` | PlayingScene |
+| Almost There | `almostThereShown`, `almostThereTimer` | PlayingScene |
+| Victory Dance | `victoryDanceTimer`, `victoryDanceActive` | WonScene |
+| Countdown | `countdownTicksPlayed` | MemorizeScene |
 | Performance | `perfMode`, `perf` (fps, avgFps, minFps, frameTimes, showFps), `lastParallaxY` | loop.js, init.js, drawing.js |
 
 ---
@@ -229,14 +245,17 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `updateTimers(dt)` - Tick all timers, fire expired ones
 - `clearTimers()` - Cancel all pending timers
 
-### audio.js (17 functions)
+### audio.js (20 functions)
 - `initAudio()` - Lazy-create AudioContext (with try-catch)
 - `hasAudio()` - Guard: returns true if AudioContext is available
 - `stopMusic()` - Fade out + disconnect current music
 - `playMemorizeMusic()` - Procedural tense chord loop + ticking clock
 - `playActionMusic()` - Procedural 80s synth-funk 4-bar loops
-- `playJumpSound()` / `playHopSound()` - Jump SFX
-- `playLandSound()` / `playCrumbleSound()` / `playFallSound()` - Impact SFX
+- `playJumpSound()` / `playHopSound()` - Jump SFX (character-specific pitch + type)
+- `playLandSound()` / `playCrumbleSound()` / `playFallSound()` - Impact SFX (land uses character-specific pitch + type)
+- `playCoinSound()` - Coin collection SFX
+- `playCountdownTick(secsLeft)` - Countdown tick SFX during memorize phase
+- `playAlmostThereSound()` - "Almost there" proximity alert SFX
 - `playWinSound()` - 10-second procedural victory fanfare
 - `playLoseSound()` - Sad descending trombone
 - `getEnglishVoice()` - Cached English voice lookup for speech synthesis
@@ -248,13 +267,13 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `insertBacktracks(safePath, gridCols, gridRows, numBacktracks)` - Insert backward-jump sections into the safe path for late-level difficulty
 
 ### platforms.js (2 functions)
-- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES via pathgen.js), insert backtracks, mark fakes, block straight-down exploits, then calls computeOptimalRoute()
+- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES via pathgen.js), insert backtracks, mark fakes, block straight-down exploits, place coins, then calls computeOptimalRoute()
 - `computeOptimalRoute()` - BFS through non-fake platforms to find the shortest step-count path from (row 0, safePath[0]) to (gridRows-1, safePath[last]); stored as G.optimalRoute; falls back to safeRoute if unreachable
 
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
 
-### drawing.js (12 functions)
+### drawing.js (15 functions)
 - `drawEmoji(ctx, emoji, x, y, size)` - Shared emoji renderer with shadow pass (reduced in low perf mode)
 - `drawLava(offsetY, height)` - 7-layer animated lava background (layers 4-6 skipped in low perf mode)
 - `drawPlatform(p, reveal)` - 3D stone block with brick texture + glow (memorize) + heat (lava proximity); decorative details (noise, bricks, cracks, moss) skipped in low perf mode
@@ -265,18 +284,22 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `drawRouteSteps()` - Draw numbered step markers and arrows on safeRoute during memorize (only when backtracks exist; no longer called from MemorizeScene)
 - `drawPathReveal(revealCount)` - Sequential path reveal during memorize: highlights first `revealCount` optimalRoute steps with gold glow, border, step number badge, and arrows; replaces column indicator
 - `formatTime(seconds)` - Timer display formatter
+- `drawCoins()` - Render collectible coins with bob and spin animation
+- `drawAlmostThere()` - "Almost there" proximity HUD prompt
+- `drawVictoryDance(x,y,timer)` - Animated victory dance celebration
 - `drawFpsCounter()` - FPS/avg/min overlay (toggle via F3 key)
 
 ### hud.js (9 functions)
+Note: `drawLevelPreview()` now shows level story blurbs from `LEVEL_STORIES`.
 - `transitionTo(scene)` - Scene fade transition (DOM overlay with CSS transitions)
 - `updateTransition(dt)` / `drawTransition()` - No-ops kept for backward compat
-- `updateStreakPopups(dt)` / `drawStreakPopups()` - Combo streak counter display
+- `updateStreakPopups(dt)` / `drawStreakPopups()` - Combo streak counter display with milestone callout text
 - `drawUrgencyVignette(intensity)` - Red vignette pulse for memorize countdown (cached offscreen canvas)
 - `_getVignetteCache()` - Creates/returns cached vignette offscreen canvas
-- `drawLevelPreview()` - Level name/info card overlay
+- `drawLevelPreview()` - Level name/info card overlay with level story blurbs
 - `drawTutorialArrow()` / `drawTutorialHint(ctx, tx, ty, text)` - Tutorial arrow pointing at first safe platform
 
-### effects.js (8 functions)
+### effects.js (11 functions)
 - `pushParticle(p)` - Adds particle to array if below MAX_PARTICLES cap
 - `spawnPlatformExplosion(plat)` - 18 stone debris particles on departure
 - `spawnLandDust(plat)` - Radial dust cloud on landing
@@ -285,14 +308,17 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `spawnJumpTrail(x, y)` - 2 glowing trail particles during jump arc
 - `spawnFirework(x, y)` - Burst of 30 radial particles
 - `spawnConfetti()` - 40 falling confetti particles
+- `spawnCoinSparkle(x, y)` - Sparkle burst on coin collection
+- `spawnSpeedLines(x, y, dx)` - Directional speed line particles
+- `spawnVictorySparkle(x, y)` - Sparkle particles during victory dance
 
 ### scenes.js (SceneManager + 5 scenes + 5 helpers)
 - `SceneManager` - push/pop/replace + update/render delegation
 - `MenuScene` - Lava background, shows menu HTML overlay, resets parallax
-- `MemorizeScene` - Zoom-out view, countdown, level preview card, urgency vignette, progress dots
-- `PlayingScene` - Gameplay: jump animation, camera, platform bob, trail, HUD, jump trail particles, streak popups, tutorial arrow, parallax
+- `MemorizeScene` - Zoom-out view, countdown, level preview card, urgency vignette, progress dots, countdown ticks
+- `PlayingScene` - Gameplay: jump animation, camera, platform bob, trail, HUD, jump trail particles, streak popups, tutorial arrow, parallax, coins, almost-there prompt
 - `FallingScene` - Fall animation, shake, "Almost!" feedback, lose screen after 1.8s, parallax
-- `WonScene` - Firework sequence, character celebration walk, star pop-in animation, win screen
+- `WonScene` - Firework sequence, character celebration walk, victory dance phase, star pop-in animation, win screen
 - `renderPlatforms(reveal)` / `applyShake(ctx)` / `updatePlatformBob(dt)` / `updateCrumbleTimers(dt)` / `startPlayingEarly()`
 
 ### scoring.js (2 functions)
@@ -302,7 +328,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 ### logic.js (3 functions)
 - `destroyDeparturePlatform()` - Explode and mark current platform as destroyed
 - `tryJump(direction)` - Handle left/right/forward/backward jump; uses destroyDeparturePlatform
-- `landOnPlatform(plat, row, col)` - Process landing; check win/fake/destroyed
+- `landOnPlatform(plat, row, col)` - Process landing; collect coins, check win/fake/destroyed
 
 ### input.js (1 function)
 - `setupInput()` - Register keyboard + touch event listeners
@@ -416,7 +442,7 @@ Convert to `<script type="module">` with import/export. Requires HTTP server.
 - ~~START button not debounced~~ — disabled immediately in `startGame()`
 - ~~Missing bounds check~~ in sideways jump — added row bounds guard
 - ~~Speech synthesis wrong voice~~ — now explicitly requests English voice via `getEnglishVoice()`
-- ~~Dead data `CHARACTERS[*].color`~~ — removed (never read)
+- ~~Dead data `CHARACTERS[*].color`~~ — reinstated in v1.5.0; now used by character-specific audio (along with new `soundPitch` and `soundType` properties)
 - ~~No offline support~~ — added PWA manifest + service worker
 - ~~No tab backgrounding handling~~ — loop pauses on `visibilitychange`, resets accumulator on resume
 - ~~Unbounded particle array~~ — capped at `MAX_PARTICLES` via `pushParticle()` helper

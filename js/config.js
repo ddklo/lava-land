@@ -317,16 +317,51 @@ function palette() {
   return THEME_PALETTES[G.theme] || THEME_PALETTES.volcano;
 }
 
+// ─── COLLECTIBLE COINS ──────────────────────────────────────────
+const COIN_CHANCE = 0.3;       // chance a safe non-path platform gets a coin
+const COIN_POINTS = 150;       // points per coin collected
+const COIN_SIZE = 14;          // radius of coin sprite
+const COIN_BOB_SPEED = 3;     // bob animation speed
+const COIN_BOB_HEIGHT = 4;    // bob amplitude in pixels
+const COIN_SPIN_SPEED = 4;    // spin animation speed
+
+// ─── COMBO CALLOUTS ─────────────────────────────────────────────
+// Milestone streak thresholds and their i18n keys
+const COMBO_MILESTONES = [
+  { streak: 3,  key: 'combo.nice' },
+  { streak: 5,  key: 'combo.awesome' },
+  { streak: 7,  key: 'combo.incredible' },
+  { streak: 10, key: 'combo.unstoppable' },
+  { streak: 15, key: 'combo.legendary' },
+];
+
+// ─── ALMOST THERE ───────────────────────────────────────────────
+const ALMOST_THERE_ROWS = 2;   // show encouragement when this many rows from end
+
+// ─── COUNTDOWN TICK ─────────────────────────────────────────────
+const COUNTDOWN_TICK_START = 3; // seconds before memorize end to start ticking
+
+// ─── VICTORY DANCE ──────────────────────────────────────────────
+const VICTORY_DANCE_DURATION = 2.0; // seconds of dance before fly-away
+
 // Characters
 const CHARACTERS = [
-  { id: 'tortoise', emoji: '\u{1F422}', name: 'Tortoise' },
-  { id: 'wizard', emoji: '\u{1F9D9}', name: 'Wizard' },
-  { id: 'koala', emoji: '\u{1F428}', name: 'Koala' },
-  { id: 'ninja',  emoji: '\u{1F977}', name: 'Ninja' },
-  { id: 'princess', emoji: '\u{1F478}', name: 'Princess' },
-  { id: 'prince', emoji: '\u{1F934}', name: 'Prince' },
-  { id: 'cat', emoji: '\u{1F431}', name: 'Cat' },
-  { id: 'dog', emoji: '\u{1F436}', name: 'Dog' },
-  { id: 'witch', emoji: '\u{1F9D9}\u200D\u2640\uFE0F', name: 'Witch' },
-  { id: 'dolphin', emoji: '\u{1F42C}', name: 'Dolphin' },
+  { id: 'tortoise', emoji: '\u{1F422}', name: 'Tortoise', color: '#6B8E23', soundPitch: 0.7,  soundType: 'triangle' },
+  { id: 'wizard',   emoji: '\u{1F9D9}', name: 'Wizard',   color: '#7B68EE', soundPitch: 1.2,  soundType: 'sine' },
+  { id: 'koala',    emoji: '\u{1F428}', name: 'Koala',     color: '#A0A0A0', soundPitch: 0.9,  soundType: 'sine' },
+  { id: 'ninja',    emoji: '\u{1F977}', name: 'Ninja',     color: '#2F4F4F', soundPitch: 1.1,  soundType: 'square' },
+  { id: 'princess', emoji: '\u{1F478}', name: 'Princess',  color: '#FF69B4', soundPitch: 1.3,  soundType: 'sine' },
+  { id: 'prince',   emoji: '\u{1F934}', name: 'Prince',    color: '#4169E1', soundPitch: 1.0,  soundType: 'triangle' },
+  { id: 'cat',      emoji: '\u{1F431}', name: 'Cat',       color: '#FF8C00', soundPitch: 1.4,  soundType: 'sine' },
+  { id: 'dog',      emoji: '\u{1F436}', name: 'Dog',       color: '#CD853F', soundPitch: 0.85, soundType: 'sawtooth' },
+  { id: 'witch',    emoji: '\u{1F9D9}\u200D\u2640\uFE0F', name: 'Witch', color: '#9932CC', soundPitch: 0.95, soundType: 'sawtooth' },
+  { id: 'dolphin',  emoji: '\u{1F42C}', name: 'Dolphin',   color: '#00CED1', soundPitch: 1.5,  soundType: 'sine' },
+];
+
+// ─── LEVEL STORIES ──────────────────────────────────────────────
+// Short narrative intro for each adventure level (i18n key)
+const LEVEL_STORIES = [
+  'story.1',  'story.2',  'story.3',  'story.4',  'story.5',
+  'story.6',  'story.7',  'story.8',  'story.9',  'story.10',
+  'story.11', 'story.12', 'story.13', 'story.14', 'story.15',
 ];

@@ -185,6 +185,26 @@ function landOnPlatform(plat, row, col) {
       G.tutorialShown = true;
     }
 
+    // Coin collection
+    for (const coin of G.coins) {
+      if (!coin.collected && coin.row === row && coin.col === col) {
+        coin.collected = true;
+        G.coinsCollected++;
+        G.coinScore += COIN_POINTS;
+        playCoinSound();
+        haptic([15, 10, 25]);
+        spawnCoinSparkle(plat.x + plat.w / 2, plat.y + (PLAT_H - PLAT_DEPTH) / 2 - 18);
+        // Coin popup
+        G.streakPopups.push({
+          x: plat.x + plat.w / 2,
+          y: plat.y - 35,
+          text: '+' + COIN_POINTS,
+          timer: 1.0,
+        });
+        break;
+      }
+    }
+
     // Trail mark
     G.trailMarks.push({
       x: plat.x + plat.w / 2,
