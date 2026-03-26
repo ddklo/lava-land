@@ -83,7 +83,7 @@ function drawStreakPopups() {
     ctx.translate(p.x, screenY);
     ctx.scale(scale, scale);
     ctx.fillStyle = '#ffcc44';
-    ctx.font = 'bold 22px sans-serif';
+    ctx.font = '800 23px "Nunito", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.shadowColor = 'rgba(0,0,0,0.8)';
@@ -142,14 +142,14 @@ function drawLevelPreview() {
 
   ctx.globalAlpha = alpha;
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 42px sans-serif';
+  ctx.font = '800 44px "Nunito", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.shadowColor = 'rgba(255,100,0,0.6)';
   ctx.shadowBlur = 20;
   ctx.fillText(t('level.preview', { level: G.level }), CANVAS_W / 2, CANVAS_H / 2 - 30);
 
-  ctx.font = '24px sans-serif';
+  ctx.font = '700 25px "Nunito", sans-serif';
   ctx.fillStyle = '#ffaa55';
   ctx.shadowBlur = 0;
   ctx.fillText(G.levelConfig ? t('level.' + G.levelConfig.name, { n: G.level }) : '', CANVAS_W / 2, CANVAS_H / 2 + 15);
@@ -161,14 +161,14 @@ function drawLevelPreview() {
       G.levelPreview._diffStr = `${G.levelConfig.cols}\u00D7${G.levelConfig.rows}  ${'\uD83D\uDD25'.repeat(fires)}`;
       G.levelPreview._diffLevel = G.level;
     }
-    ctx.font = '18px sans-serif';
+    ctx.font = '600 19px "Nunito", sans-serif';
     ctx.fillStyle = '#cc8855';
     ctx.fillText(G.levelPreview._diffStr, CANVAS_W / 2, CANVAS_H / 2 + 55);
   }
 
   // Level story blurb (word-wrap cached to avoid per-frame measureText)
   if (G.level <= LEVEL_STORIES.length && G.heroChar && G.rescueChar) {
-    ctx.font = 'italic 15px sans-serif';
+    ctx.font = 'italic 600 16px "Nunito", sans-serif';
     ctx.fillStyle = '#ffddaa';
     ctx.shadowBlur = 0;
     if (!G.levelPreview._wrappedLines || G.levelPreview._wrappedLevel !== G.level) {
@@ -281,7 +281,7 @@ function drawTutorialHint(ctx, tx, ty, text) {
   // Text
   ctx.globalAlpha = 0.95;
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 16px sans-serif';
+  ctx.font = '800 17px "Nunito", sans-serif';
   ctx.textAlign = 'center';
   ctx.fillText(text, tx, ty - 34);
 

@@ -5,7 +5,8 @@
 
 :root {
   /* ── Fonts ──────────────────────────────────────────────────── */
-  --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-main: 'Nunito', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  --font-heading: 'Fredoka One', 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   --font-mono: monospace;
 
   /* ── Background / surface ───────────────────────────────────── */

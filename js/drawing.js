@@ -718,7 +718,7 @@ function drawRescueCharacter(noClip) {
   drawEmoji(ctx, G.rescueChar.emoji, gx, gy + floatY, EMOJI_SIZE);
 
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 16px sans-serif';
+  ctx.font = 'bold 17px "Nunito", sans-serif';
   ctx.fillText(t('rescue.help'), gx, gy + floatY - 36);
 }
 
@@ -774,7 +774,7 @@ function drawCoins() {
 
     // Star symbol in center
     ctx.fillStyle = '#B8860B';
-    ctx.font = 'bold 14px sans-serif';
+    ctx.font = 'bold 15px "Nunito", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('\u2605', 0, 0);
@@ -800,7 +800,7 @@ function drawAlmostThere() {
   ctx.shadowColor = '#44ff88';
   ctx.shadowBlur = 16 + Math.sin(G.lavaTime * 6) * 6;
   ctx.fillStyle = '#ffffff';
-  ctx.font = 'bold 28px sans-serif';
+  ctx.font = '800 30px "Nunito", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(phrase, CANVAS_W / 2, CANVAS_H * 0.25 - rise);
@@ -808,7 +808,7 @@ function drawAlmostThere() {
   // Smaller sub-text with rescue character emoji
   if (G.rescueChar) {
     ctx.shadowBlur = 8;
-    ctx.font = '18px sans-serif';
+    ctx.font = '600 19px "Nunito", sans-serif';
     ctx.fillStyle = '#ffcc44';
     ctx.fillText(G.rescueChar.emoji + ' ' + t('rescue.help'), CANVAS_W / 2, CANVAS_H * 0.25 + 28 - rise);
   }
@@ -1009,7 +1009,7 @@ function drawRouteSteps() {
 
     // Step number text
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 11px sans-serif';
+    ctx.font = 'bold 12px "Nunito", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(String(i + 1), px, py);
@@ -1132,7 +1132,7 @@ function drawPathReveal(revealCount) {
     ctx.arc(px, py, 11, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#1a0a00';
-    ctx.font = 'bold 11px sans-serif';
+    ctx.font = 'bold 12px "Nunito", sans-serif';
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(String(i + 1), px, py);
