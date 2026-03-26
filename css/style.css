@@ -82,8 +82,9 @@ canvas {
 
 #pause-inner h1 {
   color: var(--primary);
-  font-size: 2.2rem;
-  letter-spacing: 0.12em;
+  font-size: 2.6rem;
+  font-family: var(--font-heading);
+  letter-spacing: 0.06em;
   margin-bottom: 8px;
 }
 
@@ -118,23 +119,27 @@ canvas {
 }
 
 .menu-screen h1 {
-  font-size: 48px;
+  font-size: 56px;
+  font-family: var(--font-heading);
   color: var(--primary);
   text-shadow: 0 0 20px var(--primary-glow);
   margin-bottom: 8px;
+  letter-spacing: 0.04em;
 }
 
 .menu-screen h2 {
-  font-size: 18px;
+  font-size: 20px;
   color: #ff9944;
   margin-bottom: 30px;
-  font-weight: normal;
+  font-weight: 600;
 }
 
 .menu-screen h3 {
-  font-size: 20px;
+  font-size: 22px;
+  font-family: var(--font-heading);
   color: var(--accent-warm);
   margin: 20px 0 12px;
+  letter-spacing: 0.02em;
 }
 
 /* ─── Character grid ─────────────────────────────────────── */
@@ -180,7 +185,7 @@ canvas {
 }
 
 .char-card .emoji { font-size: 36px; margin-bottom: 6px; }
-.char-card .name { font-size: 12px; color: var(--text-primary); }
+.char-card .name { font-size: 13px; color: var(--text-primary); font-weight: 700; }
 
 /* ─── Buttons ────────────────────────────────────────────── */
 
@@ -190,11 +195,12 @@ canvas {
   border: none;
   padding: 14px 40px;
   font-size: 20px;
+  font-family: var(--font-heading);
   border-radius: 8px;
   cursor: pointer;
   margin-top: 20px;
-  font-weight: bold;
-  letter-spacing: 1px;
+  font-weight: 400;
+  letter-spacing: 0.05em;
   transition: all 0.2s;
 }
 
@@ -224,8 +230,8 @@ canvas {
   max-width: 360px;
   margin: 20px auto 0;
   padding: 16px 40px;
-  font-size: 22px;
-  letter-spacing: 2px;
+  font-size: 24px;
+  letter-spacing: 0.08em;
 }
 
 .menu-secondary {
@@ -239,7 +245,7 @@ canvas {
 .menu-secondary .btn {
   margin-top: 0;
   padding: 10px 20px;
-  font-size: 14px;
+  font-size: 16px;
 }
 
 .btn-settings {
@@ -274,26 +280,27 @@ canvas {
 
 .settings-summary {
   color: var(--text-faint);
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 8px;
 }
 
 .menu-credit {
   color: var(--text-faint);
-  font-size: 11px;
+  font-size: 13px;
   margin-top: 20px;
   letter-spacing: 0.5px;
 }
 
 #settings-screen h1 {
-  font-size: 36px;
+  font-size: 40px;
+  font-family: var(--font-heading);
 }
 
 .instructions {
   color: var(--text-muted);
-  font-size: 13px;
+  font-size: 15px;
   margin-top: 18px;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 .instructions kbd {
@@ -331,8 +338,8 @@ canvas {
 }
 
 #hud-left .hud-level-line {
-  font-size: 14px;
-  font-weight: bold;
+  font-size: 15px;
+  font-weight: 800;
   color: var(--accent-warm);
   text-shadow: 0 0 8px var(--hud-level-glow);
   white-space: nowrap;
@@ -340,8 +347,8 @@ canvas {
 }
 
 #hud-left .hud-total-score {
-  font-size: 12px;
-  font-weight: bold;
+  font-size: 13px;
+  font-weight: 700;
   color: var(--accent-gold);
   margin-top: 1px;
 }
@@ -359,18 +366,19 @@ canvas {
 }
 
 #hud-game-title {
-  font-size: 22px;
-  font-weight: bold;
+  font-size: 24px;
+  font-family: var(--font-heading);
+  font-weight: 400;
   color: var(--primary);
   text-shadow: 0 0 16px var(--primary-glow);
-  letter-spacing: 2px;
+  letter-spacing: 0.08em;
   line-height: 1.1;
   white-space: nowrap;
   text-align: center;
 }
 
 #hud-game-author {
-  font-size: 11px;
+  font-size: 12px;
   color: var(--accent-cream);
   opacity: 0.7;
   margin-top: 1px;
@@ -441,15 +449,15 @@ canvas {
   display: inline-flex;
   align-items: baseline;
   color: var(--accent-light);
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 19px;
+  font-weight: 800;
   line-height: 1.2;
 }
 
 #hud-stats .stat-label {
   color: var(--text-dim);
-  font-size: 11px;
-  font-weight: 600;
+  font-size: 12px;
+  font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
   line-height: 1;
@@ -467,7 +475,7 @@ canvas {
 
 #hud-stats .timer-hint {
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 13px;
   line-height: 1.2;
   text-align: right;
 }
@@ -480,7 +488,8 @@ canvas {
 /* ─── Lose screen ────────────────────────────────────────── */
 
 #lose-screen h1 {
-  font-size: 52px;
+  font-size: 56px;
+  font-family: var(--font-heading);
   color: var(--lose-title);
   text-shadow: 0 0 30px var(--lose-glow);
 }
@@ -536,7 +545,7 @@ canvas {
   justify-content: space-between;
   padding: 3px 0;
   color: var(--score-row-text);
-  font-size: 14px;
+  font-size: 15px;
 }
 
 .score-row.bonus {
@@ -550,19 +559,20 @@ canvas {
   margin-top: 6px;
   border-top: 1px solid rgba(255, 100, 0, 0.3);
   color: var(--text-bright);
-  font-size: 18px;
-  font-weight: bold;
+  font-size: 20px;
+  font-weight: 800;
 }
 
 .score-cumulative {
   text-align: center;
   color: var(--text-muted);
-  font-size: 12px;
+  font-size: 14px;
   margin-top: 6px;
 }
 
 #win-screen h1 {
-  font-size: 52px;
+  font-size: 56px;
+  font-family: var(--font-heading);
   color: var(--win-title);
   text-shadow: 0 0 30px var(--win-glow);
 }
@@ -638,13 +648,13 @@ canvas {
 }
 
 .opt-card .opt-label {
-  font-weight: bold;
-  font-size: 15px;
+  font-weight: 800;
+  font-size: 16px;
   margin-bottom: 2px;
 }
 
 .opt-card .opt-desc {
-  font-size: 11px;
+  font-size: 13px;
   color: var(--text-muted);
 }
 
@@ -692,9 +702,9 @@ canvas {
     overflow-y: auto;
   }
 
-  .menu-screen h1 { font-size: 38px; margin-bottom: 4px; }
-  .menu-screen h2 { font-size: 16px; margin-bottom: 12px; }
-  .menu-screen h3 { font-size: 16px; margin: 10px 0 6px; }
+  .menu-screen h1 { font-size: 42px; margin-bottom: 4px; }
+  .menu-screen h2 { font-size: 18px; margin-bottom: 12px; }
+  .menu-screen h3 { font-size: 18px; margin: 10px 0 6px; }
 
   .character-grid { gap: 8px; margin-bottom: 10px; }
   .char-card {
@@ -703,7 +713,7 @@ canvas {
     border-radius: 8px;
   }
   .char-card .emoji { font-size: 24px; margin-bottom: 2px; }
-  .char-card .name { font-size: 10px; }
+  .char-card .name { font-size: 11px; }
 
   .option-row { gap: 8px; }
   .opt-card {
@@ -723,10 +733,10 @@ canvas {
 
   .menu-secondary .btn { font-size: 15px; padding: 10px 22px; }
 
-  .instructions { font-size: 14px; margin-top: 12px; }
-  .settings-summary { font-size: 13px; }
+  .instructions { font-size: 15px; margin-top: 12px; }
+  .settings-summary { font-size: 14px; }
 
-  #settings-screen h1 { font-size: 32px; }
+  #settings-screen h1 { font-size: 34px; }
 
   #pause-inner { padding: 28px 32px; }
   #pause-inner h1 { font-size: 1.8rem; }
@@ -752,20 +762,20 @@ canvas {
   #hud-stats .timer-warn { font-size: 20px; }
   #hud-stats .timer-hint { font-size: 11px; }
 
-  #win-screen h1 { font-size: 42px; }
+  #win-screen h1 { font-size: 46px; }
   .win-emojis { font-size: 36px; }
 
   /* Lose screen: match win screen sizes */
-  #lose-screen h1 { font-size: 42px; }
-  #lose-screen h2 { font-size: 16px; }
+  #lose-screen h1 { font-size: 46px; }
+  #lose-screen h2 { font-size: 18px; }
   .lose-emoji { font-size: 40px; margin: 8px 0; }
 
-  .level-info { font-size: 15px; }
+  .level-info { font-size: 16px; }
   .score-section { padding: 12px 16px; max-width: 300px; }
   .score-stars { font-size: 32px; }
-  .score-row { font-size: 14px; }
-  .score-total { font-size: 17px; }
-  .score-cumulative { font-size: 13px; }
+  .score-row { font-size: 15px; }
+  .score-total { font-size: 18px; }
+  .score-cumulative { font-size: 14px; }
 }
 
 @media (max-height: 500px) {
