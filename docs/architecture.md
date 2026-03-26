@@ -153,6 +153,17 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `BOARD_RULES.maxConsecutiveSameDirection` | 5 | Max consecutive same lateral direction |
 | `BOARD_RULES.minLateralMoveFraction` | 0.4 | Min fraction of rows with lateral moves |
 | `BOARD_RULES.minColumnSpreadFraction` | 0.6 | Min fraction of columns the safe path must visit |
+| `COIN_CHANCE` | — | Probability of spawning a coin on a safe platform |
+| `COIN_POINTS` | — | Points awarded per collected coin |
+| `COIN_SIZE` | — | Coin sprite size |
+| `COIN_BOB_SPEED` | — | Coin floating bob animation speed |
+| `COIN_BOB_HEIGHT` | — | Coin floating bob amplitude |
+| `COIN_SPIN_SPEED` | — | Coin spin animation speed |
+| `COMBO_MILESTONES` | — | Streak thresholds that trigger combo callout text |
+| `ALMOST_THERE_ROWS` | — | Rows from goal to trigger "almost there" prompt |
+| `COUNTDOWN_TICK_START` | — | Seconds remaining when countdown ticks begin |
+| `VICTORY_DANCE_DURATION` | — | Duration of victory dance phase (seconds) |
+| `LEVEL_STORIES` | — | Per-level story blurb strings |
 
 ### 6. Audio Error Handling (audio.js)
 
@@ -187,6 +198,11 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Timers | `timers` | timers.js |
 | Input | `keys`, `isTouchDevice` | input.js |
 | Loop | `lastTime`, `accumulator` | loop.js |
+| Coins | `coins`, `coinsCollected`, `coinScore` | platforms.js, logic.js |
+| Idle | `idleTimer`, `idleBobPhase` | PlayingScene |
+| Almost There | `almostThereShown`, `almostThereTimer` | PlayingScene |
+| Victory Dance | `victoryDanceTimer`, `victoryDanceActive` | WonScene |
+| Countdown | `countdownTicksPlayed` | MemorizeScene |
 | Performance | `perfMode`, `perf` (fps, avgFps, minFps, frameTimes, showFps), `lastParallaxY` | loop.js, init.js, drawing.js |
 
 ---
@@ -229,14 +245,17 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `updateTimers(dt)` - Tick all timers, fire expired ones
 - `clearTimers()` - Cancel all pending timers
 
-### audio.js (17 functions)
+### audio.js (20 functions)
 - `initAudio()` - Lazy-create AudioContext (with try-catch)
 - `hasAudio()` - Guard: returns true if AudioContext is available
 - `stopMusic()` - Fade out + disconnect current music
 - `playMemorizeMusic()` - Procedural tense chord loop + ticking clock
 - `playActionMusic()` - Procedural 80s synth-funk 4-bar loops
-- `playJumpSound()` / `playHopSound()` - Jump SFX
-- `playLandSound()` / `playCrumbleSound()` / `playFallSound()` - Impact SFX
+- `playJumpSound()` / `playHopSound()` - Jump SFX (character-specific pitch + type)
+- `playLandSound()` / `playCrumbleSound()` / `playFallSound()` - Impact SFX (land uses character-specific pitch + type)
+- `playCoinSound()` - Coin collection SFX
+- `playCountdownTick(secsLeft)` - Countdown tick SFX during memorize phase
+- `playAlmostThereSound()` - "Almost there" proximity alert SFX
 - `playWinSound()` - 10-second procedural victory fanfare
 - `playLoseSound()` - Sad descending trombone
 - `getEnglishVoice()` - Cached English voice lookup for speech synthesis
@@ -248,13 +267,13 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `insertBacktracks(safePath, gridCols, gridRows, numBacktracks)` - Insert backward-jump sections into the safe path for late-level difficulty
 
 ### platforms.js (2 functions)
-- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES via pathgen.js), insert backtracks, mark fakes, block straight-down exploits, then calls computeOptimalRoute()
+- `generatePlatforms()` - Create grid, build safe path (applying BOARD_RULES via pathgen.js), insert backtracks, mark fakes, block straight-down exploits, place coins, then calls computeOptimalRoute()
 - `computeOptimalRoute()` - BFS through non-fake platforms to find the shortest step-count path from (row 0, safePath[0]) to (gridRows-1, safePath[last]); stored as G.optimalRoute; falls back to safeRoute if unreachable
 
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
 
-### drawing.js (12 functions)
+### drawing.js (15 functions)
 - `drawEmoji(ctx, emoji, x, y, size)` - Shared emoji renderer with shadow pass (reduced in low perf mode)
 - `drawLava(offsetY, height)` - 7-layer animated lava background (layers 4-6 skipped in low perf mode)
 - `drawPlatform(p, reveal)` - 3D stone block with brick texture + glow (memorize) + heat (lava proximity); decorative details (noise, bricks, cracks, moss) skipped in low perf mode
