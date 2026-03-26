@@ -394,8 +394,9 @@ function computeOptimalRoute() {
   const path = [];
   let idx = goalIdx;
   while (idx !== -1) {
-    path.unshift({ row: Math.floor(idx / gridCols), col: idx % gridCols });
+    path.push({ row: Math.floor(idx / gridCols), col: idx % gridCols });
     idx = parent[idx];
   }
+  path.reverse();
   return path;
 }

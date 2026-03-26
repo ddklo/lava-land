@@ -46,6 +46,8 @@ window.addEventListener('resize', function () {
   resizeCanvas();
   G.lavaCache = null;
   G.lavaCacheCtx = null;
+  G.lavaCacheMem = null;
+  G.lavaCacheMemCtx = null;
 });
 
 // ─── PERFORMANCE MODE ──────────────────────────────────────────

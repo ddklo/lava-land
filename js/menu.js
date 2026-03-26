@@ -60,9 +60,11 @@ function applyTheme() {
   document.body.classList.remove('theme-volcano', 'theme-ocean', 'theme-forest');
   var p = THEME_PALETTES[G.theme];
   if (p && p.cssClass) document.body.classList.add(p.cssClass);
-  // Invalidate lava cache so it re-renders with new colors
+  // Invalidate lava caches so they re-render with new colors
   G.lavaCache = null;
   G.lavaCacheCtx = null;
+  G.lavaCacheMem = null;
+  G.lavaCacheMemCtx = null;
 }
 
 function updateStartBtn() {
@@ -97,20 +99,9 @@ function startLevel() {
   G.gridRows = cfg.rows;
   G.memorizeTimer = cfg.memTime;
 
-  generatePlatforms();
-  resetPlayer();
-  G.particles = [];
-  G.trailMarks = [];
-  G.jumpCount = 0;
-  G.memTimeSaved = 0;
-  G.jumpStreak = 0;
-  G.hopsThisRow = 0;
-  G.streakBonus = 0;
-  G.routeRevealed = false;
-  G.almostThereShown = false;
-  G.almostThereTimer = 0;
-  G.victoryDanceActive = false;
-  G.victoryDanceTimer = 0;
+  // Defer heavy work (platform generation, player reset) to MemorizeScene.onEnter
+  // so it runs during the fade-to-black overlay instead of blocking before the fade.
+  G._pendingLevelSetup = true;
 
   transitionTo(MemorizeScene);
 }
@@ -129,6 +120,9 @@ function setupMenu() {
     hCard.className = 'char-card';
     hCard.innerHTML = `<div class="emoji">${ch.emoji}</div><div class="name" data-raw-name="${ch.name}">${t('char.' + ch.name)}</div>`;
     hCard.addEventListener('click', () => {
+      // Pre-warm audio context on first user interaction so it's ready
+      // when the game starts (avoids 10-100ms blocking delay on Start click).
+      initAudio();
       G.heroChoice = ch.id;
       heroGrid.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
       hCard.classList.add('selected');
@@ -334,22 +328,10 @@ function startGame() {
   const sizeConfig = GRID_SIZES[G.selectedSize];
   G.gridCols = sizeConfig.cols;
   G.gridRows = sizeConfig.rows;
-
-  generatePlatforms();
-  resetPlayer();
   G.memorizeTimer = MEMORIZE_TIMES[G.selectedMemTime];
-  G.particles = [];
-  G.trailMarks = [];
-  G.jumpCount = 0;
-  G.memTimeSaved = 0;
-  G.jumpStreak = 0;
-  G.hopsThisRow = 0;
-  G.streakBonus = 0;
-  G.routeRevealed = false;
-  G.almostThereShown = false;
-  G.almostThereTimer = 0;
-  G.victoryDanceActive = false;
-  G.victoryDanceTimer = 0;
+
+  // Defer heavy work to MemorizeScene.onEnter (runs during fade-to-black)
+  G._pendingLevelSetup = true;
 
   transitionTo(MemorizeScene);
 }
