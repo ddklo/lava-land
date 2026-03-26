@@ -24,7 +24,7 @@ lava-land/
     icon-512.png          App icon 512×512 (PWA / splash)
   js/
     config.js             Constants, physics tuning, CHARACTERS (with color/soundPitch/soundType), LEVELS, getLevelConfig(), scoring constants, THEME_PALETTES, coin/combo/almost-there/victory-dance/story constants
-    i18n.js               Translation dictionary (en/no) + t() helper + SPEECH_LANG
+    i18n.js               Translation dictionary (en/no) + t() helper + SPEECH_LANG (includes combo callout, almost-there, coin, and level story keys)
     state.js              Shared mutable state object (G)
     timers.js             Managed timer system (replaces setTimeout in game logic)
     audio.js              Procedural music dispatchers + sound effects + speech synthesis
