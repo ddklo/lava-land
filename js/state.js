@@ -121,6 +121,6 @@ const G = {
 
   // Performance
   perfMode: 'high',  // 'high' (desktop) or 'low' (mobile)
-  perf: { fps: 0, avgFps: 0, minFps: 60, frameTimes: [], showFps: false },
+  perf: { fps: 0, avgFps: 0, minFps: 60, frameTimes: new Float64Array(FPS_SAMPLE_SIZE), frameIdx: 0, frameCount: 0, showFps: false },
   lastParallaxY: -999,
 };

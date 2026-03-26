@@ -203,7 +203,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Almost There | `almostThereShown`, `almostThereTimer` | PlayingScene |
 | Victory Dance | `victoryDanceTimer`, `victoryDanceActive` | WonScene |
 | Countdown | `countdownTicksPlayed` | MemorizeScene |
-| Performance | `perfMode`, `perf` (fps, avgFps, minFps, frameTimes, showFps), `lastParallaxY` | loop.js, init.js, drawing.js |
+| Performance | `perfMode`, `perf` (fps, avgFps, minFps, frameTimes (Float64Array circular buffer), frameIdx, frameCount, showFps), `lastParallaxY` | loop.js, init.js, drawing.js |
 
 ---
 
