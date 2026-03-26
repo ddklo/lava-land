@@ -27,7 +27,7 @@ function tryJump(direction) {
     G.jumpCount++;
     G.hopsThisRow++;
     playHopSound();
-    haptic(20);
+    haptic(45);
     destroyDeparturePlatform();
 
     G.jumpAnim = {
@@ -64,7 +64,7 @@ function tryJump(direction) {
     const targetPlat = prevRowPlats[nearest];
     G.jumpCount++;
     playJumpSound();
-    haptic(25);
+    haptic(55);
     destroyDeparturePlatform();
 
     G.jumpAnim = {
@@ -103,7 +103,7 @@ function tryJump(direction) {
   const targetPlat = nextRowPlats[nearest];
   G.jumpCount++;
   playJumpSound();
-  haptic(25);
+  haptic(55);
   destroyDeparturePlatform();
 
   G.jumpAnim = {
@@ -122,7 +122,7 @@ function tryJump(direction) {
 function landOnPlatform(plat, row, col) {
   if (plat.destroyed) {
     playFallSound();
-    haptic([80, 30, 120]);
+    haptic([150, 50, 200]);
     spawnLavaSplash(plat.x + plat.w / 2, plat.y + 40);
     SceneManager.replace(FallingScene); // instant — already in lava
     return;
@@ -133,11 +133,11 @@ function landOnPlatform(plat, row, col) {
     plat.crumbling = true;
     spawnCrumbleParticles(plat);
     playCrumbleSound();
-    haptic([60, 40, 100]);
+    haptic([100, 60, 180]);
     addTimer(0.3, () => { SceneManager.replace(FallingScene); }); // instant — crumble animation handles it
   } else {
     playLandSound();
-    haptic(15);
+    haptic(40);
 
     // Streak tracking: a clean forward row = no hops made before jumping forward
     if (row > G.player.row) {
@@ -192,7 +192,7 @@ function landOnPlatform(plat, row, col) {
         G.coinsCollected++;
         G.coinScore += COIN_POINTS;
         playCoinSound();
-        haptic([15, 10, 25]);
+        haptic([30, 15, 50]);
         spawnCoinSparkle(plat.x + plat.w / 2, plat.y + (PLAT_H - PLAT_DEPTH) / 2 - 18);
         // Coin popup
         G.streakPopups.push({
