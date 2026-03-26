@@ -1958,6 +1958,121 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // I18N / TRANSLATION TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('i18n — Translation System', () => {
+    const origLang = G.language;
+
+    // t() returns English by default
+    G.language = 'en';
+    assertEqual(t('menu.title'), 'LAVA LAND', 't() returns English menu title');
+    assertEqual(t('rescue.help'), 'Help!', 't() returns English rescue.help');
+
+    // t() returns Norwegian when language is set
+    G.language = 'no';
+    assertEqual(t('menu.title'), 'LAVALAND', 't() returns Norwegian menu title');
+    assertEqual(t('rescue.help'), 'Hjelp!', 't() returns Norwegian rescue.help');
+
+    // t() falls back to English for missing keys
+    G.language = 'no';
+    assertEqual(t('nonexistent.key'), 'nonexistent.key', 't() returns key for missing translation');
+
+    // t() with parameter substitution
+    G.language = 'en';
+    assertEqual(t('win.saved', { hero: 'Cat', rescue: 'Dog' }), 'Cat saved Dog!', 't() substitutes params');
+
+    // Norwegian param substitution
+    G.language = 'no';
+    assertEqual(t('win.saved', { hero: 'Katt', rescue: 'Hund' }), 'Katt reddet Hund!', 't() substitutes params in Norwegian');
+
+    // SPEECH_LANG mapping
+    assertEqual(SPEECH_LANG.en, 'en-US', 'SPEECH_LANG.en is en-US');
+    assertEqual(SPEECH_LANG.no, 'nb-NO', 'SPEECH_LANG.no is nb-NO');
+
+    // Character name translations exist
+    G.language = 'no';
+    assertEqual(t('char.Cat'), 'Katt', 'Norwegian Cat translation');
+    assertEqual(t('char.Wizard'), 'Trollmann', 'Norwegian Wizard translation');
+
+    G.language = origLang;
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // THEME PALETTE TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Theme Palettes', () => {
+    const origTheme = G.theme;
+
+    // palette() returns volcano by default
+    G.theme = 'volcano';
+    const vp = palette();
+    assertEqual(vp.safeGlow, '#44ff88', 'Volcano safeGlow is green');
+    assert(Array.isArray(vp.explosionColors), 'Volcano has explosionColors array');
+    assertEqual(vp.explosionColors.length, 5, 'Volcano has 5 explosion colors');
+
+    // palette() returns ocean palette
+    G.theme = 'ocean';
+    const op = palette();
+    assertEqual(op.safeGlow, '#44ffcc', 'Ocean safeGlow is teal');
+    assertEqual(op.cssClass, 'theme-ocean', 'Ocean cssClass is correct');
+    assert(op.lavaBaseR < 20, 'Ocean lavaBaseR is low (blue theme)');
+
+    // palette() returns forest palette
+    G.theme = 'forest';
+    const fp = palette();
+    assertEqual(fp.safeGlow, '#88ff44', 'Forest safeGlow is lime');
+    assertEqual(fp.cssClass, 'theme-forest', 'Forest cssClass is correct');
+
+    // palette() falls back to volcano for unknown theme
+    G.theme = 'unknown';
+    const up = palette();
+    assertEqual(up.safeGlow, '#44ff88', 'Unknown theme falls back to volcano');
+
+    // All three palettes have required keys
+    ['volcano', 'ocean', 'forest'].forEach(theme => {
+      G.theme = theme;
+      const p = palette();
+      assert(typeof p.lavaBaseR === 'number', theme + ' has lavaBaseR');
+      assert(typeof p.platDepthTop === 'string', theme + ' has platDepthTop');
+      assert(typeof p.trailOuter === 'string', theme + ' has trailOuter');
+      assert(typeof p.impactRingColor === 'string', theme + ' has impactRingColor');
+      assert(Array.isArray(p.dustColors), theme + ' has dustColors array');
+      assert(Array.isArray(p.lavaSplashColors), theme + ' has lavaSplashColors array');
+    });
+
+    G.theme = origTheme;
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // SOUNDTRACK DISPATCH TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Soundtrack Dispatch', () => {
+    // Verify dispatch functions exist
+    assertEqual(typeof playRetroMemorize, 'function', 'playRetroMemorize exists');
+    assertEqual(typeof playRetroAction, 'function', 'playRetroAction exists');
+    assertEqual(typeof playChillMemorize, 'function', 'playChillMemorize exists');
+    assertEqual(typeof playChillAction, 'function', 'playChillAction exists');
+    assertEqual(typeof playClassicMemorize, 'function', 'playClassicMemorize exists');
+    assertEqual(typeof playClassicAction, 'function', 'playClassicAction exists');
+    // Dispatcher functions exist
+    assertEqual(typeof playMemorizeMusic, 'function', 'playMemorizeMusic dispatcher exists');
+    assertEqual(typeof playActionMusic, 'function', 'playActionMusic dispatcher exists');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // SETTINGS STATE TESTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Settings State Fields', () => {
+    // New state fields exist with correct defaults
+    assert('language' in G, 'G.language exists');
+    assert('soundtrack' in G, 'G.soundtrack exists');
+    assert('theme' in G, 'G.theme exists');
+    assert(['en', 'no'].includes(G.language), 'G.language is valid');
+    assert(['classic', 'retro', 'chill'].includes(G.soundtrack), 'G.soundtrack is valid');
+    assert(['volcano', 'ocean', 'forest'].includes(G.theme), 'G.theme is valid');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
   // RENDER RESULTS
   // ═══════════════════════════════════════════════════════════════
   const container = document.getElementById('results');

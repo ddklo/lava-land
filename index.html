@@ -9,8 +9,8 @@
   <title>Lava Land - Save Your Friend!</title>
   <link rel="manifest" href="manifest.json">
   <link rel="apple-touch-icon" href="images/icon-192.png">
-  <link rel="stylesheet" href="css/theme.css?v=1.2.4">
-  <link rel="stylesheet" href="css/style.css?v=1.2.4">
+  <link rel="stylesheet" href="css/theme.css?v=1.3.0">
+  <link rel="stylesheet" href="css/style.css?v=1.3.0">
 </head>
 <body>
   <div class="game-area">
@@ -33,17 +33,17 @@
   </div>
   <div id="ui-overlay">
     <div id="menu-screen" class="menu-screen">
-      <h1 id="menu-title">LAVA LAND</h1>
-      <h2>Jump across the lava to save your friend!</h2>
-      <h3>Choose Your Hero</h3>
+      <h1 id="menu-title" data-i18n="menu.title">LAVA LAND</h1>
+      <h2 data-i18n="menu.subtitle">Jump across the lava to save your friend!</h2>
+      <h3 data-i18n="menu.choose_hero">Choose Your Hero</h3>
       <div class="character-grid" id="hero-grid"></div>
-      <h3>Choose Who to Save</h3>
+      <h3 data-i18n="menu.choose_rescue">Choose Who to Save</h3>
       <div class="character-grid" id="rescue-grid"></div>
 
-      <button class="btn btn-adventure" id="start-btn" disabled>ADVENTURE MODE</button>
+      <button class="btn btn-adventure" id="start-btn" disabled data-i18n="menu.adventure">ADVENTURE MODE</button>
       <div class="menu-secondary">
-        <button class="btn btn-custom" id="custom-btn" disabled>CUSTOM MODE</button>
-        <button class="btn btn-settings" id="settings-btn">&#9881; SETTINGS</button>
+        <button class="btn btn-custom" id="custom-btn" disabled data-i18n="menu.custom">CUSTOM MODE</button>
+        <button class="btn btn-settings" id="settings-btn" data-i18n="menu.settings">&#9881; SETTINGS</button>
       </div>
       <div id="settings-summary" class="settings-summary">Custom: Easy &middot; Medium grid &middot; 10s memorize</div>
       <div class="instructions" id="instructions-keyboard">
@@ -62,109 +62,153 @@
     </div>
 
     <div id="settings-screen" class="menu-screen" style="display:none;">
-      <h1>&#9881; SETTINGS</h1>
+      <h1 data-i18n="settings.title">&#9881; SETTINGS</h1>
 
-      <h3>Difficulty</h3>
+      <h3 data-i18n="settings.difficulty">Difficulty</h3>
       <div class="option-row" id="diff-row">
         <div class="opt-card selected" data-diff="easy">
-          <div class="opt-label">Easy</div>
-          <div class="opt-desc">Few fake blocks</div>
+          <div class="opt-label" data-i18n="diff.easy">Easy</div>
+          <div class="opt-desc" data-i18n="diff.easy.desc">Few fake blocks</div>
         </div>
         <div class="opt-card" data-diff="medium">
-          <div class="opt-label">Medium</div>
-          <div class="opt-desc">Many fake blocks</div>
+          <div class="opt-label" data-i18n="diff.medium">Medium</div>
+          <div class="opt-desc" data-i18n="diff.medium.desc">Many fake blocks</div>
         </div>
         <div class="opt-card" data-diff="hard">
-          <div class="opt-label">Hard</div>
-          <div class="opt-desc">Most blocks are fake</div>
+          <div class="opt-label" data-i18n="diff.hard">Hard</div>
+          <div class="opt-desc" data-i18n="diff.hard.desc">Most blocks are fake</div>
         </div>
       </div>
 
-      <h3>Grid Size</h3>
+      <h3 data-i18n="settings.grid_size">Grid Size</h3>
       <div class="option-row" id="size-row">
         <div class="opt-card" data-size="small">
-          <div class="opt-label">Small</div>
-          <div class="opt-desc">5 cols &times; 8 rows</div>
+          <div class="opt-label" data-i18n="size.small">Small</div>
+          <div class="opt-desc" data-i18n="size.small.desc">5 cols &times; 8 rows</div>
         </div>
         <div class="opt-card selected" data-size="medium">
-          <div class="opt-label">Medium</div>
-          <div class="opt-desc">6 cols &times; 12 rows</div>
+          <div class="opt-label" data-i18n="size.medium">Medium</div>
+          <div class="opt-desc" data-i18n="size.medium.desc">6 cols &times; 12 rows</div>
         </div>
         <div class="opt-card" data-size="large">
-          <div class="opt-label">Large</div>
-          <div class="opt-desc">7 cols &times; 16 rows</div>
+          <div class="opt-label" data-i18n="size.large">Large</div>
+          <div class="opt-desc" data-i18n="size.large.desc">7 cols &times; 16 rows</div>
         </div>
       </div>
 
-      <h3>Memorize Time</h3>
+      <h3 data-i18n="settings.memorize_time">Memorize Time</h3>
       <div class="option-row" id="memtime-row">
         <div class="opt-card" data-memtime="short">
-          <div class="opt-label">Short</div>
-          <div class="opt-desc">5 seconds</div>
+          <div class="opt-label" data-i18n="mem.short">Short</div>
+          <div class="opt-desc" data-i18n="mem.short.desc">5 seconds</div>
         </div>
         <div class="opt-card selected" data-memtime="medium">
-          <div class="opt-label">Medium</div>
-          <div class="opt-desc">10 seconds</div>
+          <div class="opt-label" data-i18n="mem.medium">Medium</div>
+          <div class="opt-desc" data-i18n="mem.medium.desc">10 seconds</div>
         </div>
         <div class="opt-card" data-memtime="long">
-          <div class="opt-label">Long</div>
-          <div class="opt-desc">20 seconds</div>
+          <div class="opt-label" data-i18n="mem.long">Long</div>
+          <div class="opt-desc" data-i18n="mem.long.desc">20 seconds</div>
         </div>
       </div>
 
-      <button class="btn" id="settings-back-btn">DONE</button>
+      <h3 data-i18n="settings.language">Language</h3>
+      <div class="option-row" id="lang-row">
+        <div class="opt-card selected" data-lang="en">
+          <div class="opt-label" data-i18n="lang.en">English</div>
+        </div>
+        <div class="opt-card" data-lang="no">
+          <div class="opt-label" data-i18n="lang.no">Norsk</div>
+        </div>
+      </div>
+
+      <h3 data-i18n="settings.soundtrack">Soundtrack</h3>
+      <div class="option-row" id="soundtrack-row">
+        <div class="opt-card selected" data-soundtrack="classic">
+          <div class="opt-label" data-i18n="soundtrack.classic">Classic</div>
+          <div class="opt-desc" data-i18n="soundtrack.classic.desc">80s synth-funk</div>
+        </div>
+        <div class="opt-card" data-soundtrack="retro">
+          <div class="opt-label" data-i18n="soundtrack.retro">Retro</div>
+          <div class="opt-desc" data-i18n="soundtrack.retro.desc">Chiptune 8-bit</div>
+        </div>
+        <div class="opt-card" data-soundtrack="chill">
+          <div class="opt-label" data-i18n="soundtrack.chill">Chill</div>
+          <div class="opt-desc" data-i18n="soundtrack.chill.desc">Ambient lo-fi</div>
+        </div>
+      </div>
+
+      <h3 data-i18n="settings.theme">Theme</h3>
+      <div class="option-row" id="theme-row">
+        <div class="opt-card selected" data-theme="volcano">
+          <div class="opt-label" data-i18n="theme.volcano">Volcano</div>
+          <div class="opt-desc" data-i18n="theme.volcano.desc">Fire &amp; lava</div>
+        </div>
+        <div class="opt-card" data-theme="ocean">
+          <div class="opt-label" data-i18n="theme.ocean">Ocean</div>
+          <div class="opt-desc" data-i18n="theme.ocean.desc">Deep sea</div>
+        </div>
+        <div class="opt-card" data-theme="forest">
+          <div class="opt-label" data-i18n="theme.forest">Forest</div>
+          <div class="opt-desc" data-i18n="theme.forest.desc">Enchanted woods</div>
+        </div>
+      </div>
+
+      <button class="btn" id="settings-back-btn" data-i18n="settings.done">DONE</button>
     </div>
 
     <div id="lose-screen" class="menu-screen" style="display:none;">
-      <h1>OH NO!</h1>
+      <h1 data-i18n="lose.title">OH NO!</h1>
       <div id="lose-level-info" class="level-info"></div>
       <div class="lose-emoji" id="lose-emoji"></div>
       <h2 id="lose-msg"></h2>
-      <button class="btn" id="try-again-btn">TRY AGAIN</button>
-      <button class="btn btn-secondary" id="lose-menu-btn">BACK TO MENU</button>
+      <button class="btn" id="try-again-btn" data-i18n="lose.try_again">TRY AGAIN</button>
+      <button class="btn btn-secondary" id="lose-menu-btn" data-i18n="lose.back_to_menu">BACK TO MENU</button>
     </div>
 
     <div id="win-screen" class="menu-screen" style="display:none;">
-      <h1>YOU DID IT!</h1>
+      <h1 data-i18n="win.title">YOU DID IT!</h1>
       <div id="win-level-info" class="level-info"></div>
       <div class="win-emojis" id="win-emojis"></div>
       <h2 id="win-msg"></h2>
       <div id="win-score-section" class="score-section"></div>
       <div class="win-buttons">
-        <button class="btn" id="next-level-btn" style="display:none;">NEXT LEVEL</button>
-        <button class="btn btn-secondary" id="play-again-btn">BACK TO MENU</button>
+        <button class="btn" id="next-level-btn" style="display:none;" data-i18n="win.next_level">NEXT LEVEL</button>
+        <button class="btn btn-secondary" id="play-again-btn" data-i18n="win.back_to_menu">BACK TO MENU</button>
       </div>
     </div>
   </div>
 
   <div id="pause-screen" style="display:none;">
     <div id="pause-inner">
-      <h1>PAUSED</h1>
-      <button class="btn" id="resume-btn">RESUME</button>
-      <button class="btn btn-secondary" id="pause-menu-btn">QUIT TO MENU</button>
+      <h1 data-i18n="pause.title">PAUSED</h1>
+      <button class="btn" id="resume-btn" data-i18n="pause.resume">RESUME</button>
+      <button class="btn btn-secondary" id="pause-menu-btn" data-i18n="pause.quit">QUIT TO MENU</button>
     </div>
   </div>
 
   <div id="transition-overlay"></div>
 
 
-  <script src="js/config.js?v=1.2.4"></script>
-  <script src="js/state.js?v=1.2.4"></script>
-  <script src="js/timers.js?v=1.2.4"></script>
-  <script src="js/audio.js?v=1.2.4"></script>
-  <script src="js/pathgen.js?v=1.2.4"></script>
-  <script src="js/platforms.js?v=1.2.4"></script>
-  <script src="js/player.js?v=1.2.4"></script>
-  <script src="js/drawing.js?v=1.2.4"></script>
-  <script src="js/hud.js?v=1.2.4"></script>
-  <script src="js/effects.js?v=1.2.4"></script>
-  <script src="js/scenes.js?v=1.2.4"></script>
-  <script src="js/scoring.js?v=1.2.4"></script>
-  <script src="js/logic.js?v=1.2.4"></script>
-  <script src="js/input.js?v=1.2.4"></script>
-  <script src="js/loop.js?v=1.2.4"></script>
-  <script src="js/menu.js?v=1.2.4"></script>
-  <script src="js/init.js?v=1.2.4"></script>
+  <script src="js/config.js?v=1.3.0"></script>
+  <script src="js/i18n.js?v=1.3.0"></script>
+  <script src="js/state.js?v=1.3.0"></script>
+  <script src="js/timers.js?v=1.3.0"></script>
+  <script src="js/audio.js?v=1.3.0"></script>
+  <script src="js/soundtracks.js?v=1.3.0"></script>
+  <script src="js/pathgen.js?v=1.3.0"></script>
+  <script src="js/platforms.js?v=1.3.0"></script>
+  <script src="js/player.js?v=1.3.0"></script>
+  <script src="js/drawing.js?v=1.3.0"></script>
+  <script src="js/hud.js?v=1.3.0"></script>
+  <script src="js/effects.js?v=1.3.0"></script>
+  <script src="js/scenes.js?v=1.3.0"></script>
+  <script src="js/scoring.js?v=1.3.0"></script>
+  <script src="js/logic.js?v=1.3.0"></script>
+  <script src="js/input.js?v=1.3.0"></script>
+  <script src="js/loop.js?v=1.3.0"></script>
+  <script src="js/menu.js?v=1.3.0"></script>
+  <script src="js/init.js?v=1.3.0"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(function() {});

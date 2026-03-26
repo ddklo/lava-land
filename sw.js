@@ -1,20 +1,24 @@
 // ─── SERVICE WORKER ─────────────────────────────────────────────
 // Cache-first strategy for fully offline play.
 // Bump VERSION on every deploy to invalidate stale caches.
-const VERSION = '1.2.4';
+const VERSION = '1.3.0';
 const CACHE_NAME = 'lava-land-v' + VERSION;
 const ASSETS = [
   'index.html',
   'css/theme.css',
   'css/style.css',
   'images/background.svg',
+  'images/background-ocean.svg',
+  'images/background-forest.svg',
   'images/icon-192.png',
   'images/icon-512.png',
   'manifest.json',
   'js/config.js',
+  'js/i18n.js',
   'js/state.js',
   'js/timers.js',
   'js/audio.js',
+  'js/soundtracks.js',
   'js/pathgen.js',
   'js/platforms.js',
   'js/player.js',

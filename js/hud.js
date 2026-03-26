@@ -123,12 +123,12 @@ function drawLevelPreview() {
   ctx.textBaseline = 'middle';
   ctx.shadowColor = 'rgba(255,100,0,0.6)';
   ctx.shadowBlur = 20;
-  ctx.fillText(`Level ${G.level}`, CANVAS_W / 2, CANVAS_H / 2 - 30);
+  ctx.fillText(t('level.preview', { level: G.level }), CANVAS_W / 2, CANVAS_H / 2 - 30);
 
   ctx.font = '24px sans-serif';
   ctx.fillStyle = '#ffaa55';
   ctx.shadowBlur = 0;
-  ctx.fillText(G.levelConfig ? G.levelConfig.name : '', CANVAS_W / 2, CANVAS_H / 2 + 15);
+  ctx.fillText(G.levelConfig ? t('level.' + G.levelConfig.name, { n: G.level }) : '', CANVAS_W / 2, CANVAS_H / 2 + 15);
 
   // Grid size + difficulty indicator
   if (G.levelConfig) {
@@ -178,25 +178,23 @@ function drawTutorialArrow() {
   let hint, arrowRow, arrowCol;
   if (nextStepRow === curRow) {
     // Sideways hop needed (backtrack scenario)
-    const dir = nextStepCol < curCol ? '\u2190' : '\u2192';
-    hint = `Hop ${dir} first!`;
+    hint = nextStepCol < curCol ? t('tutorial.hop_left') : t('tutorial.hop_right');
     arrowRow = curRow;
     arrowCol = nextStepCol < curCol ? curCol - 1 : curCol + 1;
   } else if (nextStepRow < curRow) {
     // Jump backward
-    hint = G.isTouchDevice ? 'Swipe \u2191 to jump back!' : 'Press \u2191 to jump back!';
+    hint = G.isTouchDevice ? t('tutorial.jump_back.touch') : t('tutorial.jump_back.keyboard');
     arrowRow = nextStepRow;
     arrowCol = nextStepCol;
   } else if (curCol === nextStepCol) {
     // Aligned with next row's safe platform — jump forward
-    hint = G.isTouchDevice ? 'Tap to jump!' : 'Press \u2193 to jump!';
+    hint = G.isTouchDevice ? t('tutorial.jump_forward.touch') : t('tutorial.jump_forward.keyboard');
     arrowRow = nextStepRow;
     arrowCol = nextStepCol;
   } else {
     // Need to hop sideways before jumping — point at the adjacent platform
     // in the current row (one step toward the target column).
-    const dir = nextStepCol < curCol ? '\u2190' : '\u2192';
-    hint = `Hop ${dir} first!`;
+    hint = nextStepCol < curCol ? t('tutorial.hop_left') : t('tutorial.hop_right');
     arrowRow = curRow;
     arrowCol = nextStepCol < curCol ? curCol - 1 : curCol + 1;
   }

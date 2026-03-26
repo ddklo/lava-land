@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1080" preserveAspectRatio="xMidYMid slice">
+  <defs>
+    <!-- Deep ocean gradient -->
+    <linearGradient id="oceanGrad" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%"   stop-color="#000510"/>
+      <stop offset="35%"  stop-color="#001020"/>
+      <stop offset="65%"  stop-color="#001830"/>
+      <stop offset="100%" stop-color="#002040"/>
+    </linearGradient>
+
+    <!-- Underwater light from above -->
+    <radialGradient id="surfaceLight" cx="50%" cy="5%" r="60%">
+      <stop offset="0%"   stop-color="#0066cc" stop-opacity="0.15"/>
+      <stop offset="40%"  stop-color="#003388" stop-opacity="0.08"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Bioluminescent glow from deep -->
+    <radialGradient id="deepGlow" cx="50%" cy="75%" r="40%">
+      <stop offset="0%"   stop-color="#00aaff" stop-opacity="0.10"/>
+      <stop offset="50%"  stop-color="#004488" stop-opacity="0.05"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0"/>
+    </radialGradient>
+
+    <!-- Edge vignette -->
+    <radialGradient id="vignette" cx="50%" cy="50%" r="75%">
+      <stop offset="0%"   stop-color="transparent"/>
+      <stop offset="100%" stop-color="#000000" stop-opacity="0.55"/>
+    </radialGradient>
+
+    <!-- Soft glow filter -->
+    <filter id="softGlow" x="-60%" y="-60%" width="220%" height="220%">
+      <feGaussianBlur in="SourceGraphic" stdDeviation="4" result="blur"/>
+      <feMerge>
+        <feMergeNode in="blur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Background fill -->
+  <rect width="1920" height="1080" fill="url(#oceanGrad)"/>
+
+  <!-- Surface light -->
+  <rect width="1920" height="1080" fill="url(#surfaceLight)"/>
+
+  <!-- Deep glow -->
+  <rect width="1920" height="1080" fill="url(#deepGlow)"/>
+
+  <!-- Underwater rock formations -->
+  <g opacity="0.25">
+    <!-- Left rock wall -->
+    <path d="M0 600 Q80 400 120 500 Q160 580 200 520 Q240 460 280 540 Q300 600 280 700 L0 700Z" fill="#0a1520"/>
+    <path d="M0 650 Q60 550 100 600 Q140 640 180 590 Q200 560 220 620 L200 750 L0 750Z" fill="#081218"/>
+
+    <!-- Right rock wall -->
+    <path d="M1920 550 Q1840 420 1800 500 Q1760 560 1720 490 Q1680 430 1640 510 Q1620 580 1650 680 L1920 680Z" fill="#0a1520"/>
+    <path d="M1920 620 Q1860 530 1820 580 Q1780 620 1740 570 Q1720 540 1700 600 L1720 730 L1920 730Z" fill="#081218"/>
+
+    <!-- Floor rocks -->
+    <path d="M300 950 Q400 880 500 920 Q600 960 700 900 Q800 850 900 910 Q1000 960 1100 900 Q1200 850 1300 920 Q1400 970 1500 910 Q1600 860 1700 930 L1920 980 L1920 1080 L0 1080 L0 970 Q100 920 200 960Z" fill="#0a1825"/>
+    <path d="M0 1000 Q200 950 400 980 Q600 1010 800 970 Q1000 940 1200 980 Q1400 1020 1600 980 Q1800 950 1920 1000 L1920 1080 L0 1080Z" fill="#081520"/>
+  </g>
+
+  <!-- Coral formations -->
+  <g opacity="0.2" filter="url(#softGlow)">
+    <!-- Left coral cluster -->
+    <path d="M150 900 Q160 820 170 850 Q180 800 190 860 Q200 810 210 880 L200 920 L160 920Z" fill="#cc4466" opacity="0.6"/>
+    <path d="M180 920 Q190 850 200 870 Q210 830 220 890 L210 930 L180 930Z" fill="#ee6688" opacity="0.5"/>
+
+    <!-- Right coral -->
+    <path d="M1700 880 Q1710 800 1720 840 Q1730 790 1740 850 Q1750 810 1760 870 L1750 910 L1710 910Z" fill="#cc6644" opacity="0.6"/>
+    <path d="M1730 910 Q1740 840 1750 860 Q1760 820 1770 880 L1760 920 L1730 920Z" fill="#ee8866" opacity="0.5"/>
+
+    <!-- Center coral -->
+    <path d="M900 950 Q910 880 920 910 Q930 870 940 920 L930 960 L910 960Z" fill="#aa66cc" opacity="0.4"/>
+  </g>
+
+  <!-- Light rays from surface -->
+  <g opacity="0.06">
+    <polygon points="400,0 500,1080 450,1080" fill="#4488cc"/>
+    <polygon points="800,0 860,1080 820,1080" fill="#4488cc"/>
+    <polygon points="1200,0 1280,1080 1240,1080" fill="#4488cc"/>
+    <polygon points="1600,0 1660,1080 1630,1080" fill="#4488cc"/>
+  </g>
+
+  <!-- Floating particles / plankton -->
+  <g opacity="0.3">
+    <circle cx="300" cy="200" r="1.5" fill="#44aaff"/>
+    <circle cx="500" cy="350" r="1" fill="#66ccff"/>
+    <circle cx="800" cy="150" r="2" fill="#44aaff"/>
+    <circle cx="1100" cy="300" r="1.5" fill="#88ddff"/>
+    <circle cx="1400" cy="180" r="1" fill="#44aaff"/>
+    <circle cx="1600" cy="400" r="2" fill="#66ccff"/>
+    <circle cx="200" cy="500" r="1" fill="#44aaff"/>
+    <circle cx="700" cy="550" r="1.5" fill="#88ddff"/>
+    <circle cx="1300" cy="600" r="1" fill="#66ccff"/>
+    <circle cx="1800" cy="250" r="1.5" fill="#44aaff"/>
+  </g>
+
+  <!-- Bubbles -->
+  <g opacity="0.15">
+    <circle cx="350" cy="700" r="8" fill="none" stroke="#66aacc" stroke-width="1"/>
+    <circle cx="380" cy="650" r="5" fill="none" stroke="#66aacc" stroke-width="0.8"/>
+    <circle cx="1550" cy="720" r="10" fill="none" stroke="#66aacc" stroke-width="1"/>
+    <circle cx="1580" cy="660" r="6" fill="none" stroke="#66aacc" stroke-width="0.8"/>
+    <circle cx="960" cy="780" r="7" fill="none" stroke="#66aacc" stroke-width="0.8"/>
+  </g>
+
+  <!-- Vignette overlay -->
+  <rect width="1920" height="1080" fill="url(#vignette)"/>
+</svg>

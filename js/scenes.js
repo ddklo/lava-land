@@ -164,9 +164,10 @@ const MemorizeScene = {
           ? '<span class="dot-done">\u25CF</span>'
           : '\u25CB';
       }
+      const levelName = t('level.' + G.levelConfig.name, { n: G.level });
       hudLeft.innerHTML =
-        `<div class="hud-level-line">Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}</div>` +
-        `<div class="hud-total-score">Score ${G.totalScore}</div>` +
+        `<div class="hud-level-line">${t('hud.level_of', { level: G.level, total: LEVELS.length, name: levelName })}</div>` +
+        `<div class="hud-total-score">${t('hud.score', { score: G.totalScore })}</div>` +
         `<div class="hud-progress-dots">${dots}</div>`;
     } else {
       hudLeft.innerHTML = '';
@@ -207,10 +208,10 @@ const MemorizeScene = {
     if (secs !== this._lastSecs) {
       this._lastSecs = secs;
       const hint = G.isTouchDevice
-        ? 'Tap to start early for bonus points!'
-        : 'Press any key to start early for bonus points!';
+        ? t('memorize.hint.touch')
+        : t('memorize.hint.keyboard');
       document.getElementById('hud-text').innerHTML =
-        `<div class="timer-warn">MEMORIZE! ${secs}s</div>` +
+        `<div class="timer-warn">${t('memorize.countdown', { secs: secs })}</div>` +
         `<div class="timer-hint">${hint}</div>`;
     }
     if (G.memorizeTimer <= 0) {
@@ -261,7 +262,7 @@ const MemorizeScene = {
 function showStreakFlash(n) {
   const el = document.getElementById('streak-flash');
   if (!el) return;
-  el.textContent = `\uD83D\uDD25 ${n}\xD7 STREAK!`;
+  el.textContent = t('playing.streak', { n: n });
   el.style.display = 'block';
   addTimer(1.5, () => { el.style.display = 'none'; });
 }
@@ -314,9 +315,10 @@ const PlayingScene = {
           ? '<span class="dot-done">\u25CF</span>'
           : '\u25CB';
       }
+      const levelName = t('level.' + G.levelConfig.name, { n: G.level });
       hudLeft.innerHTML =
-        `<div class="hud-level-line">Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}</div>` +
-        `<div class="hud-total-score">Score ${G.totalScore}</div>` +
+        `<div class="hud-level-line">${t('hud.level_of', { level: G.level, total: LEVELS.length, name: levelName })}</div>` +
+        `<div class="hud-total-score">${t('hud.score', { score: G.totalScore })}</div>` +
         `<div class="hud-progress-dots">${dots}</div>`;
     } else {
       hudLeft.innerHTML = '';
@@ -328,8 +330,8 @@ const PlayingScene = {
       G.trailMarks.push({ x: p.x + p.w / 2, y: p.y + (PLAT_H - PLAT_DEPTH) / 2, life: 1.0 });
     }
     document.getElementById('hud-text').innerHTML = G.isTouchDevice
-      ? '<div class="timer-hint">Tap platform to move &nbsp;|&nbsp; Swipe down/up to jump</div>'
-      : '<div class="timer-hint">&larr; &rarr; hop &nbsp;|&nbsp; &darr; / Space forward &nbsp;|&nbsp; &uarr; backward</div>';
+      ? `<div class="timer-hint">${t('playing.hint.touch')}</div>`
+      : `<div class="timer-hint">${t('playing.hint.keyboard')}</div>`;
 
     document.getElementById('forfeit-btn').style.display = '';
     document.getElementById('pause-btn').style.display = '';
@@ -413,12 +415,12 @@ const PlayingScene = {
       this._lastJumps = curJumps;
       this._lastStreak = curStreak;
       const streakPart = curStreak > 0
-        ? `<span class="stat-item stat-streak">${curStreak}x<span class="stat-label">STREAK</span></span>`
+        ? `<span class="stat-item stat-streak">${curStreak}x<span class="stat-label">${t('hud.streak')}</span></span>`
         : '';
       document.getElementById('hud-text').innerHTML =
         `<div class="stat-row">` +
-        `<span class="stat-item">${curTimer}<span class="stat-label">TIME</span></span>` +
-        `<span class="stat-item">${curJumps}<span class="stat-label">JUMPS</span></span>` +
+        `<span class="stat-item">${curTimer}<span class="stat-label">${t('hud.time')}</span></span>` +
+        `<span class="stat-item">${curJumps}<span class="stat-label">${t('hud.jumps')}</span></span>` +
         streakPart +
         `</div>`;
     }
@@ -452,7 +454,7 @@ const PlayingScene = {
       ctx.font = 'bold 16px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
-      ctx.fillText(`\uD83D\uDDFA\uFE0F Secret Route (${secs}s) \u2014 green\u00A0=\u00A0safe, red\u00A0=\u00A0danger`, CANVAS_W / 2, 18);
+      ctx.fillText(t('playing.route_reveal', { secs: secs }), CANVAS_W / 2, 18);
       ctx.restore();
     }
 
@@ -490,25 +492,28 @@ const FallingScene = {
       // Show level info on lose screen (adventure mode)
       const loseLevelInfo = document.getElementById('lose-level-info');
       if (G.gameMode === 'adventure' && G.levelConfig) {
-        loseLevelInfo.textContent = `Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}`;
+        const levelName = t('level.' + G.levelConfig.name, { n: G.level });
+        loseLevelInfo.textContent = t('hud.level_of', { level: G.level, total: LEVELS.length, name: levelName });
         loseLevelInfo.style.display = '';
       } else {
         loseLevelInfo.style.display = 'none';
       }
       // Show lose screen
       document.getElementById('lose-emoji').textContent = G.heroChar.emoji + ' \uD83D\uDD25';
+      const heroName = t('char.' + G.heroChar.name);
+      const rescueName = t('char.' + G.rescueChar.name);
       let messages;
       if (wasAlmostWin) {
         messages = [
-          `So close! ${G.heroChar.name} almost made it!`,
-          `Almost there! Just one more jump!`,
-          `${G.rescueChar.name} was right there! Try again!`,
+          t('lose.almost.1', { hero: heroName }),
+          t('lose.almost.2'),
+          t('lose.almost.3', { rescue: rescueName }),
         ];
       } else {
         messages = [
-          `${G.heroChar.name} fell into the lava!`,
-          `${G.heroChar.name} couldn't save ${G.rescueChar.name}!`,
-          `The lava got ${G.heroChar.name}!`,
+          t('lose.fell.1', { hero: heroName }),
+          t('lose.fell.2', { hero: heroName, rescue: rescueName }),
+          t('lose.fell.3', { hero: heroName }),
         ];
       }
       document.getElementById('lose-msg').textContent = messages[Math.floor(Math.random() * messages.length)];
@@ -610,8 +615,10 @@ const WonScene = {
 
     document.getElementById('win-emojis').textContent =
       `${G.heroChar.emoji} \u{1F91D} ${G.rescueChar.emoji}`;
+    const heroName = t('char.' + G.heroChar.name);
+    const rescueName = t('char.' + G.rescueChar.name);
     document.getElementById('win-msg').textContent =
-      `${G.heroChar.name} saved ${G.rescueChar.name}!`;
+      t('win.saved', { hero: heroName, rescue: rescueName });
 
     // Score & level display
     const winLevelInfo = document.getElementById('win-level-info');
@@ -630,7 +637,8 @@ const WonScene = {
       G.levelScoreBreakdown = breakdown;
       G.totalScore += breakdown.totalScore;
 
-      winLevelInfo.textContent = `Level ${G.level} of ${LEVELS.length}: ${G.levelConfig.name}`;
+      const winLevelName = t('level.' + G.levelConfig.name, { n: G.level });
+      winLevelInfo.textContent = t('hud.level_of', { level: G.level, total: LEVELS.length, name: winLevelName });
       winLevelInfo.style.display = '';
 
       const starStr = Array.from({length: 3}, (_, i) => {
@@ -640,29 +648,29 @@ const WonScene = {
       }).join('');
       let scoreHtml = `<div class="score-stars">${starStr}</div>`;
       if (breakdown.routeRevealed) {
-        scoreHtml += `<div class="score-row bonus" style="color:#ff6644"><span>Route revealed — no score!</span><span>0</span></div>`;
+        scoreHtml += `<div class="score-row bonus" style="color:#ff6644"><span>${t('win.route_revealed')}</span><span>0</span></div>`;
       } else {
-        scoreHtml += `<div class="score-row"><span>Time bonus</span><span>${breakdown.timeScore}</span></div>`;
-        scoreHtml += `<div class="score-row"><span>Jump efficiency</span><span>${breakdown.jumpScore}</span></div>`;
-        scoreHtml += `<div class="score-row"><span>Level bonus</span><span>${breakdown.levelBonus}</span></div>`;
+        scoreHtml += `<div class="score-row"><span>${t('win.time_bonus')}</span><span>${breakdown.timeScore}</span></div>`;
+        scoreHtml += `<div class="score-row"><span>${t('win.jump_efficiency')}</span><span>${breakdown.jumpScore}</span></div>`;
+        scoreHtml += `<div class="score-row"><span>${t('win.level_bonus')}</span><span>${breakdown.levelBonus}</span></div>`;
         if (breakdown.difficultyBonus > 0) {
-          scoreHtml += `<div class="score-row"><span>Difficulty bonus</span><span>${breakdown.difficultyBonus}</span></div>`;
+          scoreHtml += `<div class="score-row"><span>${t('win.difficulty_bonus')}</span><span>${breakdown.difficultyBonus}</span></div>`;
         }
         if (breakdown.perfectBonus > 0) {
-          scoreHtml += `<div class="score-row bonus"><span>Perfect path!</span><span>+${breakdown.perfectBonus}</span></div>`;
+          scoreHtml += `<div class="score-row bonus"><span>${t('win.perfect_path')}</span><span>+${breakdown.perfectBonus}</span></div>`;
         }
         if (breakdown.speedBonus > 0) {
-          scoreHtml += `<div class="score-row bonus"><span>Speed bonus!</span><span>+${breakdown.speedBonus}</span></div>`;
+          scoreHtml += `<div class="score-row bonus"><span>${t('win.speed_bonus')}</span><span>+${breakdown.speedBonus}</span></div>`;
         }
         if (breakdown.earlyMemBonus > 0) {
-          scoreHtml += `<div class="score-row bonus"><span>Early start bonus!</span><span>+${breakdown.earlyMemBonus}</span></div>`;
+          scoreHtml += `<div class="score-row bonus"><span>${t('win.early_start')}</span><span>+${breakdown.earlyMemBonus}</span></div>`;
         }
         if (breakdown.streakBonus > 0) {
-          scoreHtml += `<div class="score-row bonus"><span>Streak bonus!</span><span>+${breakdown.streakBonus}</span></div>`;
+          scoreHtml += `<div class="score-row bonus"><span>${t('win.streak_bonus')}</span><span>+${breakdown.streakBonus}</span></div>`;
         }
       }
-      scoreHtml += `<div class="score-total"><span>Level Score</span><span>${breakdown.totalScore}</span></div>`;
-      scoreHtml += `<div class="score-cumulative">Total Score: ${G.totalScore}</div>`;
+      scoreHtml += `<div class="score-total"><span>${t('win.level_score')}</span><span>${breakdown.totalScore}</span></div>`;
+      scoreHtml += `<div class="score-cumulative">${t('win.total_score', { score: G.totalScore })}</div>`;
       winScoreSection.innerHTML = scoreHtml;
       winScoreSection.style.display = '';
 

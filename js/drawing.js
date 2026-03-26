@@ -17,10 +17,12 @@ function drawEmoji(ctx, emoji, x, y, size) {
 
 // Internal: render all lava layers to the given context.
 function _renderLavaLayers(ctx, drawH, t, offsetY) {
+  const p = palette();
+
   // Layer 1: Deep dark base
   for (let y = 0; y < drawH; y += 3) {
-    const r = 60 + Math.sin(y * 0.01 + t * 0.3) * 15;
-    const g = 5 + Math.sin(y * 0.015 + t * 0.2) * 5;
+    const r = p.lavaBaseR + Math.sin(y * 0.01 + t * 0.3) * 15;
+    const g = p.lavaBaseG + Math.sin(y * 0.015 + t * 0.2) * 5;
     ctx.fillStyle = `rgb(${Math.floor(r)},${Math.floor(g)},0)`;
     ctx.fillRect(0, y, CANVAS_W, 4);
   }
@@ -40,16 +42,16 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
 
       if (combined > 0.1) {
         const intensity = (combined - 0.1) / 0.9;
-        const r = Math.floor(200 + intensity * 55);
-        const g = Math.floor(60 + intensity * 140);
-        const b = Math.floor(intensity * 30);
+        const r = Math.floor(p.lavaFlowHotR + intensity * 55);
+        const g = Math.floor(p.lavaFlowHotG + intensity * 140);
+        const b = Math.floor(p.lavaFlowHotB + intensity * 30);
         const a = 0.4 + intensity * 0.6;
         ctx.fillStyle = `rgba(${r},${g},${b},${a})`;
         ctx.fillRect(x, y, 9, 4);
       } else if (combined > -0.1) {
         const edge = (combined + 0.1) / 0.2;
-        const r = Math.floor(80 + edge * 60);
-        ctx.fillStyle = `rgba(${r},8,0,0.5)`;
+        const r = Math.floor(p.lavaFlowEdgeR + edge * 60);
+        ctx.fillStyle = `rgba(${r},${p.lavaFlowEdgeG},${p.lavaFlowEdgeB},0.5)`;
         ctx.fillRect(x, y, 9, 4);
       }
     }
@@ -80,16 +82,16 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
       const bright = (1 - s / segments) * pulse;
       const width = 1.5 + bright * 3;
 
-      // Outer glow (orange)
-      ctx.strokeStyle = `rgba(255,120,20,${bright * 0.4})`;
+      // Outer glow
+      ctx.strokeStyle = `rgba(${p.lavaCrackOuter},${bright * 0.4})`;
       ctx.lineWidth = width + 4;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
       ctx.lineTo(nx, ny);
       ctx.stroke();
 
-      // Hot core (bright yellow-white)
-      ctx.strokeStyle = `rgba(255,${Math.floor(200 + bright * 55)},${Math.floor(bright * 80)},${bright * 0.7})`;
+      // Hot core
+      ctx.strokeStyle = `rgba(${p.lavaCrackCore},${Math.floor(200 + bright * 55)},${Math.floor(bright * 80)},${bright * 0.7})`;
       ctx.lineWidth = width;
       ctx.beginPath();
       ctx.moveTo(cx, cy);
@@ -104,7 +106,7 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
           const bnx = bx + Math.cos(branchDir + Math.sin(b * 1.2 + seed) * 0.6) * 3.5;
           const bny = by + Math.sin(branchDir + Math.cos(b * 0.8 + seed) * 0.6) * 3.5;
           const bb = bright * (1 - b / 8) * 0.6;
-          ctx.strokeStyle = `rgba(255,160,40,${bb * 0.5})`;
+          ctx.strokeStyle = `rgba(${p.lavaBranch},${bb * 0.5})`;
           ctx.lineWidth = 1 + bb * 2;
           ctx.beginPath();
           ctx.moveTo(bx, by);
@@ -132,7 +134,7 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
 
     // Spurt glow
     const glowR = 15 + intensity * 20;
-    ctx.fillStyle = `rgba(255,100,0,${intensity * 0.15})`;
+    ctx.fillStyle = `rgba(${p.lavaSpurtGlow},${intensity * 0.15})`;
     ctx.beginPath();
     ctx.arc(sx, sy, glowR, 0, Math.PI * 2);
     ctx.fill();
@@ -145,7 +147,8 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
       const dx = sx + Math.cos(angle + Math.sin(dSeed * 0.5) * 0.5) * dist * 0.6;
       const dy = sy + Math.sin(angle) * dist + dist * dist * 0.02; // gravity arc
       const dAlpha = intensity * (1 - d / 6);
-      ctx.fillStyle = `rgba(255,${Math.floor(180 + d * 10)},${Math.floor(30 + d * 8)},${dAlpha * 0.8})`;
+      const _db = p.lavaDropletBase;
+      ctx.fillStyle = `rgba(${_db[0]},${Math.floor(_db[1] + d * 10)},${Math.floor(_db[2] + d * 8)},${dAlpha * 0.8})`;
       ctx.beginPath();
       ctx.arc(dx, dy, 1.5 + intensity * 2, 0, Math.PI * 2);
       ctx.fill();
@@ -161,12 +164,12 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
     const flicker = 0.5 + Math.sin(t * 8 + i * 5) * 0.5;
     const sz = 1.5 + flicker * 2;
     // Glow
-    ctx.fillStyle = `rgba(255,200,50,${flicker * 0.3})`;
+    ctx.fillStyle = `rgba(${p.lavaEmberGlow},${flicker * 0.3})`;
     ctx.beginPath();
     ctx.arc(ex, ey - offsetY * 0.3, sz + 3, 0, Math.PI * 2);
     ctx.fill();
     // Core
-    ctx.fillStyle = `rgba(255,255,200,${flicker * 0.8})`;
+    ctx.fillStyle = `rgba(${p.lavaEmberCore},${flicker * 0.8})`;
     ctx.beginPath();
     ctx.arc(ex, ey - offsetY * 0.3, sz, 0, Math.PI * 2);
     ctx.fill();
@@ -183,19 +186,19 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
     const br = 4 + growPhase * 12;
     const alpha = growPhase < 0.8 ? growPhase : (1 - growPhase) * 5;
     // Bubble body
-    ctx.strokeStyle = `rgba(255,180,50,${alpha * 0.4})`;
+    ctx.strokeStyle = `rgba(${p.lavaBubbleStroke},${alpha * 0.4})`;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.arc(bx, by - offsetY * 0.2, br, 0, Math.PI * 2);
     ctx.stroke();
     // Bright center
-    ctx.fillStyle = `rgba(255,220,100,${alpha * 0.25})`;
+    ctx.fillStyle = `rgba(${p.lavaBubbleFill},${alpha * 0.25})`;
     ctx.beginPath();
     ctx.arc(bx, by - offsetY * 0.2, br * 0.5, 0, Math.PI * 2);
     ctx.fill();
     // Pop flash at end
     if (growPhase > 0.85) {
-      ctx.fillStyle = `rgba(255,255,200,${(growPhase - 0.85) * 6})`;
+      ctx.fillStyle = `rgba(${p.lavaBubblePop},${(growPhase - 0.85) * 6})`;
       ctx.beginPath();
       ctx.arc(bx, by - offsetY * 0.2, br * 1.5, 0, Math.PI * 2);
       ctx.fill();
@@ -203,7 +206,7 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
   }
 
   // Layer 7: Heat haze shimmer overlay
-  ctx.fillStyle = 'rgba(255,60,0,0.04)';
+  ctx.fillStyle = p.lavaHaze;
   for (let y = 0; y < drawH; y += 12) {
     const wobble = Math.sin(y * 0.05 + t * 2) * 8;
     ctx.fillRect(wobble, y, CANVAS_W, 6);
@@ -238,49 +241,50 @@ function drawLava(offsetY, height) {
   _renderLavaLayers(G.ctx, drawH, t, offsetY);
 }
 
-function drawPlatform(p, reveal) {
+function drawPlatform(plat, reveal) {
   const ctx = G.ctx;
+  const tp = palette();
   // Idle float — each platform gently bobs as if floating on lava
-  const idleBob = reveal ? 0 : Math.sin(G.lavaTime * 1.2 + p.x * 0.03 + p.y * 0.02) * 1.5;
-  const screenY = p.y - G.camera.y + (p.bobOffset || 0) + idleBob;
+  const idleBob = reveal ? 0 : Math.sin(G.lavaTime * 1.2 + plat.x * 0.03 + plat.y * 0.02) * 1.5;
+  const screenY = plat.y - G.camera.y + (plat.bobOffset || 0) + idleBob;
   if (!reveal && (screenY < -80 || screenY > CANVAS_H + 80)) return;
 
   let ox = 0, oy = 0;
   let crumbleAlpha = 1;
-  if (p.crumbling) {
+  if (plat.crumbling) {
     ox = (Math.random() - 0.5) * 6;
-    oy = p.crumbleTimer * 6;
-    crumbleAlpha = Math.max(0, 1 - p.crumbleTimer * 3.5);
+    oy = plat.crumbleTimer * 6;
+    crumbleAlpha = Math.max(0, 1 - plat.crumbleTimer * 3.5);
   }
 
   ctx.save();
   ctx.globalAlpha = crumbleAlpha;
   ctx.translate(ox, oy);
 
-  const x = p.x, w = p.w, h = p.h;
+  const x = plat.x, w = plat.w, h = plat.h;
   const depth = PLAT_DEPTH;
 
-  if (p.fake && reveal) {
+  if (plat.fake && reveal) {
     // Fake platform — translucent danger block
     ctx.fillStyle = 'rgba(0,0,0,0.2)';
     ctx.fillRect(x + 3, screenY + 5, w, h);
 
     // Bottom depth face
-    ctx.fillStyle = 'rgba(60,15,15,0.5)';
+    ctx.fillStyle = tp.fakeDepth;
     ctx.fillRect(x, screenY + h - depth, w, depth);
 
     // Main face
-    ctx.fillStyle = 'rgba(80,30,30,0.55)';
+    ctx.fillStyle = tp.fakeFace;
     ctx.fillRect(x, screenY, w, h - depth);
 
-    ctx.strokeStyle = '#ff4444';
+    ctx.strokeStyle = tp.fakeBorder;
     ctx.lineWidth = 2;
     ctx.setLineDash([6, 4]);
     ctx.strokeRect(x + 1, screenY + 1, w - 2, h - 2);
     ctx.setLineDash([]);
 
     // X cross
-    ctx.strokeStyle = 'rgba(255,80,80,0.7)';
+    ctx.strokeStyle = tp.fakeCross;
     ctx.lineWidth = 2;
     ctx.beginPath();
     ctx.moveTo(x + 8, screenY + 8);
@@ -289,21 +293,21 @@ function drawPlatform(p, reveal) {
     ctx.lineTo(x + 8, screenY + h - 8);
     ctx.stroke();
 
-  } else if (!p.fake && reveal) {
+  } else if (!plat.fake && reveal) {
     // Revealed safe platform — green-tinted stone block with pulsing glow
-    const glowPulse = 8 + Math.sin(G.lavaTime * 4 + p.x * 0.01) * 5;
-    ctx.shadowColor = '#44ff88';
+    const glowPulse = 8 + Math.sin(G.lavaTime * 4 + plat.x * 0.01) * 5;
+    ctx.shadowColor = tp.safeGlow;
     ctx.shadowBlur = glowPulse;
 
     ctx.fillStyle = 'rgba(0,0,0,0.25)';
     ctx.fillRect(x + 3, screenY + depth + 3, w, h - depth);
 
     // Bottom depth
-    ctx.fillStyle = '#3a5530';
+    ctx.fillStyle = tp.safeDepth;
     ctx.fillRect(x, screenY + h - depth, w, depth);
 
     // Main face
-    ctx.fillStyle = '#4a7040';
+    ctx.fillStyle = tp.safeFace;
     ctx.fillRect(x, screenY, w, h - depth);
 
     ctx.shadowColor = 'transparent';
@@ -311,18 +315,18 @@ function drawPlatform(p, reveal) {
 
     // Top highlight
     const topGrad = ctx.createLinearGradient(x, screenY, x, screenY + 10);
-    topGrad.addColorStop(0, '#5a8850');
-    topGrad.addColorStop(1, '#4a7040');
+    topGrad.addColorStop(0, tp.safeHighlight);
+    topGrad.addColorStop(1, tp.safeFace);
     ctx.fillStyle = topGrad;
     ctx.fillRect(x, screenY, w, 10);
 
     // Green glow border
-    ctx.strokeStyle = '#44ff88';
+    ctx.strokeStyle = tp.safeGlow;
     ctx.lineWidth = 2;
     ctx.strokeRect(x - 1, screenY - 1, w + 2, h + 2);
 
     // Checkmark
-    ctx.strokeStyle = 'rgba(80,255,120,0.9)';
+    ctx.strokeStyle = tp.safeCheck;
     ctx.lineWidth = 3;
     ctx.beginPath();
     const cx = x + w / 2, cy = screenY + (h - depth) / 2;
@@ -335,13 +339,13 @@ function drawPlatform(p, reveal) {
     // Normal stone platform — realistic 3D floating stone block
 
     // Seed for deterministic per-platform variation
-    const seed = p.x * 7.3 + p.y * 13.1;
+    const seed = plat.x * 7.3 + plat.y * 13.1;
 
     // Lava glow from underneath — platform is floating in lava
     const underGlow = 0.15 + Math.sin(G.lavaTime * 2 + seed * 0.01) * 0.08;
-    ctx.fillStyle = `rgba(255,80,0,${underGlow})`;
+    ctx.fillStyle = `rgba(${tp.platUnderGlowR},${tp.platUnderGlowG},${tp.platUnderGlowB},${underGlow})`;
     ctx.fillRect(x - 3, screenY + h - 1, w + 6, 8);
-    ctx.fillStyle = `rgba(255,120,20,${underGlow * 0.5})`;
+    ctx.fillStyle = `rgba(${tp.platUnderGlowR},${tp.platUnderGlowG + 40},${tp.platUnderGlowB + 20},${underGlow * 0.5})`;
     ctx.fillRect(x - 5, screenY + h + 3, w + 10, 5);
 
     // Drop shadow (softened by lava glow)
@@ -350,18 +354,18 @@ function drawPlatform(p, reveal) {
 
     // Bottom depth face — darkest, with lava-lit warmth
     const depthGrad = ctx.createLinearGradient(x, screenY + h - depth, x, screenY + h);
-    depthGrad.addColorStop(0, '#4a3828');
-    depthGrad.addColorStop(1, '#5a3020');
+    depthGrad.addColorStop(0, tp.platDepthTop);
+    depthGrad.addColorStop(1, tp.platDepthBot);
     ctx.fillStyle = depthGrad;
     ctx.fillRect(x, screenY + h - depth, w, depth);
 
     // Main face — vertical gradient for natural stone look
     const faceH = h - depth;
     const mainGrad = ctx.createLinearGradient(x, screenY, x, screenY + faceH);
-    mainGrad.addColorStop(0, PLATFORM_REAL_TOP);
-    mainGrad.addColorStop(0.15, PLATFORM_REAL_COLOR);
-    mainGrad.addColorStop(0.85, '#5a4433');
-    mainGrad.addColorStop(1, '#4a3828');
+    mainGrad.addColorStop(0, tp.platFaceTop);
+    mainGrad.addColorStop(0.15, tp.platFaceMain);
+    mainGrad.addColorStop(0.85, tp.platFaceMid);
+    mainGrad.addColorStop(1, tp.platFaceBot);
     ctx.fillStyle = mainGrad;
     ctx.fillRect(x, screenY, w, faceH);
 
@@ -424,7 +428,7 @@ function drawPlatform(p, reveal) {
     if (Math.sin(seed * 3.7) > 0.3) {
       const mx = x + (Math.sin(seed * 5.1) * 0.5 + 0.5) * (w - 14) + 4;
       const my = screenY + 3 + Math.abs(Math.cos(seed * 2.3)) * 6;
-      ctx.fillStyle = 'rgba(80,120,60,0.2)';
+      ctx.fillStyle = tp.platMoss;
       ctx.beginPath();
       ctx.ellipse(mx, my, 5 + Math.sin(seed) * 2, 3, 0, 0, Math.PI * 2);
       ctx.fill();
@@ -468,7 +472,7 @@ function drawPlatform(p, reveal) {
 
     // Molten edge glow — lava seeping along the bottom edges
     const edgeGlow = 0.2 + Math.sin(G.lavaTime * 3 + seed * 0.02) * 0.1;
-    ctx.strokeStyle = `rgba(255,100,20,${edgeGlow})`;
+    ctx.strokeStyle = `rgba(${tp.platEdgeGlowR},${tp.platEdgeGlowG},${tp.platEdgeGlowB},${edgeGlow})`;
     ctx.lineWidth = 1.5;
     ctx.beginPath();
     ctx.moveTo(x, screenY + h - 0.5);
@@ -478,18 +482,18 @@ function drawPlatform(p, reveal) {
     // Lava proximity heat glow on lower platforms
     const heatFactor = Math.max(0, 1 - (CANVAS_H - screenY) / (CANVAS_H * 0.4));
     if (heatFactor > 0) {
-      ctx.fillStyle = `rgba(255,80,0,${heatFactor * 0.3})`;
+      ctx.fillStyle = `rgba(${tp.heatGlowR},${tp.heatGlowG},${tp.heatGlowB},${heatFactor * 0.3})`;
       ctx.fillRect(x, screenY + h - depth - 2, w, depth + 4);
     }
 
     // Crumble reveal — red cracks bleed through as fake platform breaks apart
-    if (p.crumbling) {
-      const crumbleProgress = Math.min(1, p.crumbleTimer * 3.5);
-      // Red danger wash
-      ctx.fillStyle = `rgba(200,30,10,${crumbleProgress * 0.65})`;
+    if (plat.crumbling) {
+      const crumbleProgress = Math.min(1, plat.crumbleTimer * 3.5);
+      // Danger wash
+      ctx.fillStyle = `rgba(${tp.crumbleWash},${crumbleProgress * 0.65})`;
       ctx.fillRect(x, screenY, w, h - depth);
       // Crack lines radiating from center
-      ctx.strokeStyle = `rgba(255,80,30,${crumbleProgress * 0.9})`;
+      ctx.strokeStyle = `rgba(${tp.crumbleCrack},${crumbleProgress * 0.9})`;
       ctx.lineWidth = 1.5;
       const cx2 = x + w / 2, cy2 = screenY + (h - depth) / 2;
       for (let ci = 0; ci < 6; ci++) {
@@ -500,10 +504,10 @@ function drawPlatform(p, reveal) {
         ctx.lineTo(cx2 + Math.cos(angle) * len, cy2 + Math.sin(angle) * len);
         ctx.stroke();
       }
-      // Hot red border glow
-      ctx.shadowColor = '#ff2200';
+      // Hot border glow
+      ctx.shadowColor = tp.crumbleGlow;
       ctx.shadowBlur = 12 * crumbleProgress;
-      ctx.strokeStyle = `rgba(255,60,20,${crumbleProgress * 0.8})`;
+      ctx.strokeStyle = `rgba(${tp.crumbleBorder},${crumbleProgress * 0.8})`;
       ctx.lineWidth = 2;
       ctx.strokeRect(x + 1, screenY + 1, w - 2, h - depth - 2);
       ctx.shadowColor = 'transparent';
@@ -651,7 +655,7 @@ function drawRescueCharacter(noClip) {
 
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 16px sans-serif';
-  ctx.fillText('Help!', gx, gy + floatY - 36);
+  ctx.fillText(t('rescue.help'), gx, gy + floatY - 36);
 }
 
 // Update particle physics — called from scene update(), not render
@@ -733,6 +737,7 @@ function updateTrailMarks(dt) {
 
 function drawTrailMarks() {
   const ctx = G.ctx;
+  const tp = palette();
   for (const m of G.trailMarks) {
     const screenY = m.y - G.camera.y;
     if (screenY < -30 || screenY > CANVAS_H + 30) continue;
@@ -743,21 +748,21 @@ function drawTrailMarks() {
 
     // Outer glow
     ctx.globalAlpha = a * 0.25 * pulse;
-    ctx.fillStyle = '#ffaa44';
+    ctx.fillStyle = tp.trailOuter;
     ctx.beginPath();
     ctx.arc(m.x, screenY, r + 6, 0, Math.PI * 2);
     ctx.fill();
 
     // Mid glow
     ctx.globalAlpha = a * 0.4 * pulse;
-    ctx.fillStyle = '#ffcc66';
+    ctx.fillStyle = tp.trailMid;
     ctx.beginPath();
     ctx.arc(m.x, screenY, r, 0, Math.PI * 2);
     ctx.fill();
 
     // Bright core
     ctx.globalAlpha = a * 0.7;
-    ctx.fillStyle = '#ffeecc';
+    ctx.fillStyle = tp.trailCore;
     ctx.beginPath();
     ctx.arc(m.x, screenY, r * 0.4, 0, Math.PI * 2);
     ctx.fill();

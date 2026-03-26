@@ -10,33 +10,37 @@ Lava Land is a browser-based memory-platformer. The player memorizes a grid of p
 
 ```
 lava-land/
-  index.html              HTML markup + <link> + 17 <script> tags + SW registration
+  index.html              HTML markup + <link> + 19 <script> tags + SW registration
   manifest.json           PWA web app manifest (name, icons, display, orientation)
   sw.js                   Service worker — cache-first offline support
   css/
-    theme.css             CSS custom properties (colors, fonts) — the design token file
+    theme.css             CSS custom properties (colors, fonts) — design tokens + theme variants
     style.css             All CSS (responsive, mobile-friendly), uses theme.css variables
   images/
-    background.svg        Volcanic cave background (referenced by style.css)
+    background.svg        Volcanic cave background (default theme)
+    background-ocean.svg  Underwater ocean background (ocean theme)
+    background-forest.svg Enchanted forest background (forest theme)
     icon-192.png          App icon 192×192 (PWA / Android)
     icon-512.png          App icon 512×512 (PWA / splash)
   js/
-    config.js             Constants, physics tuning, CHARACTERS, LEVELS, getLevelConfig(), scoring constants
+    config.js             Constants, physics tuning, CHARACTERS, LEVELS, getLevelConfig(), scoring constants, THEME_PALETTES
+    i18n.js               Translation dictionary (en/no) + t() helper + SPEECH_LANG
     state.js              Shared mutable state object (G)
     timers.js             Managed timer system (replaces setTimeout in game logic)
-    audio.js              Procedural music generators + sound effects (with error guards)
+    audio.js              Procedural music dispatchers + sound effects + speech synthesis
+    soundtracks.js        Retro (chiptune) and Chill (ambient) soundtrack variants
     pathgen.js            Safe-path shaping algorithms (board rules, backtrack insertion)
     platforms.js          Grid generation + fake seeding (calls pathgen.js algorithms)
     player.js             resetPlayer()
-    drawing.js            Core canvas rendering (lava, platforms, player, particles, trail, route)
+    drawing.js            Core canvas rendering (lava, platforms, player, particles, trail, route) — uses palette()
     hud.js                UI overlays (level preview, transitions, streak popups, tutorial, urgency)
-    effects.js            All particle spawners (dust, explosions, lava, fireworks, confetti)
-    scenes.js             SceneManager + 5 scene objects (pushdown automaton)
+    effects.js            All particle spawners (dust, explosions, lava, fireworks, confetti) — uses palette()
+    scenes.js             SceneManager + 5 scene objects (pushdown automaton) — uses t()
     scoring.js            Pure scoring functions (calculateScore, calculateStars)
     logic.js              Jump + landing game rules (tryJump, landOnPlatform)
     input.js              Keyboard + touch event listeners
     loop.js               Fixed-timestep game loop
-    menu.js               Menu/settings UI setup + startGame
+    menu.js               Menu/settings UI + startGame + applyLanguage/applyTheme
     init.js               Bootstrap (canvas setup, starts loop)
   tests/
     test.html             Test runner HTML (opens in browser)
@@ -50,7 +54,7 @@ lava-land/
 ### Script Load Order
 
 ```
-config -> state -> timers -> audio -> pathgen -> platforms -> player ->
+config -> i18n -> state -> timers -> audio -> soundtracks -> pathgen -> platforms -> player ->
 drawing -> hud -> effects -> scenes -> scoring -> logic -> input -> loop -> menu -> init
 ```
 
