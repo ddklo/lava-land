@@ -23,7 +23,7 @@ lava-land/
     icon-192.png          App icon 192×192 (PWA / Android)
     icon-512.png          App icon 512×512 (PWA / splash)
   js/
-    config.js             Constants, physics tuning, CHARACTERS, LEVELS, getLevelConfig(), scoring constants, THEME_PALETTES
+    config.js             Constants, physics tuning, CHARACTERS (with color/soundPitch/soundType), LEVELS, getLevelConfig(), scoring constants, THEME_PALETTES, coin/combo/almost-there/victory-dance/story constants
     i18n.js               Translation dictionary (en/no) + t() helper + SPEECH_LANG
     state.js              Shared mutable state object (G)
     timers.js             Managed timer system (replaces setTimeout in game logic)
@@ -293,10 +293,10 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 Note: `drawLevelPreview()` now shows level story blurbs from `LEVEL_STORIES`.
 - `transitionTo(scene)` - Scene fade transition (DOM overlay with CSS transitions)
 - `updateTransition(dt)` / `drawTransition()` - No-ops kept for backward compat
-- `updateStreakPopups(dt)` / `drawStreakPopups()` - Combo streak counter display
+- `updateStreakPopups(dt)` / `drawStreakPopups()` - Combo streak counter display with milestone callout text
 - `drawUrgencyVignette(intensity)` - Red vignette pulse for memorize countdown (cached offscreen canvas)
 - `_getVignetteCache()` - Creates/returns cached vignette offscreen canvas
-- `drawLevelPreview()` - Level name/info card overlay
+- `drawLevelPreview()` - Level name/info card overlay with level story blurbs
 - `drawTutorialArrow()` / `drawTutorialHint(ctx, tx, ty, text)` - Tutorial arrow pointing at first safe platform
 
 ### effects.js (11 functions)
@@ -442,7 +442,7 @@ Convert to `<script type="module">` with import/export. Requires HTTP server.
 - ~~START button not debounced~~ — disabled immediately in `startGame()`
 - ~~Missing bounds check~~ in sideways jump — added row bounds guard
 - ~~Speech synthesis wrong voice~~ — now explicitly requests English voice via `getEnglishVoice()`
-- ~~Dead data `CHARACTERS[*].color`~~ — removed (never read)
+- ~~Dead data `CHARACTERS[*].color`~~ — reinstated in v1.5.0; now used by character-specific audio (along with new `soundPitch` and `soundType` properties)
 - ~~No offline support~~ — added PWA manifest + service worker
 - ~~No tab backgrounding handling~~ — loop pauses on `visibilitychange`, resets accumulator on resume
 - ~~Unbounded particle array~~ — capped at `MAX_PARTICLES` via `pushParticle()` helper
