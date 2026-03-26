@@ -138,6 +138,28 @@ const MemorizeScene = {
   _lastSecs: -1,
 
   onEnter() {
+    // Run deferred level setup (platform generation, player reset) during the
+    // fade-to-black overlay so it doesn't block UI before the fade starts.
+    if (G._pendingLevelSetup) {
+      generatePlatforms();
+      resetPlayer();
+      G.particles = [];
+      G.trailMarks = [];
+      G.jumpCount = 0;
+      G.memTimeSaved = 0;
+      G.jumpStreak = 0;
+      G.hopsThisRow = 0;
+      G.streakBonus = 0;
+      G.routeRevealed = false;
+      G.almostThereShown = false;
+      G.almostThereTimer = 0;
+      G.victoryDanceActive = false;
+      G.victoryDanceTimer = 0;
+      // Invalidate memorize lava cache for new level height
+      G.lavaCacheMem = null;
+      G._pendingLevelSetup = false;
+    }
+
     G.gameState = 'memorize';
     G.camera.y = 0;
     this._lastSecs = -1;

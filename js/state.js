@@ -22,6 +22,9 @@ const G = {
   lavaCache: null,
   lavaCacheCtx: null,
   lavaFrameCount: 0,
+  lavaCacheMem: null,
+  lavaCacheMemCtx: null,
+  lavaMemFrameCount: 0,
 
   // Selections
   heroChoice: null,
@@ -102,6 +105,9 @@ const G = {
 
   // Level preview
   levelPreview: null,
+
+  // Deferred level setup flag (heavy work deferred to scene onEnter)
+  _pendingLevelSetup: false,
 
   // Managed timers (replaces setTimeout/setInterval in game logic)
   timers: [],

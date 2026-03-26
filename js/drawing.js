@@ -272,8 +272,20 @@ function drawLava(offsetY, height) {
     return;
   }
 
-  // Memorize scene or non-standard height: render directly (scaled context).
-  _renderLavaLayers(G.ctx, drawH, t, offsetY);
+  // Memorize scene: cache at the level-specific height, re-render every 3 frames.
+  if (!G.lavaCacheMem || G.lavaCacheMem.height !== drawH) {
+    G.lavaCacheMem = document.createElement('canvas');
+    G.lavaCacheMem.width = CANVAS_W;
+    G.lavaCacheMem.height = drawH;
+    G.lavaCacheMemCtx = G.lavaCacheMem.getContext('2d');
+    G.lavaMemFrameCount = 0;
+  }
+  G.lavaMemFrameCount++;
+  if (G.lavaMemFrameCount % 3 === 0 || G.lavaMemFrameCount === 1) {
+    G.lavaCacheMemCtx.clearRect(0, 0, CANVAS_W, drawH);
+    _renderLavaLayers(G.lavaCacheMemCtx, drawH, t, offsetY);
+  }
+  G.ctx.drawImage(G.lavaCacheMem, 0, 0);
 }
 
 function drawPlatform(plat, reveal) {
