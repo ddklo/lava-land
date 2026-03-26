@@ -284,9 +284,13 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `drawRouteSteps()` - Draw numbered step markers and arrows on safeRoute during memorize (only when backtracks exist; no longer called from MemorizeScene)
 - `drawPathReveal(revealCount)` - Sequential path reveal during memorize: highlights first `revealCount` optimalRoute steps with gold glow, border, step number badge, and arrows; replaces column indicator
 - `formatTime(seconds)` - Timer display formatter
+- `drawCoins()` - Render collectible coins with bob and spin animation
+- `drawAlmostThere()` - "Almost there" proximity HUD prompt
+- `drawVictoryDance(x,y,timer)` - Animated victory dance celebration
 - `drawFpsCounter()` - FPS/avg/min overlay (toggle via F3 key)
 
 ### hud.js (9 functions)
+Note: `drawLevelPreview()` now shows level story blurbs from `LEVEL_STORIES`.
 - `transitionTo(scene)` - Scene fade transition (DOM overlay with CSS transitions)
 - `updateTransition(dt)` / `drawTransition()` - No-ops kept for backward compat
 - `updateStreakPopups(dt)` / `drawStreakPopups()` - Combo streak counter display
@@ -295,7 +299,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `drawLevelPreview()` - Level name/info card overlay
 - `drawTutorialArrow()` / `drawTutorialHint(ctx, tx, ty, text)` - Tutorial arrow pointing at first safe platform
 
-### effects.js (8 functions)
+### effects.js (11 functions)
 - `pushParticle(p)` - Adds particle to array if below MAX_PARTICLES cap
 - `spawnPlatformExplosion(plat)` - 18 stone debris particles on departure
 - `spawnLandDust(plat)` - Radial dust cloud on landing
@@ -304,14 +308,17 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `spawnJumpTrail(x, y)` - 2 glowing trail particles during jump arc
 - `spawnFirework(x, y)` - Burst of 30 radial particles
 - `spawnConfetti()` - 40 falling confetti particles
+- `spawnCoinSparkle(x, y)` - Sparkle burst on coin collection
+- `spawnSpeedLines(x, y, dx)` - Directional speed line particles
+- `spawnVictorySparkle(x, y)` - Sparkle particles during victory dance
 
 ### scenes.js (SceneManager + 5 scenes + 5 helpers)
 - `SceneManager` - push/pop/replace + update/render delegation
 - `MenuScene` - Lava background, shows menu HTML overlay, resets parallax
-- `MemorizeScene` - Zoom-out view, countdown, level preview card, urgency vignette, progress dots
-- `PlayingScene` - Gameplay: jump animation, camera, platform bob, trail, HUD, jump trail particles, streak popups, tutorial arrow, parallax
+- `MemorizeScene` - Zoom-out view, countdown, level preview card, urgency vignette, progress dots, countdown ticks
+- `PlayingScene` - Gameplay: jump animation, camera, platform bob, trail, HUD, jump trail particles, streak popups, tutorial arrow, parallax, coins, almost-there prompt
 - `FallingScene` - Fall animation, shake, "Almost!" feedback, lose screen after 1.8s, parallax
-- `WonScene` - Firework sequence, character celebration walk, star pop-in animation, win screen
+- `WonScene` - Firework sequence, character celebration walk, victory dance phase, star pop-in animation, win screen
 - `renderPlatforms(reveal)` / `applyShake(ctx)` / `updatePlatformBob(dt)` / `updateCrumbleTimers(dt)` / `startPlayingEarly()`
 
 ### scoring.js (2 functions)
@@ -321,7 +328,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 ### logic.js (3 functions)
 - `destroyDeparturePlatform()` - Explode and mark current platform as destroyed
 - `tryJump(direction)` - Handle left/right/forward/backward jump; uses destroyDeparturePlatform
-- `landOnPlatform(plat, row, col)` - Process landing; check win/fake/destroyed
+- `landOnPlatform(plat, row, col)` - Process landing; collect coins, check win/fake/destroyed
 
 ### input.js (1 function)
 - `setupInput()` - Register keyboard + touch event listeners
