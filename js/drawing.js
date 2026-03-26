@@ -593,11 +593,24 @@ function drawPlayer() {
   ctx.fill();
   ctx.restore();
 
+  // Lean rotation during jump / idle rocking
+  let jumpRotation = 0;
+
   // Idle breathing scale when grounded (subtle size oscillation)
   if (!G.jumpAnim.active) {
     const breathe = 1 + Math.sin(G.lavaTime * 2.2) * 0.04;
     scaleX *= breathe;
     scaleY *= breathe;
+    // Idle rocking — gentle side-to-side tilt
+    G.idleTimer += 0.016;
+    jumpRotation = Math.sin(G.idleTimer * 1.8) * 0.06;
+    // Periodic micro-hop every ~3 seconds
+    G.idleBobPhase += 0.016;
+    if (G.idleBobPhase > 3) G.idleBobPhase -= 3;
+    if (G.idleBobPhase < 0.15) {
+      const hopPhase = G.idleBobPhase / 0.15;
+      bob -= Math.sin(hopPhase * Math.PI) * 3;
+    }
   }
 
   // Landing squash: apply squash for a brief window after landing
@@ -609,7 +622,6 @@ function drawPlayer() {
   }
 
   // Lean rotation during jump based on horizontal travel direction
-  let jumpRotation = 0;
   if (G.jumpAnim.active) {
     const dx = G.jumpAnim.endX - G.jumpAnim.startX;
     jumpRotation = (dx !== 0 ? Math.sign(dx) : 0) * 0.22 * Math.sin(G.jumpAnim.t * Math.PI);
@@ -680,6 +692,131 @@ function drawRescueCharacter(noClip) {
   ctx.fillStyle = '#fff';
   ctx.font = 'bold 16px sans-serif';
   ctx.fillText(t('rescue.help'), gx, gy + floatY - 36);
+}
+
+// ─── COIN RENDERING ─────────────────────────────────────────────
+function drawCoins() {
+  const ctx = G.ctx;
+  if (!G.coins || G.coins.length === 0) return;
+  for (const coin of G.coins) {
+    if (coin.collected) continue;
+    const plat = G.platforms[coin.row] && G.platforms[coin.row][coin.col];
+    if (!plat || plat.destroyed) continue;
+    const cx = plat.x + plat.w / 2;
+    const platScreenY = plat.y - G.camera.y;
+    if (platScreenY < -80 || platScreenY > CANVAS_H + 80) continue;
+    const bobY = Math.sin(G.lavaTime * COIN_BOB_SPEED + coin.row * 2 + coin.col) * COIN_BOB_HEIGHT;
+    const cy = plat.y + (PLAT_H - PLAT_DEPTH) / 2 - 18 + bobY - G.camera.y;
+    const spin = Math.cos(G.lavaTime * COIN_SPIN_SPEED + coin.row + coin.col * 3);
+    const scaleX = Math.abs(spin) * 0.7 + 0.3;
+
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.scale(scaleX, 1);
+
+    // Outer glow
+    ctx.globalAlpha = 0.3 + Math.sin(G.lavaTime * 3 + coin.row) * 0.1;
+    ctx.fillStyle = '#FFD700';
+    ctx.beginPath();
+    ctx.arc(0, 0, COIN_SIZE + 3, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Coin body
+    ctx.globalAlpha = 1;
+    const grad = ctx.createRadialGradient(-3, -3, 1, 0, 0, COIN_SIZE);
+    grad.addColorStop(0, '#FFF44F');
+    grad.addColorStop(0.5, '#FFD700');
+    grad.addColorStop(1, '#DAA520');
+    ctx.fillStyle = grad;
+    ctx.beginPath();
+    ctx.arc(0, 0, COIN_SIZE, 0, Math.PI * 2);
+    ctx.fill();
+
+    // Coin border
+    ctx.strokeStyle = '#B8860B';
+    ctx.lineWidth = 1.5;
+    ctx.stroke();
+
+    // Star symbol in center
+    ctx.fillStyle = '#B8860B';
+    ctx.font = 'bold 14px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText('\u2605', 0, 0);
+
+    ctx.restore();
+  }
+}
+
+// ─── ALMOST THERE ENCOURAGEMENT ─────────────────────────────────
+function drawAlmostThere() {
+  if (!G.almostThereShown || G.almostThereTimer <= 0) return;
+  const ctx = G.ctx;
+  const alpha = Math.min(1, G.almostThereTimer / 0.5) * (G.almostThereTimer < 0.5 ? G.almostThereTimer / 0.5 : 1);
+  const rise = (1 - Math.min(1, G.almostThereTimer / 2)) * 15;
+
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  // Glowing text banner
+  const phrases = ['almost.there', 'almost.one_more', 'almost.you_got_this', 'almost.so_close'];
+  const phrase = t(phrases[Math.floor(G.lavaTime * 0.3) % phrases.length]);
+
+  ctx.shadowColor = '#44ff88';
+  ctx.shadowBlur = 16 + Math.sin(G.lavaTime * 6) * 6;
+  ctx.fillStyle = '#ffffff';
+  ctx.font = 'bold 28px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.textBaseline = 'middle';
+  ctx.fillText(phrase, CANVAS_W / 2, CANVAS_H * 0.25 - rise);
+
+  // Smaller sub-text with rescue character emoji
+  if (G.rescueChar) {
+    ctx.shadowBlur = 8;
+    ctx.font = '18px sans-serif';
+    ctx.fillStyle = '#ffcc44';
+    ctx.fillText(G.rescueChar.emoji + ' ' + t('rescue.help'), CANVAS_W / 2, CANVAS_H * 0.25 + 28 - rise);
+  }
+
+  ctx.restore();
+}
+
+// ─── VICTORY DANCE RENDERING ────────────────────────────────────
+function drawVictoryDance(x, y, timer) {
+  const ctx = G.ctx;
+  if (!G.heroChar || !G.rescueChar) return;
+
+  // Characters bounce and spin
+  const bounce = Math.abs(Math.sin(timer * 6)) * 15;
+  const wobble = Math.sin(timer * 8) * 0.2;
+  const heroX = x - 25;
+  const rescueX = x + 25;
+
+  // Draw hero doing victory dance
+  ctx.save();
+  ctx.translate(heroX, y - bounce);
+  ctx.rotate(wobble);
+  drawEmoji(ctx, G.heroChar.emoji, 0, 0, EMOJI_SIZE);
+  ctx.restore();
+
+  // Draw rescue character bouncing too
+  ctx.save();
+  ctx.translate(rescueX, y - Math.abs(Math.sin(timer * 6 + 1)) * 15);
+  ctx.rotate(-wobble);
+  drawEmoji(ctx, G.rescueChar.emoji, 0, 0, EMOJI_SIZE);
+  ctx.restore();
+
+  // Draw celebration emojis rotating around them
+  const emojis = ['\u2B50', '\u{1F389}', '\u{1F38A}', '\u2728'];
+  for (let i = 0; i < emojis.length; i++) {
+    const angle = timer * 3 + (i / emojis.length) * Math.PI * 2;
+    const orbitR = 45 + Math.sin(timer * 2 + i) * 10;
+    const ex = x + Math.cos(angle) * orbitR;
+    const ey = y + Math.sin(angle) * orbitR * 0.5 - 10;
+    ctx.globalAlpha = 0.8;
+    drawEmoji(ctx, emojis[i], ex, ey, 18);
+  }
+  ctx.globalAlpha = 1;
 }
 
 // Update particle physics — called from scene update(), not render

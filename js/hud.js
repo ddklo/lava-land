@@ -157,6 +157,32 @@ function drawLevelPreview() {
     ctx.fillText(`${G.levelConfig.cols}\u00D7${G.levelConfig.rows}  ${fireStr}`, CANVAS_W / 2, CANVAS_H / 2 + 55);
   }
 
+  // Level story blurb
+  if (G.level <= LEVEL_STORIES.length && G.heroChar && G.rescueChar) {
+    const heroName = t('char.' + G.heroChar.name);
+    const rescueName = t('char.' + G.rescueChar.name);
+    const story = t(LEVEL_STORIES[G.level - 1], { hero: heroName, rescue: rescueName });
+    ctx.font = 'italic 15px sans-serif';
+    ctx.fillStyle = '#ffddaa';
+    ctx.shadowBlur = 0;
+    // Word wrap the story text
+    const maxW = CANVAS_W * 0.7;
+    const words = story.split(' ');
+    let line = '';
+    let lineY = CANVAS_H / 2 + 85;
+    for (let i = 0; i < words.length; i++) {
+      const test = line + (line ? ' ' : '') + words[i];
+      if (ctx.measureText(test).width > maxW && line) {
+        ctx.fillText(line, CANVAS_W / 2, lineY);
+        line = words[i];
+        lineY += 20;
+      } else {
+        line = test;
+      }
+    }
+    if (line) ctx.fillText(line, CANVAS_W / 2, lineY);
+  }
+
   ctx.restore();
 }
 

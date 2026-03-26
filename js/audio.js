@@ -425,10 +425,12 @@ function playJumpSound() {
   initAudio();
   if (!hasAudio()) return;
   const now = G.audioCtx.currentTime;
+  const pitch = G.heroChar ? G.heroChar.soundPitch : 1;
+  const type = G.heroChar ? G.heroChar.soundType : 'sine';
   const osc = G.audioCtx.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(300, now);
-  osc.frequency.exponentialRampToValueAtTime(500, now + 0.1);
+  osc.type = type;
+  osc.frequency.setValueAtTime(300 * pitch, now);
+  osc.frequency.exponentialRampToValueAtTime(500 * pitch, now + 0.1);
   const g = G.audioCtx.createGain();
   g.gain.setValueAtTime(0.2, now);
   g.gain.linearRampToValueAtTime(0, now + 0.15);
@@ -441,10 +443,12 @@ function playLandSound() {
   initAudio();
   if (!hasAudio()) return;
   const now = G.audioCtx.currentTime;
+  const pitch = G.heroChar ? G.heroChar.soundPitch : 1;
+  const type = G.heroChar ? G.heroChar.soundType : 'triangle';
   const osc = G.audioCtx.createOscillator();
-  osc.type = 'triangle';
-  osc.frequency.setValueAtTime(200, now);
-  osc.frequency.exponentialRampToValueAtTime(80, now + 0.1);
+  osc.type = type;
+  osc.frequency.setValueAtTime(200 * pitch, now);
+  osc.frequency.exponentialRampToValueAtTime(80 * pitch, now + 0.1);
   const g = G.audioCtx.createGain();
   g.gain.setValueAtTime(0.25, now);
   g.gain.linearRampToValueAtTime(0, now + 0.12);
@@ -759,14 +763,95 @@ function playHopSound() {
   initAudio();
   if (!hasAudio()) return;
   const now = G.audioCtx.currentTime;
+  const pitch = G.heroChar ? G.heroChar.soundPitch : 1;
+  const type = G.heroChar ? G.heroChar.soundType : 'sine';
   const osc = G.audioCtx.createOscillator();
-  osc.type = 'sine';
-  osc.frequency.setValueAtTime(250, now);
-  osc.frequency.exponentialRampToValueAtTime(300, now + 0.08);
+  osc.type = type;
+  osc.frequency.setValueAtTime(250 * pitch, now);
+  osc.frequency.exponentialRampToValueAtTime(300 * pitch, now + 0.08);
   const g = G.audioCtx.createGain();
   g.gain.setValueAtTime(0.15, now);
   g.gain.linearRampToValueAtTime(0, now + 0.1);
   osc.connect(g).connect(G.audioCtx.destination);
   osc.start(now);
   osc.stop(now + 0.1);
+}
+
+// ─── COIN COLLECT SOUND ─────────────────────────────────────────
+function playCoinSound() {
+  initAudio();
+  if (!hasAudio()) return;
+  const now = G.audioCtx.currentTime;
+  // Bright ascending chime
+  const osc = G.audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(880, now);
+  osc.frequency.exponentialRampToValueAtTime(1760, now + 0.12);
+  const g = G.audioCtx.createGain();
+  g.gain.setValueAtTime(0.2, now);
+  g.gain.linearRampToValueAtTime(0, now + 0.2);
+  osc.connect(g).connect(G.audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.2);
+  // Sparkle harmonic
+  const osc2 = G.audioCtx.createOscillator();
+  osc2.type = 'sine';
+  osc2.frequency.setValueAtTime(1320, now + 0.05);
+  osc2.frequency.exponentialRampToValueAtTime(2640, now + 0.15);
+  const g2 = G.audioCtx.createGain();
+  g2.gain.setValueAtTime(0.1, now + 0.05);
+  g2.gain.linearRampToValueAtTime(0, now + 0.25);
+  osc2.connect(g2).connect(G.audioCtx.destination);
+  osc2.start(now + 0.05);
+  osc2.stop(now + 0.25);
+}
+
+// ─── COUNTDOWN TICK SOUND ───────────────────────────────────────
+function playCountdownTick(secsLeft) {
+  initAudio();
+  if (!hasAudio()) return;
+  const now = G.audioCtx.currentTime;
+  // Higher pitch for fewer seconds remaining
+  const basePitch = secsLeft === 1 ? 1200 : secsLeft === 2 ? 900 : 700;
+  const osc = G.audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(basePitch, now);
+  osc.frequency.exponentialRampToValueAtTime(basePitch * 0.5, now + 0.15);
+  const g = G.audioCtx.createGain();
+  g.gain.setValueAtTime(0.25, now);
+  g.gain.linearRampToValueAtTime(0, now + 0.15);
+  osc.connect(g).connect(G.audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.15);
+  // Resonant click
+  const click = G.audioCtx.createOscillator();
+  click.type = 'square';
+  click.frequency.setValueAtTime(basePitch * 2, now);
+  click.frequency.exponentialRampToValueAtTime(basePitch, now + 0.03);
+  const cg = G.audioCtx.createGain();
+  cg.gain.setValueAtTime(0.12, now);
+  cg.gain.linearRampToValueAtTime(0, now + 0.05);
+  click.connect(cg).connect(G.audioCtx.destination);
+  click.start(now);
+  click.stop(now + 0.05);
+}
+
+// ─── ALMOST THERE SOUND ────────────────────────────────────────
+function playAlmostThereSound() {
+  initAudio();
+  if (!hasAudio()) return;
+  const now = G.audioCtx.currentTime;
+  // Hopeful ascending two-note chime
+  [523, 659].forEach((freq, i) => {
+    const osc = G.audioCtx.createOscillator();
+    osc.type = 'sine';
+    osc.frequency.value = freq;
+    const g = G.audioCtx.createGain();
+    g.gain.setValueAtTime(0, now + i * 0.12);
+    g.gain.linearRampToValueAtTime(0.18, now + i * 0.12 + 0.03);
+    g.gain.linearRampToValueAtTime(0, now + i * 0.12 + 0.25);
+    osc.connect(g).connect(G.audioCtx.destination);
+    osc.start(now + i * 0.12);
+    osc.stop(now + i * 0.12 + 0.25);
+  });
 }

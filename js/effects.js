@@ -145,6 +145,64 @@ function spawnImpactRing(plat) {
   });
 }
 
+// ─── COIN COLLECT SPARKLE ────────────────────────────────────────
+function spawnCoinSparkle(x, y) {
+  const colors = ['#FFD700', '#FFF44F', '#FFEC8B', '#FFE066', '#FFFFFF'];
+  for (let i = 0; i < 12; i++) {
+    const angle = (i / 12) * Math.PI * 2 + Math.random() * 0.4;
+    const speed = 1.5 + Math.random() * 3;
+    pushParticle({
+      x: x + (Math.random() - 0.5) * 8,
+      y: y + (Math.random() - 0.5) * 8,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 1,
+      size: 2 + Math.random() * 3,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      life: 0.6 + Math.random() * 0.3,
+      gravity: -0.02,
+      round: true,
+    });
+  }
+}
+
+// ─── SPEED LINES (jump action lines) ────────────────────────────
+function spawnSpeedLines(x, y, dx) {
+  const dir = dx > 0 ? -1 : dx < 0 ? 1 : 0;
+  for (let i = 0; i < 4; i++) {
+    pushParticle({
+      x: x + dir * 10 + (Math.random() - 0.5) * 6,
+      y: y + (Math.random() - 0.5) * 20,
+      vx: dir * (2 + Math.random() * 3),
+      vy: (Math.random() - 0.5) * 0.5,
+      size: 1 + Math.random(),
+      color: 'rgba(255,255,255,0.6)',
+      life: 0.2 + Math.random() * 0.15,
+      gravity: 0,
+      round: true,
+    });
+  }
+}
+
+// ─── VICTORY DANCE SPARKLES ─────────────────────────────────────
+function spawnVictorySparkle(x, y) {
+  const colors = ['#FFD700', '#FF69B4', '#44FF88', '#44CCFF', '#FF44FF', '#FFFFFF'];
+  for (let i = 0; i < 3; i++) {
+    const angle = Math.random() * Math.PI * 2;
+    const speed = 0.5 + Math.random() * 1.5;
+    pushParticle({
+      x: x + (Math.random() - 0.5) * 20,
+      y: y + (Math.random() - 0.5) * 20,
+      vx: Math.cos(angle) * speed,
+      vy: Math.sin(angle) * speed - 0.5,
+      size: 2 + Math.random() * 2,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      life: 0.5 + Math.random() * 0.3,
+      gravity: -0.01,
+      round: true,
+    });
+  }
+}
+
 function spawnConfetti() {
   const colors = ['#ff0000', '#00ff00', '#0088ff', '#ffff00', '#ff00ff', '#00ffff', '#ffffff', '#ffaa00',
                   '#ff6699', '#66ccff', '#ffcc00', '#cc44ff', '#ff4400', '#44ff88', '#ff88cc', '#88ff44',
