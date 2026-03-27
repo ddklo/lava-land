@@ -142,6 +142,7 @@ const MemorizeScene = {
     // fade-to-black overlay so it doesn't block UI before the fade starts.
     if (G._pendingLevelSetup) {
       generatePlatforms();
+      cachePlatformTextures();
       resetPlayer();
       G.particles = [];
       G.trailMarks = [];

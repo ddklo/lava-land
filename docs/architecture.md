@@ -273,10 +273,14 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 ### player.js (1 function)
 - `resetPlayer()` - Place player on first safe platform, reset camera
 
-### drawing.js (15 functions)
+### drawing.js (19 functions)
 - `drawEmoji(ctx, emoji, x, y, size)` - Shared emoji renderer with shadow pass (reduced in low perf mode)
 - `drawLava(offsetY, height)` - 7-layer animated lava background (layers 4-6 skipped in low perf mode)
-- `drawPlatform(p, reveal)` - 3D stone block with brick texture + glow (memorize) + heat (lava proximity); decorative details (noise, bricks, cracks, moss) skipped in low perf mode
+- `cachePlatformTextures()` - Pre-renders all platform static visuals to offscreen canvases (called once per level after generatePlatforms); eliminates per-frame gradient creation and deterministic detail redraw
+- `_drawNormalStatic(ctx, tp, x, y, w, h, depth, seed)` - Renders static normal stone platform (gradients, textures, edges) to a given context
+- `_drawSafeRevealedStatic(ctx, tp, x, y, w, h, depth)` - Renders static safe revealed platform (green tint, checkmark) to a given context
+- `_drawFakeRevealedStatic(ctx, tp, x, y, w, h, depth)` - Renders static fake revealed platform (red X, dashed border) to a given context
+- `drawPlatform(p, reveal)` - Draws cached platform image + dynamic effects (underglow, edge glow, heat, crumble); falls back to full render if cache unavailable
 - `drawPlayer()` - Player emoji with squash/stretch and shadow
 - `drawRescueCharacter()` - Floating rescue target with SOS rings, sparkles, and "Help!"
 - `updateParticles(dt)` / `drawParticles()` - Particle physics and rendering
