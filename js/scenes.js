@@ -728,6 +728,13 @@ const WonScene = {
   _flyVX1: 0, _flyVY1: 0,
   _flyVX2: 0, _flyVY2: 0,
   _angle1: 0, _angle2: 0,
+  _flyTimer: 0,
+  _flyScale1: 1, _flyScale2: 1,
+  _flyCharging: false,
+  _flyLaunched: false,
+  _exhaustTimer: 0,
+  _speedLines: [],
+  _spinRate1: 3.5, _spinRate2: -2.8,
 
   onEnter() {
     G.gameState = 'won';
@@ -757,12 +764,31 @@ const WonScene = {
     this._flyY1 = startY;
     this._flyX2 = startX - 20;
     this._flyY2 = startY;
-    this._flyVX1 = 55 + Math.random() * 25;
-    this._flyVY1 = -260;
-    this._flyVX2 = -(55 + Math.random() * 25);
-    this._flyVY2 = -230;
+    this._flyVX1 = 40 + Math.random() * 20;
+    this._flyVY1 = -80;
+    this._flyVX2 = -(40 + Math.random() * 20);
+    this._flyVY2 = -80;
     this._angle1 = 0;
     this._angle2 = 0;
+    this._flyTimer = 0;
+    this._flyScale1 = 1;
+    this._flyScale2 = 1;
+    this._flyCharging = false;
+    this._flyLaunched = false;
+    this._exhaustTimer = 0;
+    this._spinRate1 = 3.5;
+    this._spinRate2 = -2.8;
+    // Pre-generate speed lines
+    this._speedLines = [];
+    for (let i = 0; i < FLY_SPEED_LINE_COUNT; i++) {
+      this._speedLines.push({
+        x: Math.random() * CANVAS_W,
+        y: Math.random() * CANVAS_H,
+        len: 30 + Math.random() * 60,
+        speed: 400 + Math.random() * 600,
+        alpha: 0.15 + Math.random() * 0.25,
+      });
+    }
 
     stopMusic();
     playWinSound();
@@ -871,14 +897,72 @@ const WonScene = {
 
     // Characters fly up and off screen (only after dance)
     if (!G.victoryDanceActive) {
-      this._flyVY1 -= 120 * dt;
-      this._flyVY2 -= 120 * dt;
-      this._flyX1 += this._flyVX1 * dt;
-      this._flyY1 += this._flyVY1 * dt;
-      this._flyX2 += this._flyVX2 * dt;
-      this._flyY2 += this._flyVY2 * dt;
-      this._angle1 += dt * 3.5;
-      this._angle2 -= dt * 2.8;
+      this._flyTimer += dt;
+
+      // Phase 1: Charge-up / crouch (characters squeeze down)
+      if (!this._flyCharging && !this._flyLaunched && this._flyTimer < FLY_CHARGE_DURATION) {
+        this._flyCharging = true;
+      }
+
+      // Phase 2: Launch! — explosive acceleration
+      if (this._flyCharging && this._flyTimer >= FLY_CHARGE_DURATION) {
+        this._flyCharging = false;
+        this._flyLaunched = true;
+        this._flyVY1 = -200;
+        this._flyVY2 = -200;
+        G.shakeTimer = 12;
+      }
+
+      // Phase 3: Flying — accelerating upward, scaling up, spinning faster
+      if (this._flyLaunched) {
+        const flyElapsed = this._flyTimer - FLY_CHARGE_DURATION;
+
+        // Accelerating upward thrust
+        this._flyVY1 -= FLY_ACCEL_RATE * dt;
+        this._flyVY2 -= FLY_ACCEL_RATE * dt;
+
+        // Characters drift apart horizontally (increasing spread)
+        this._flyVX1 += 30 * dt;
+        this._flyVX2 -= 30 * dt;
+
+        // Move characters
+        this._flyX1 += this._flyVX1 * dt;
+        this._flyY1 += this._flyVY1 * dt;
+        this._flyX2 += this._flyVX2 * dt;
+        this._flyY2 += this._flyVY2 * dt;
+
+        // Scale up — characters "approach the camera" as they fly out
+        this._flyScale1 = Math.min(FLY_MAX_SCALE, 1 + flyElapsed * FLY_SCALE_RATE);
+        this._flyScale2 = Math.min(FLY_MAX_SCALE, 1 + flyElapsed * FLY_SCALE_RATE * 0.85);
+
+        // Spin accelerates over time
+        this._spinRate1 += FLY_SPIN_ACCEL * dt;
+        this._spinRate2 -= FLY_SPIN_ACCEL * dt;
+        this._angle1 += this._spinRate1 * dt;
+        this._angle2 += this._spinRate2 * dt;
+
+        // Screen shake that fades out
+        if (flyElapsed < 1.5) {
+          G.shakeTimer = Math.max(G.shakeTimer, FLY_SHAKE_INTENSITY * (1 - flyElapsed / 1.5));
+        }
+
+        // Exhaust particles from both characters
+        this._exhaustTimer += dt;
+        if (this._exhaustTimer >= FLY_EXHAUST_RATE) {
+          this._exhaustTimer -= FLY_EXHAUST_RATE;
+          spawnFlyExhaust(this._flyX1, this._flyY1, this._flyVX1, this._flyVY1);
+          spawnFlyExhaust(this._flyX2, this._flyY2, this._flyVX2, this._flyVY2);
+        }
+
+        // Update speed lines (they streak downward as characters fly up)
+        for (const line of this._speedLines) {
+          line.y += line.speed * dt;
+          if (line.y > CANVAS_H + line.len) {
+            line.y = -line.len;
+            line.x = Math.random() * CANVAS_W;
+          }
+        }
+      }
     }
 
     updateTransition(dt);
@@ -953,24 +1037,64 @@ const WonScene = {
     }
 
     // Characters fly up and off screen
-    const drawFlyChar = (emoji, x, y, angle, vx, vy) => {
-      // Sparkle trail in the wake
+    const flyElapsed = this._flyTimer - FLY_CHARGE_DURATION;
+
+    // Draw speed lines during launched phase
+    if (this._flyLaunched && flyElapsed > 0) {
+      const lineAlphaBase = Math.min(1, flyElapsed * 2);
+      ctx.strokeStyle = '#FFFFFF';
+      ctx.lineWidth = 2;
+      for (const line of this._speedLines) {
+        ctx.globalAlpha = line.alpha * lineAlphaBase;
+        ctx.beginPath();
+        ctx.moveTo(line.x, line.y);
+        ctx.lineTo(line.x, line.y - line.len);
+        ctx.stroke();
+      }
+      ctx.globalAlpha = 1;
+    }
+
+    const drawFlyChar = (emoji, x, y, angle, vx, vy, scale) => {
       const speed = Math.sqrt(vx * vx + vy * vy);
-      const nx = -vx / speed, ny = -vy / speed;
-      for (let i = 1; i <= 4; i++) {
-        ctx.globalAlpha = 0.6 - i * 0.13;
-        drawEmoji(ctx, '\u2728', x + nx * i * 18, y + ny * i * 18, 18 - i * 3);
+      if (speed > 1) {
+        // Sparkle/fire trail behind character (longer when going faster)
+        const nx = -vx / speed, ny = -vy / speed;
+        const trailLen = Math.min(8, Math.floor(speed / 40));
+        for (let i = 1; i <= trailLen; i++) {
+          const t = i / trailLen;
+          ctx.globalAlpha = (0.7 - t * 0.6) * Math.min(1, scale);
+          const trailSize = (22 - i * 1.5) * scale;
+          const trailEmoji = i <= 2 ? '\u{1F525}' : '\u2728';
+          drawEmoji(ctx, trailEmoji, x + nx * i * 16 * scale, y + ny * i * 16 * scale, Math.max(4, trailSize));
+        }
       }
       ctx.globalAlpha = 1;
       ctx.save();
       ctx.translate(x, y);
       ctx.rotate(angle);
-      drawEmoji(ctx, emoji, 0, 0, 52);
+      drawEmoji(ctx, emoji, 0, 0, 52 * scale);
       ctx.restore();
     };
 
-    drawFlyChar(G.heroChar.emoji,   this._flyX1, this._flyY1, this._angle1, this._flyVX1, this._flyVY1);
-    drawFlyChar(G.rescueChar.emoji, this._flyX2, this._flyY2, this._angle2, this._flyVX2, this._flyVY2);
+    // During charge phase: characters squeeze/crouch
+    if (this._flyCharging) {
+      const chargeT = this._flyTimer / FLY_CHARGE_DURATION;
+      const squash = 1 - chargeT * 0.3; // squeeze down to 70%
+      const stretch = 1 + chargeT * 0.15;
+      ctx.save();
+      ctx.translate(this._flyX1, this._flyY1);
+      ctx.scale(stretch, squash);
+      drawEmoji(ctx, G.heroChar.emoji, 0, 0, 52);
+      ctx.restore();
+      ctx.save();
+      ctx.translate(this._flyX2, this._flyY2);
+      ctx.scale(stretch, squash);
+      drawEmoji(ctx, G.rescueChar.emoji, 0, 0, 52);
+      ctx.restore();
+    } else {
+      drawFlyChar(G.heroChar.emoji,   this._flyX1, this._flyY1, this._angle1, this._flyVX1, this._flyVY1, this._flyScale1);
+      drawFlyChar(G.rescueChar.emoji, this._flyX2, this._flyY2, this._angle2, this._flyVX2, this._flyVY2, this._flyScale2);
+    }
 
     ctx.globalAlpha = 1;
     ctx.restore();
