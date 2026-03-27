@@ -100,6 +100,7 @@ All state mutation happens in `update(dt)`. All drawing happens in `render()` as
 
 - `updateParticles(dt)` -- advances particle physics (drawing.js)
 - `updateCrumbleTimers(dt)` -- advances platform crumble state (scenes.js)
+- `updateDissolve(dt)` -- advances dissolve timers; triggers next fake platform dissolution from queue (scenes.js)
 - `updatePlatformBob(dt)` -- damped spring animation (scenes.js)
 - `updateTrailMarks(dt)` -- trail mark fade (drawing.js)
 - `drawParticles()` -- renders particles without mutation (drawing.js)
@@ -164,6 +165,10 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `COUNTDOWN_TICK_START` | — | Seconds remaining when countdown ticks begin |
 | `VICTORY_DANCE_DURATION` | — | Duration of victory dance phase (seconds) |
 | `LEVEL_STORIES` | — | Per-level story blurb strings |
+| `DISSOLVE_INITIAL_DELAY` | 3.0 | Seconds before first dissolve |
+| `DISSOLVE_MIN_INTERVAL` | 1.0 | Minimum seconds between dissolves |
+| `DISSOLVE_MAX_INTERVAL` | 3.0 | Maximum seconds between dissolves |
+| `DISSOLVE_PACE_MULT` | 1.8 | Multiplier on estimated completion time |
 
 ### 6. Audio Error Handling (audio.js)
 
@@ -203,6 +208,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Almost There | `almostThereShown`, `almostThereTimer` | PlayingScene |
 | Victory Dance | `victoryDanceTimer`, `victoryDanceActive` | WonScene |
 | Countdown | `countdownTicksPlayed` | MemorizeScene |
+| Dissolve | `fakeDissolveQueue` (fake platforms queued to dissolve, top-to-bottom), `dissolveTimer` (countdown to next dissolve event), `dissolveInterval` (seconds between dissolves, calculated per level) | PlayingScene |
 | Performance | `perfMode`, `perf` (fps, avgFps, minFps, frameTimes (Float64Array circular buffer), frameIdx, frameCount, showFps), `lastParallaxY` | loop.js, init.js, drawing.js |
 
 ---
@@ -323,7 +329,8 @@ Note: `drawLevelPreview()` now shows level story blurbs from `LEVEL_STORIES`.
 - `PlayingScene` - Gameplay: jump animation, camera, platform bob, trail, HUD, jump trail particles, streak popups, tutorial arrow, parallax, coins, almost-there prompt
 - `FallingScene` - Fall animation, shake, "Almost!" feedback, lose screen after 1.8s, parallax
 - `WonScene` - Firework sequence, character celebration walk, victory dance phase, star pop-in animation, win screen
-- `renderPlatforms(reveal)` / `applyShake(ctx)` / `updatePlatformBob(dt)` / `updateCrumbleTimers(dt)` / `startPlayingEarly()`
+- `renderPlatforms(reveal)` / `applyShake(ctx)` / `updatePlatformBob(dt)` / `updateCrumbleTimers(dt)` / `updateDissolve(dt)` / `startPlayingEarly()`
+- `updateDissolve(dt)` - Advances dissolve timers; triggers next fake platform dissolution from queue
 
 ### scoring.js (2 functions)
 - `calculateScore(levelNum, timeSec, jumpCount, totalRows, memTime, memTimeSaved, streakBonus, opts)` - Compute score breakdown (pure function). opts: {routeRevealed, totalCols, fakeChance}. Returns 0 score if route was revealed.
@@ -376,7 +383,7 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - State initialization
 - Platform generation (correct dimensions, safe path validity, fake marking)
 - Board rules (BOARD_RULES config, max consecutive same-direction enforcement, bounds safety, no straight-down column exploit)
-- Platform initialization (all properties including `destroyed` are explicit)
+- Platform initialization (all properties including `destroyed`, `dissolving`, `dissolveTimer` are explicit)
 - Player reset (position, platform reference)
 - Timer system (add, fire, clear, concurrent timers)
 - Scene manager (push, pop, replace, delegation)

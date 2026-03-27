@@ -62,6 +62,7 @@ function renderPlatforms(reveal) {
     for (const plat of row) {
       if (plat.destroyed) continue;
       if (plat.crumbling && plat.crumbleTimer > 0.5) continue;
+      if (plat.dissolving && plat.dissolveTimer > 0.5) continue;
       drawPlatform(plat, reveal);
     }
   }
@@ -98,6 +99,42 @@ function updateCrumbleTimers(dt) {
   for (const row of G.platforms) {
     for (const plat of row) {
       if (plat.crumbling) plat.crumbleTimer += dt;
+    }
+  }
+}
+
+// ─── HELPER: dissolve fake platforms one by one ─────────────────
+function updateDissolve(dt) {
+  // Advance dissolve timers on already-dissolving platforms
+  for (const row of G.platforms) {
+    for (const plat of row) {
+      if (plat.dissolving) {
+        plat.dissolveTimer += dt;
+        if (plat.dissolveTimer > 0.5 && !plat.destroyed) {
+          plat.destroyed = true;
+          if (G.player.onPlatform === plat) {
+            playFallSound();
+            haptic([150, 50, 200]);
+            spawnLavaSplash(plat.x + plat.w / 2, plat.y + 40);
+            SceneManager.replace(FallingScene);
+          }
+        }
+      }
+    }
+  }
+
+  // Countdown to next dissolve
+  if (G.fakeDissolveQueue && G.fakeDissolveQueue.length > 0) {
+    G.dissolveTimer -= dt;
+    if (G.dissolveTimer <= 0) {
+      const next = G.fakeDissolveQueue.shift();
+      if (!next.plat.destroyed && !next.plat.crumbling && !next.plat.dissolving) {
+        next.plat.dissolving = true;
+        next.plat.dissolveTimer = 0;
+        spawnCrumbleParticles(next.plat);
+        playCrumbleSound();
+      }
+      G.dissolveTimer = G.dissolveInterval;
     }
   }
 }
@@ -368,6 +405,21 @@ const PlayingScene = {
       hudLeft.innerHTML = '';
     }
 
+    // Build dissolve queue: fake platforms top-to-bottom, left-to-right
+    G.fakeDissolveQueue = [];
+    for (let r = 0; r < G.platforms.length; r++) {
+      for (let c = 0; c < G.platforms[r].length; c++) {
+        const plat = G.platforms[r][c];
+        if (plat.fake) G.fakeDissolveQueue.push({ row: r, col: c, plat });
+      }
+    }
+    const numFakes = G.fakeDissolveQueue.length;
+    const estTime = G.platforms.length * 2;
+    G.dissolveInterval = numFakes > 0
+      ? Math.max(DISSOLVE_MIN_INTERVAL, Math.min(DISSOLVE_MAX_INTERVAL, (estTime * DISSOLVE_PACE_MULT) / numFakes))
+      : 99;
+    G.dissolveTimer = DISSOLVE_INITIAL_DELAY;
+
     // First trail mark on starting platform
     if (G.player.onPlatform) {
       const p = G.player.onPlatform;
@@ -391,6 +443,7 @@ const PlayingScene = {
     updateParticles(dt);
     updateTimers(dt);
     updateCrumbleTimers(dt);
+    updateDissolve(dt);
     updatePlatformBob(dt);
     updateTrailMarks(dt);
     updateStreakPopups(dt);

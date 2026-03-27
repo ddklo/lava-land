@@ -21,6 +21,8 @@ function generatePlatforms() {
         destroyed: false,
         crumbling: false,
         crumbleTimer: 0,
+        dissolving: false,
+        dissolveTimer: 0,
         bobOffset: 0,
         bobVel: 0,
       });

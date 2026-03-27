@@ -504,10 +504,11 @@ function drawPlatform(plat, reveal) {
 
   let ox = 0, oy = 0;
   let crumbleAlpha = 1;
-  if (plat.crumbling) {
+  if (plat.crumbling || plat.dissolving) {
+    const timer = plat.crumbling ? plat.crumbleTimer : plat.dissolveTimer;
     ox = (Math.random() - 0.5) * 6;
-    oy = plat.crumbleTimer * 6;
-    crumbleAlpha = Math.max(0, 1 - plat.crumbleTimer * 3.5);
+    oy = timer * 6;
+    crumbleAlpha = Math.max(0, 1 - timer * 3.5);
   }
 
   ctx.save();
@@ -574,9 +575,10 @@ function drawPlatform(plat, reveal) {
       ctx.fillRect(x, screenY + h - depth - 2, w, depth + 4);
     }
 
-    // Dynamic: crumble animation
-    if (plat.crumbling) {
-      const crumbleProgress = Math.min(1, plat.crumbleTimer * 3.5);
+    // Dynamic: crumble / dissolve animation
+    if (plat.crumbling || plat.dissolving) {
+      const _timer = plat.crumbling ? plat.crumbleTimer : plat.dissolveTimer;
+      const crumbleProgress = Math.min(1, _timer * 3.5);
       ctx.fillStyle = `rgba(${tp.crumbleWash},${(crumbleProgress * 0.65).toFixed(2)})`;
       ctx.fillRect(x, screenY, w, h - depth);
       ctx.strokeStyle = `rgba(${tp.crumbleCrack},${(crumbleProgress * 0.9).toFixed(2)})`;
