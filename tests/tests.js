@@ -254,6 +254,8 @@
     assertEqual(plat.h, PLAT_H, 'Platform height matches PLAT_H');
     assertEqual(plat.crumbling, false, 'Platform starts not crumbling');
     assertEqual(plat.crumbleTimer, 0, 'Crumble timer starts at 0');
+    assertEqual(plat.dissolving, false, 'Platform starts not dissolving');
+    assertEqual(plat.dissolveTimer, 0, 'Dissolve timer starts at 0');
     assertEqual(plat.bobOffset, 0, 'Bob offset starts at 0');
     assertEqual(plat.bobVel, 0, 'Bob velocity starts at 0');
   });

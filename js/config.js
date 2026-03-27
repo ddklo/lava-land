@@ -28,6 +28,12 @@ const SPRING_DAMPING = 14;
 const SPRING_REST_THRESHOLD = 0.15;
 const SPRING_VEL_THRESHOLD = 0.5;
 
+// Dissolve timing (fake platforms disappear during play)
+const DISSOLVE_INITIAL_DELAY = 3.0;  // seconds before first dissolve
+const DISSOLVE_MIN_INTERVAL = 1.0;   // minimum seconds between dissolves
+const DISSOLVE_MAX_INTERVAL = 3.0;   // maximum seconds between dissolves
+const DISSOLVE_PACE_MULT = 1.8;      // multiplier on estimated completion time
+
 // Landing impact
 const LAND_BOB_OFFSET = 11;
 const LAND_BOB_VEL = 80;
