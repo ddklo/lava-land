@@ -183,6 +183,31 @@ function spawnSpeedLines(x, y, dx) {
   }
 }
 
+// ─── FLY-AWAY EXHAUST ──────────────────────────────────────────
+function spawnFlyExhaust(x, y, vx, vy) {
+  const colors = ['#FF6600', '#FFAA00', '#FFD700', '#FF4400', '#FFFF66', '#FFFFFF'];
+  const count = G.perfMode === 'low' ? 3 : 6;
+  const speed = Math.sqrt(vx * vx + vy * vy);
+  if (speed < 1) return;
+  // Exhaust goes opposite to travel direction
+  const nx = -vx / speed, ny = -vy / speed;
+  for (let i = 0; i < count; i++) {
+    const spread = (Math.random() - 0.5) * 2.5;
+    const thrust = 1 + Math.random() * 3;
+    pushParticle({
+      x: x + (Math.random() - 0.5) * 10,
+      y: y + (Math.random() - 0.5) * 10,
+      vx: nx * thrust + spread,
+      vy: ny * thrust + Math.abs(spread) * 0.5,
+      size: 3 + Math.random() * 5,
+      color: colors[Math.floor(Math.random() * colors.length)],
+      life: 0.3 + Math.random() * 0.4,
+      gravity: 0.03,
+      round: true,
+    });
+  }
+}
+
 // ─── VICTORY DANCE SPARKLES ─────────────────────────────────────
 function spawnVictorySparkle(x, y) {
   const colors = ['#FFD700', '#FF69B4', '#44FF88', '#44CCFF', '#FF44FF', '#FFFFFF'];

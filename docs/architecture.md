@@ -324,6 +324,7 @@ Note: `drawLevelPreview()` now shows level story blurbs from `LEVEL_STORIES`.
 - `spawnConfetti()` - 40 falling confetti particles
 - `spawnCoinSparkle(x, y)` - Sparkle burst on coin collection
 - `spawnSpeedLines(x, y, dx)` - Directional speed line particles
+- `spawnFlyExhaust(x, y, vx, vy)` - Rocket exhaust particles during fly-away exit
 - `spawnVictorySparkle(x, y)` - Sparkle particles during victory dance
 
 ### scenes.js (SceneManager + 5 scenes + 5 helpers)

@@ -356,6 +356,16 @@ const COUNTDOWN_TICK_START = 3; // seconds before memorize end to start ticking
 // ─── VICTORY DANCE ──────────────────────────────────────────────
 const VICTORY_DANCE_DURATION = 2.0; // seconds of dance before fly-away
 
+// ─── FLY-AWAY EXIT ─────────────────────────────────────────────
+const FLY_CHARGE_DURATION = 0.35;    // crouch/charge-up before launch (seconds)
+const FLY_ACCEL_RATE = 650;          // upward acceleration (px/sec²)
+const FLY_MAX_SCALE = 2.8;           // max emoji scale as they "approach camera"
+const FLY_SCALE_RATE = 1.2;          // how fast scale grows per second
+const FLY_SPIN_ACCEL = 2.0;          // spin acceleration (rad/sec²)
+const FLY_SHAKE_INTENSITY = 6;       // screen shake intensity during launch
+const FLY_EXHAUST_RATE = 0.02;       // seconds between exhaust particle spawns
+const FLY_SPEED_LINE_COUNT = 8;      // number of speed lines drawn
+
 // Characters
 const CHARACTERS = [
   { id: 'tortoise', emoji: '\u{1F422}', name: 'Tortoise', color: '#6B8E23', soundPitch: 0.7,  soundType: 'triangle' },
