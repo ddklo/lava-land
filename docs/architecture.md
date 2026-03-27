@@ -171,6 +171,8 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `DISSOLVE_MIN_INTERVAL` | 1.0 | Minimum seconds between dissolves |
 | `DISSOLVE_MAX_INTERVAL` | 3.0 | Maximum seconds between dissolves |
 | `DISSOLVE_PACE_MULT` | 1.8 | Multiplier on estimated completion time |
+| `DISSOLVE_START_INTERVAL` | 0.4 | Fast initial interval between dissolves |
+| `DISSOLVE_ACCEL_FACTOR` | 1.15 | Interval multiplier after each dissolve (slows down) |
 
 ### 6. Audio Error Handling (audio.js)
 

@@ -134,6 +134,7 @@ function updateDissolve(dt) {
         spawnCrumbleParticles(next.plat);
         playCrumbleSound();
       }
+      G.dissolveInterval = Math.min(DISSOLVE_MAX_INTERVAL, G.dissolveInterval * DISSOLVE_ACCEL_FACTOR);
       G.dissolveTimer = G.dissolveInterval;
     }
   }
@@ -405,19 +406,34 @@ const PlayingScene = {
       hudLeft.innerHTML = '';
     }
 
-    // Build dissolve queue: fake platforms top-to-bottom, left-to-right
+    // Build dissolve queue: fake platforms top-to-bottom, randomized within rows
     G.fakeDissolveQueue = [];
+    const rowBuckets = [];
     for (let r = 0; r < G.platforms.length; r++) {
+      const bucket = [];
       for (let c = 0; c < G.platforms[r].length; c++) {
         const plat = G.platforms[r][c];
-        if (plat.fake) G.fakeDissolveQueue.push({ row: r, col: c, plat });
+        if (plat.fake) bucket.push({ row: r, col: c, plat });
+      }
+      // Fisher-Yates shuffle within each row
+      for (let i = bucket.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [bucket[i], bucket[j]] = [bucket[j], bucket[i]];
+      }
+      if (bucket.length > 0) rowBuckets.push(bucket);
+    }
+    for (const bucket of rowBuckets) {
+      for (const entry of bucket) G.fakeDissolveQueue.push(entry);
+    }
+    // Mild cross-row shuffle: swap adjacent entries with 30% probability
+    for (let i = 0; i < G.fakeDissolveQueue.length - 1; i++) {
+      if (Math.random() < 0.3) {
+        [G.fakeDissolveQueue[i], G.fakeDissolveQueue[i + 1]] =
+          [G.fakeDissolveQueue[i + 1], G.fakeDissolveQueue[i]];
+        i++; // skip the swapped element
       }
     }
-    const numFakes = G.fakeDissolveQueue.length;
-    const estTime = G.platforms.length * 2;
-    G.dissolveInterval = numFakes > 0
-      ? Math.max(DISSOLVE_MIN_INTERVAL, Math.min(DISSOLVE_MAX_INTERVAL, (estTime * DISSOLVE_PACE_MULT) / numFakes))
-      : 99;
+    G.dissolveInterval = DISSOLVE_START_INTERVAL;
     G.dissolveTimer = DISSOLVE_INITIAL_DELAY;
 
     // First trail mark on starting platform

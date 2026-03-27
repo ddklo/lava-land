@@ -33,6 +33,8 @@ const DISSOLVE_INITIAL_DELAY = 3.0;  // seconds before first dissolve
 const DISSOLVE_MIN_INTERVAL = 1.0;   // minimum seconds between dissolves
 const DISSOLVE_MAX_INTERVAL = 3.0;   // maximum seconds between dissolves
 const DISSOLVE_PACE_MULT = 1.8;      // multiplier on estimated completion time
+const DISSOLVE_START_INTERVAL = 0.4; // fast initial interval between dissolves
+const DISSOLVE_ACCEL_FACTOR = 1.15;  // interval multiplier after each dissolve (slows down)
 
 // Landing impact
 const LAND_BOB_OFFSET = 11;
