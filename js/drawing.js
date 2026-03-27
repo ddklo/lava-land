@@ -709,50 +709,120 @@ function drawRescueCharacter(noClip) {
   const gy = goalPlat.y + (PLAT_H - PLAT_DEPTH) / 2 - G.camera.y;
   if (!noClip && (gy < -50 || gy > CANVAS_H + 50)) return;
 
-  const floatY = Math.sin(G.lavaTime * 3) * 5;
+  // Proximity: 0 at start row, 1 when adjacent to rescue character
+  const totalRows = Math.max(1, G.platforms.length - 1);
+  const rowsFromEnd = totalRows - G.player.row;
+  const proximity = Math.max(0, Math.min(1, 1 - rowsFromEnd / totalRows));
 
-  // SOS expanding rings — use rescue character's theme color
+  // Scale animation parameters by proximity
+  const floatSpeed = 3 + proximity * 4;
+  const floatAmp = 5 + proximity * RESCUE_PROXIMITY_BOUNCE_MULT;
+  const floatY = Math.sin(G.lavaTime * floatSpeed) * floatAmp;
+
+  // SOS expanding rings — speed and size scale with proximity
   const rescueColor = G.rescueChar.color;
+  const ringSpeed = 0.8 + proximity * 1.2;
+  const ringMaxR = 30 + proximity * 30;
   for (let i = 0; i < 3; i++) {
-    const phase = (G.lavaTime * 0.8 + i * 0.33) % 1;
-    const ringR = 20 + phase * 40;
-    const ringAlpha = (1 - phase) * 0.5;
+    const phase = (G.lavaTime * ringSpeed + i * 0.33) % 1;
+    const ringR = 15 + phase * ringMaxR;
+    const ringAlpha = (1 - phase) * (0.3 + proximity * 0.4);
     ctx.save();
     ctx.globalAlpha = ringAlpha;
     ctx.strokeStyle = rescueColor;
-    ctx.lineWidth = 2;
+    ctx.lineWidth = 2 + proximity * 1.5;
     ctx.beginPath();
     ctx.arc(gx, gy + floatY, ringR, 0, Math.PI * 2);
     ctx.stroke();
     ctx.restore();
   }
 
-  // Sparkle particles around rescue character
+  // Sparkle particles — intensity scales with proximity
+  const sparkleSpeed = 1.5 + proximity * 2;
   for (let i = 0; i < 3; i++) {
-    const angle = G.lavaTime * 1.5 + i * (Math.PI * 2 / 3);
+    const angle = G.lavaTime * sparkleSpeed + i * (Math.PI * 2 / 3);
     const sparkR = 28 + Math.sin(G.lavaTime * 2 + i) * 6;
     const sx = gx + Math.cos(angle) * sparkR;
     const sy = gy + floatY + Math.sin(angle) * sparkR * 0.6;
-    const sparkAlpha = 0.5 + Math.sin(G.lavaTime * 5 + i * 2) * 0.3;
+    const sparkAlpha = (0.3 + proximity * 0.4) + Math.sin(G.lavaTime * 5 + i * 2) * 0.3;
     ctx.globalAlpha = sparkAlpha;
     drawEmoji(ctx, '\u2728', sx, sy, 12);
   }
   ctx.globalAlpha = 1;
 
+  // Character glow — radius grows with proximity
+  const glowR = 34 + proximity * 12 + Math.sin(G.lavaTime * (4 + proximity * 3)) * 6;
   ctx.save();
-  ctx.globalAlpha = 0.4;
+  ctx.globalAlpha = 0.3 + proximity * 0.2;
   ctx.fillStyle = rescueColor;
   ctx.beginPath();
-  ctx.arc(gx, gy + floatY, 34 + Math.sin(G.lavaTime * 4) * 6, 0, Math.PI * 2);
+  ctx.arc(gx, gy + floatY, glowR, 0, Math.PI * 2);
   ctx.fill();
   ctx.restore();
 
+  // Emoji with excitement pulse when close
   ctx.globalAlpha = 1;
-  drawEmoji(ctx, G.rescueChar.emoji, gx, gy + floatY, EMOJI_SIZE);
+  if (proximity > 0.7) {
+    const pulse = 1 + Math.sin(G.lavaTime * 8) * 0.08 * proximity;
+    ctx.save();
+    ctx.translate(gx, gy + floatY);
+    ctx.scale(pulse, pulse);
+    drawEmoji(ctx, G.rescueChar.emoji, 0, 0, EMOJI_SIZE);
+    ctx.restore();
+  } else {
+    drawEmoji(ctx, G.rescueChar.emoji, gx, gy + floatY, EMOJI_SIZE);
+  }
 
-  ctx.fillStyle = '#fff';
-  ctx.font = FONT_HELP;
-  ctx.fillText(t('rescue.help'), gx, gy + floatY - 36);
+  // "Help!" speech bubble — only when player is close
+  if (rowsFromEnd <= RESCUE_HELP_ROWS && rowsFromEnd > 0) {
+    const helpFade = Math.min(1, (RESCUE_HELP_ROWS - rowsFromEnd + 1) / 2);
+    const bubbleY = gy + floatY - 44;
+    const helpText = t('rescue.help');
+
+    // Speech bubble background
+    ctx.save();
+    ctx.globalAlpha = helpFade * 0.85;
+    ctx.font = FONT_HELP;
+    const textW = ctx.measureText(helpText).width;
+    const padX = 10, padY = 6, bubbleH = 22;
+    const bx = gx - textW / 2 - padX;
+    const by = bubbleY - bubbleH / 2 - padY;
+    const bw = textW + padX * 2;
+    const bh = bubbleH + padY * 2;
+    const cr = 8;
+
+    // Rounded rect
+    ctx.fillStyle = '#fff';
+    ctx.beginPath();
+    ctx.moveTo(bx + cr, by);
+    ctx.lineTo(bx + bw - cr, by);
+    ctx.quadraticCurveTo(bx + bw, by, bx + bw, by + cr);
+    ctx.lineTo(bx + bw, by + bh - cr);
+    ctx.quadraticCurveTo(bx + bw, by + bh, bx + bw - cr, by + bh);
+    ctx.lineTo(bx + cr, by + bh);
+    ctx.quadraticCurveTo(bx, by + bh, bx, by + bh - cr);
+    ctx.lineTo(bx, by + cr);
+    ctx.quadraticCurveTo(bx, by, bx + cr, by);
+    ctx.closePath();
+    ctx.fill();
+
+    // Tail pointing down toward character
+    ctx.beginPath();
+    ctx.moveTo(gx - 5, by + bh);
+    ctx.lineTo(gx, by + bh + 8);
+    ctx.lineTo(gx + 5, by + bh);
+    ctx.closePath();
+    ctx.fill();
+
+    // Text
+    ctx.globalAlpha = helpFade;
+    ctx.fillStyle = '#cc2200';
+    ctx.font = FONT_HELP;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(helpText, gx, bubbleY);
+    ctx.restore();
+  }
 }
 
 // ─── COIN RENDERING ─────────────────────────────────────────────

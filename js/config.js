@@ -344,6 +344,10 @@ const COMBO_MILESTONES = [
 // ─── ALMOST THERE ───────────────────────────────────────────────
 const ALMOST_THERE_ROWS = 2;   // show encouragement when this many rows from end
 
+// ─── RESCUE CHARACTER PROXIMITY ─────────────────────────────────
+const RESCUE_HELP_ROWS = 4;           // rows from end at which "Help!" speech bubble appears
+const RESCUE_PROXIMITY_BOUNCE_MULT = 8; // extra bounce pixels at max proximity
+
 // ─── COUNTDOWN TICK ─────────────────────────────────────────────
 const COUNTDOWN_TICK_START = 3; // seconds before memorize end to start ticking
 
