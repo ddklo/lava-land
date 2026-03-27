@@ -17,8 +17,29 @@ function _rgba(r, g, b, a) {
 // Platform gradient cache — keyed by platform identity + screenY
 const _platGradCache = new WeakMap();
 
+// ─── FONT STRING CACHES ─────────────────────────────────────────
+// Avoid per-frame string concatenation for commonly used fonts.
+const _fontCache = {};
+function _font(size, style) {
+  const key = style + size;
+  return _fontCache[key] || (_fontCache[key] = size + 'px ' + style);
+}
+const FONT_COIN = 'bold 15px "Nunito", sans-serif';
+const FONT_HELP = 'bold 17px "Nunito", sans-serif';
+const FONT_ALMOST = '800 30px "Nunito", sans-serif';
+const FONT_ALMOST_SUB = '600 19px "Nunito", sans-serif';
+const FONT_STEP = 'bold 12px "Nunito", sans-serif';
+const FONT_STREAK = '800 23px "Nunito", sans-serif';
+const FONT_TUTORIAL = '800 17px "Nunito", sans-serif';
+
+// ─── PLATFORM TEXTURE CACHE ─────────────────────────────────────
+// Pre-render static platform visuals to offscreen canvases once per level.
+// During gameplay, drawImage() replaces expensive per-frame gradient creation
+// and deterministic detail rendering (stone texture, mortar, cracks, moss).
+const _PLAT_PAD = 6; // padding around cached platform for shadow overflow
+
 function drawEmoji(ctx, emoji, x, y, size) {
-  ctx.font = size + 'px serif';
+  ctx.font = _font(size, 'serif');
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   if (G.perfMode === 'low') {
@@ -288,10 +309,195 @@ function drawLava(offsetY, height) {
   G.ctx.drawImage(G.lavaCacheMem, 0, 0);
 }
 
+// ─── STATIC PLATFORM RENDERERS (for offscreen cache) ────────────
+// These draw the deterministic/static parts of each platform type
+// to an offscreen canvas. Called once per level by cachePlatformTextures().
+
+function _drawFakeRevealedStatic(ctx, tp, x, y, w, h, depth) {
+  ctx.fillStyle = 'rgba(0,0,0,0.2)';
+  ctx.fillRect(x + 3, y + 5, w, h);
+  ctx.fillStyle = tp.fakeDepth;
+  ctx.fillRect(x, y + h - depth, w, depth);
+  ctx.fillStyle = tp.fakeFace;
+  ctx.fillRect(x, y, w, h - depth);
+  ctx.strokeStyle = tp.fakeBorder;
+  ctx.lineWidth = 2;
+  ctx.setLineDash([6, 4]);
+  ctx.strokeRect(x + 1, y + 1, w - 2, h - 2);
+  ctx.setLineDash([]);
+  ctx.strokeStyle = tp.fakeCross;
+  ctx.lineWidth = 2;
+  ctx.beginPath();
+  ctx.moveTo(x + 8, y + 8);
+  ctx.lineTo(x + w - 8, y + h - 8);
+  ctx.moveTo(x + w - 8, y + 8);
+  ctx.lineTo(x + 8, y + h - 8);
+  ctx.stroke();
+}
+
+function _drawSafeRevealedStatic(ctx, tp, x, y, w, h, depth) {
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillRect(x + 3, y + depth + 3, w, h - depth);
+  ctx.fillStyle = tp.safeDepth;
+  ctx.fillRect(x, y + h - depth, w, depth);
+  ctx.fillStyle = tp.safeFace;
+  ctx.fillRect(x, y, w, h - depth);
+  const topGrad = ctx.createLinearGradient(x, y, x, y + 10);
+  topGrad.addColorStop(0, tp.safeHighlight);
+  topGrad.addColorStop(1, tp.safeFace);
+  ctx.fillStyle = topGrad;
+  ctx.fillRect(x, y, w, 10);
+  ctx.strokeStyle = tp.safeGlow;
+  ctx.lineWidth = 2;
+  ctx.strokeRect(x - 1, y - 1, w + 2, h + 2);
+  ctx.strokeStyle = tp.safeCheck;
+  ctx.lineWidth = 3;
+  ctx.beginPath();
+  const cx = x + w / 2, cy = y + (h - depth) / 2;
+  ctx.moveTo(cx - 8, cy);
+  ctx.lineTo(cx - 2, cy + 7);
+  ctx.lineTo(cx + 10, cy - 7);
+  ctx.stroke();
+}
+
+function _drawNormalStatic(ctx, tp, x, y, w, h, depth, seed) {
+  const faceH = h - depth;
+  // Drop shadow
+  ctx.fillStyle = 'rgba(0,0,0,0.25)';
+  ctx.fillRect(x + 3, y + depth + 3, w + 1, faceH + 1);
+  // Depth gradient
+  const depthGrad = ctx.createLinearGradient(x, y + h - depth, x, y + h);
+  depthGrad.addColorStop(0, tp.platDepthTop);
+  depthGrad.addColorStop(1, tp.platDepthBot);
+  ctx.fillStyle = depthGrad;
+  ctx.fillRect(x, y + h - depth, w, depth);
+  // Main face gradient
+  const mainGrad = ctx.createLinearGradient(x, y, x, y + faceH);
+  mainGrad.addColorStop(0, tp.platFaceTop);
+  mainGrad.addColorStop(0.15, tp.platFaceMain);
+  mainGrad.addColorStop(0.85, tp.platFaceMid);
+  mainGrad.addColorStop(1, tp.platFaceBot);
+  ctx.fillStyle = mainGrad;
+  ctx.fillRect(x, y, w, faceH);
+  // Decorative details (high perf only)
+  if (G.perfMode !== 'low') {
+    for (let i = 0; i < 6; i++) {
+      const ns = Math.sin(seed + i * 47.3) * 0.5 + 0.5;
+      const nx = x + ns * (w - 10) + 2;
+      const ny = y + (Math.cos(seed + i * 23.7) * 0.5 + 0.5) * (faceH - 8) + 2;
+      const nw = 6 + ns * 10;
+      const nh = 4 + Math.sin(seed + i * 11) * 3;
+      ctx.fillStyle = Math.sin(seed + i * 31) > 0 ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.04)';
+      ctx.fillRect(nx, ny, nw, nh);
+    }
+    ctx.strokeStyle = 'rgba(0,0,0,0.14)';
+    ctx.lineWidth = 1;
+    if (faceH > 20) {
+      const mortarY = y + Math.floor(faceH * 0.45);
+      ctx.beginPath();
+      ctx.moveTo(x + 3, mortarY);
+      ctx.lineTo(x + w - 3, mortarY);
+      ctx.stroke();
+      for (let bx = x + 20; bx < x + w - 8; bx += 24) {
+        ctx.beginPath();
+        ctx.moveTo(bx, y + 4);
+        ctx.lineTo(bx, mortarY);
+        ctx.stroke();
+      }
+      for (let bx = x + 10; bx < x + w - 8; bx += 24) {
+        ctx.beginPath();
+        ctx.moveTo(bx, mortarY);
+        ctx.lineTo(bx, y + faceH - 2);
+        ctx.stroke();
+      }
+    }
+    for (let i = 0; i < 3; i++) {
+      const cs = Math.sin(seed + i * 67.1);
+      if (cs < 0.1) continue;
+      const cx1 = x + (cs * 0.5 + 0.5) * w;
+      const cy1 = y + Math.abs(Math.cos(seed + i * 41)) * faceH * 0.3 + 4;
+      const cx2 = cx1 + Math.sin(seed + i * 19) * 12;
+      const cy2 = cy1 + 6 + Math.abs(Math.cos(seed + i * 53)) * 10;
+      ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+      ctx.lineWidth = 0.5;
+      ctx.beginPath();
+      ctx.moveTo(cx1, cy1);
+      ctx.lineTo(cx2, cy2);
+      ctx.stroke();
+    }
+    if (Math.sin(seed * 3.7) > 0.3) {
+      const mx = x + (Math.sin(seed * 5.1) * 0.5 + 0.5) * (w - 14) + 4;
+      const my = y + 3 + Math.abs(Math.cos(seed * 2.3)) * 6;
+      ctx.fillStyle = tp.platMoss;
+      ctx.beginPath();
+      ctx.ellipse(mx, my, 5 + Math.sin(seed) * 2, 3, 0, 0, Math.PI * 2);
+      ctx.fill();
+    }
+  }
+  // Edge highlights and shadows
+  ctx.strokeStyle = 'rgba(255,255,255,0.2)';
+  ctx.lineWidth = 1;
+  ctx.beginPath();
+  ctx.moveTo(x + 1, y + 0.5);
+  ctx.lineTo(x + w - 1, y + 0.5);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,0.08)';
+  ctx.beginPath();
+  ctx.moveTo(x + 0.5, y + 1);
+  ctx.lineTo(x + 0.5, y + faceH - 1);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.15)';
+  ctx.beginPath();
+  ctx.moveTo(x + w - 0.5, y + 1);
+  ctx.lineTo(x + w - 0.5, y + faceH - 1);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.25)';
+  ctx.beginPath();
+  ctx.moveTo(x, y + faceH - 0.5);
+  ctx.lineTo(x + w, y + faceH - 0.5);
+  ctx.stroke();
+  ctx.strokeStyle = 'rgba(0,0,0,0.12)';
+  ctx.beginPath();
+  ctx.moveTo(x, y + h - depth + 0.5);
+  ctx.lineTo(x + w, y + h - depth + 0.5);
+  ctx.stroke();
+}
+
+// Pre-render all platform textures to offscreen canvases.
+// Called once after generatePlatforms() during the fade-to-black overlay.
+function cachePlatformTextures() {
+  const tp = palette();
+  const depth = PLAT_DEPTH;
+  for (const row of G.platforms) {
+    for (const plat of row) {
+      const w = plat.w, h = plat.h;
+      const cw = w + _PLAT_PAD * 2 + 6;
+      const ch = h + _PLAT_PAD * 2 + 6;
+
+      // Normal appearance cache (gameplay)
+      const nc = document.createElement('canvas');
+      nc.width = cw;
+      nc.height = ch;
+      _drawNormalStatic(nc.getContext('2d'), tp, _PLAT_PAD, _PLAT_PAD, w, h, depth, plat.x * 7.3 + plat.y * 13.1);
+      plat._cache = nc;
+
+      // Revealed appearance cache (memorize phase)
+      const rc = document.createElement('canvas');
+      rc.width = cw;
+      rc.height = ch;
+      if (plat.fake) {
+        _drawFakeRevealedStatic(rc.getContext('2d'), tp, _PLAT_PAD, _PLAT_PAD, w, h, depth);
+      } else {
+        _drawSafeRevealedStatic(rc.getContext('2d'), tp, _PLAT_PAD, _PLAT_PAD, w, h, depth);
+      }
+      plat._cacheRevealed = rc;
+    }
+  }
+}
+
 function drawPlatform(plat, reveal) {
   const ctx = G.ctx;
   const tp = palette();
-  // Idle float — each platform gently bobs as if floating on lava
   const idleBob = reveal ? 0 : Math.sin(G.lavaTime * 1.2 + plat.x * 0.03 + plat.y * 0.02) * 1.5;
   const screenY = plat.y - G.camera.y + (plat.bobOffset || 0) + idleBob;
   if (!reveal && (screenY < -80 || screenY > CANVAS_H + 80)) return;
@@ -312,217 +518,47 @@ function drawPlatform(plat, reveal) {
   const depth = PLAT_DEPTH;
 
   if (plat.fake && reveal) {
-    // Fake platform — translucent danger block
-    ctx.fillStyle = 'rgba(0,0,0,0.2)';
-    ctx.fillRect(x + 3, screenY + 5, w, h);
-
-    // Bottom depth face
-    ctx.fillStyle = tp.fakeDepth;
-    ctx.fillRect(x, screenY + h - depth, w, depth);
-
-    // Main face
-    ctx.fillStyle = tp.fakeFace;
-    ctx.fillRect(x, screenY, w, h - depth);
-
-    ctx.strokeStyle = tp.fakeBorder;
-    ctx.lineWidth = 2;
-    ctx.setLineDash([6, 4]);
-    ctx.strokeRect(x + 1, screenY + 1, w - 2, h - 2);
-    ctx.setLineDash([]);
-
-    // X cross
-    ctx.strokeStyle = tp.fakeCross;
-    ctx.lineWidth = 2;
-    ctx.beginPath();
-    ctx.moveTo(x + 8, screenY + 8);
-    ctx.lineTo(x + w - 8, screenY + h - 8);
-    ctx.moveTo(x + w - 8, screenY + 8);
-    ctx.lineTo(x + 8, screenY + h - 8);
-    ctx.stroke();
+    if (plat._cacheRevealed) {
+      ctx.drawImage(plat._cacheRevealed, x - _PLAT_PAD, screenY - _PLAT_PAD);
+    } else {
+      _drawFakeRevealedStatic(ctx, tp, x, screenY, w, h, depth);
+    }
 
   } else if (!plat.fake && reveal) {
-    // Revealed safe platform — green-tinted stone block with pulsing glow
+    // Dynamic: pulsing green glow (applied to cached image via shadowBlur)
     const glowPulse = G.perfMode === 'low'
       ? 3 + Math.sin(G.lavaTime * 4 + plat.x * 0.01) * 2
       : 8 + Math.sin(G.lavaTime * 4 + plat.x * 0.01) * 5;
     ctx.shadowColor = tp.safeGlow;
     ctx.shadowBlur = glowPulse;
 
-    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.fillRect(x + 3, screenY + depth + 3, w, h - depth);
-
-    // Bottom depth
-    ctx.fillStyle = tp.safeDepth;
-    ctx.fillRect(x, screenY + h - depth, w, depth);
-
-    // Main face
-    ctx.fillStyle = tp.safeFace;
-    ctx.fillRect(x, screenY, w, h - depth);
-
+    if (plat._cacheRevealed) {
+      ctx.drawImage(plat._cacheRevealed, x - _PLAT_PAD, screenY - _PLAT_PAD);
+    } else {
+      _drawSafeRevealedStatic(ctx, tp, x, screenY, w, h, depth);
+    }
     ctx.shadowColor = 'transparent';
     ctx.shadowBlur = 0;
 
-    // Top highlight
-    const topGrad = ctx.createLinearGradient(x, screenY, x, screenY + 10);
-    topGrad.addColorStop(0, tp.safeHighlight);
-    topGrad.addColorStop(1, tp.safeFace);
-    ctx.fillStyle = topGrad;
-    ctx.fillRect(x, screenY, w, 10);
-
-    // Green glow border
-    ctx.strokeStyle = tp.safeGlow;
-    ctx.lineWidth = 2;
-    ctx.strokeRect(x - 1, screenY - 1, w + 2, h + 2);
-
-    // Checkmark
-    ctx.strokeStyle = tp.safeCheck;
-    ctx.lineWidth = 3;
-    ctx.beginPath();
-    const cx = x + w / 2, cy = screenY + (h - depth) / 2;
-    ctx.moveTo(cx - 8, cy);
-    ctx.lineTo(cx - 2, cy + 7);
-    ctx.lineTo(cx + 10, cy - 7);
-    ctx.stroke();
-
   } else {
-    // Normal stone platform — realistic 3D floating stone block
-
-    // Seed for deterministic per-platform variation
+    // Normal stone platform
     const seed = plat.x * 7.3 + plat.y * 13.1;
 
-    // Lava glow from underneath — platform is floating in lava
+    // Dynamic: lava underglow
     const underGlow = (0.15 + Math.sin(G.lavaTime * 2 + seed * 0.01) * 0.08).toFixed(2);
     ctx.fillStyle = _rgba(tp.platUnderGlowR, tp.platUnderGlowG, tp.platUnderGlowB, underGlow);
     ctx.fillRect(x - 3, screenY + h - 1, w + 6, 8);
     ctx.fillStyle = _rgba(tp.platUnderGlowR, tp.platUnderGlowG + 40, tp.platUnderGlowB + 20, (underGlow * 0.5).toFixed(2));
     ctx.fillRect(x - 5, screenY + h + 3, w + 10, 5);
 
-    // Drop shadow (softened by lava glow)
-    ctx.fillStyle = 'rgba(0,0,0,0.25)';
-    ctx.fillRect(x + 3, screenY + depth + 3, w + 1, h - depth + 1);
-
-    // Bottom depth face — darkest, with lava-lit warmth
-    const depthGrad = ctx.createLinearGradient(x, screenY + h - depth, x, screenY + h);
-    depthGrad.addColorStop(0, tp.platDepthTop);
-    depthGrad.addColorStop(1, tp.platDepthBot);
-    ctx.fillStyle = depthGrad;
-    ctx.fillRect(x, screenY + h - depth, w, depth);
-
-    // Main face — vertical gradient for natural stone look
-    const faceH = h - depth;
-    const mainGrad = ctx.createLinearGradient(x, screenY, x, screenY + faceH);
-    mainGrad.addColorStop(0, tp.platFaceTop);
-    mainGrad.addColorStop(0.15, tp.platFaceMain);
-    mainGrad.addColorStop(0.85, tp.platFaceMid);
-    mainGrad.addColorStop(1, tp.platFaceBot);
-    ctx.fillStyle = mainGrad;
-    ctx.fillRect(x, screenY, w, faceH);
-
-    // Decorative details skipped in low perf mode
-    if (G.perfMode !== 'low') {
-      // Rough stone noise texture — deterministic patches
-      for (let i = 0; i < 6; i++) {
-        const ns = Math.sin(seed + i * 47.3) * 0.5 + 0.5;
-        const nx = x + ns * (w - 10) + 2;
-        const ny = screenY + (Math.cos(seed + i * 23.7) * 0.5 + 0.5) * (faceH - 8) + 2;
-        const nw = 6 + ns * 10;
-        const nh = 4 + Math.sin(seed + i * 11) * 3;
-        const dark = Math.sin(seed + i * 31) > 0;
-        ctx.fillStyle = dark ? 'rgba(0,0,0,0.08)' : 'rgba(255,255,255,0.04)';
-        ctx.fillRect(nx, ny, nw, nh);
-      }
-
-      // Brick mortar lines
-      ctx.strokeStyle = 'rgba(0,0,0,0.14)';
-      ctx.lineWidth = 1;
-
-      if (faceH > 20) {
-        const mortarY = screenY + Math.floor(faceH * 0.45);
-        ctx.beginPath();
-        ctx.moveTo(x + 3, mortarY);
-        ctx.lineTo(x + w - 3, mortarY);
-        ctx.stroke();
-
-        // Top row brick dividers
-        for (let bx = x + 20; bx < x + w - 8; bx += 24) {
-          ctx.beginPath();
-          ctx.moveTo(bx, screenY + 4);
-          ctx.lineTo(bx, mortarY);
-          ctx.stroke();
-        }
-        // Bottom row brick dividers (offset)
-        for (let bx = x + 10; bx < x + w - 8; bx += 24) {
-          ctx.beginPath();
-          ctx.moveTo(bx, mortarY);
-          ctx.lineTo(bx, screenY + faceH - 2);
-          ctx.stroke();
-        }
-      }
-
-      // Weathering cracks — thin dark lines for worn stone look
-      for (let i = 0; i < 3; i++) {
-        const cs = Math.sin(seed + i * 67.1);
-        if (cs < 0.1) continue; // skip some cracks
-        const cx1 = x + (cs * 0.5 + 0.5) * w;
-        const cy1 = screenY + Math.abs(Math.cos(seed + i * 41)) * faceH * 0.3 + 4;
-        const cx2 = cx1 + Math.sin(seed + i * 19) * 12;
-        const cy2 = cy1 + 6 + Math.abs(Math.cos(seed + i * 53)) * 10;
-        ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-        ctx.lineWidth = 0.5;
-        ctx.beginPath();
-        ctx.moveTo(cx1, cy1);
-        ctx.lineTo(cx2, cy2);
-        ctx.stroke();
-      }
-
-      // Small moss/lichen patches on some platforms
-      if (Math.sin(seed * 3.7) > 0.3) {
-        const mx = x + (Math.sin(seed * 5.1) * 0.5 + 0.5) * (w - 14) + 4;
-        const my = screenY + 3 + Math.abs(Math.cos(seed * 2.3)) * 6;
-        ctx.fillStyle = tp.platMoss;
-        ctx.beginPath();
-        ctx.ellipse(mx, my, 5 + Math.sin(seed) * 2, 3, 0, 0, Math.PI * 2);
-        ctx.fill();
-      }
+    // Static cached part
+    if (plat._cache) {
+      ctx.drawImage(plat._cache, x - _PLAT_PAD, screenY - _PLAT_PAD);
+    } else {
+      _drawNormalStatic(ctx, tp, x, screenY, w, h, depth, seed);
     }
 
-    // Top edge highlight — bright rim light
-    ctx.strokeStyle = 'rgba(255,255,255,0.2)';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(x + 1, screenY + 0.5);
-    ctx.lineTo(x + w - 1, screenY + 0.5);
-    ctx.stroke();
-
-    // Left edge subtle highlight
-    ctx.strokeStyle = 'rgba(255,255,255,0.08)';
-    ctx.beginPath();
-    ctx.moveTo(x + 0.5, screenY + 1);
-    ctx.lineTo(x + 0.5, screenY + faceH - 1);
-    ctx.stroke();
-
-    // Right edge shadow
-    ctx.strokeStyle = 'rgba(0,0,0,0.15)';
-    ctx.beginPath();
-    ctx.moveTo(x + w - 0.5, screenY + 1);
-    ctx.lineTo(x + w - 0.5, screenY + faceH - 1);
-    ctx.stroke();
-
-    // Bottom edge shadow on main face
-    ctx.strokeStyle = 'rgba(0,0,0,0.25)';
-    ctx.beginPath();
-    ctx.moveTo(x, screenY + faceH - 0.5);
-    ctx.lineTo(x + w, screenY + faceH - 0.5);
-    ctx.stroke();
-
-    // Depth face top edge (seam between front and bottom)
-    ctx.strokeStyle = 'rgba(0,0,0,0.12)';
-    ctx.beginPath();
-    ctx.moveTo(x, screenY + h - depth + 0.5);
-    ctx.lineTo(x + w, screenY + h - depth + 0.5);
-    ctx.stroke();
-
-    // Molten edge glow — lava seeping along the bottom edges
+    // Dynamic: molten edge glow
     const edgeGlow = (0.2 + Math.sin(G.lavaTime * 3 + seed * 0.02) * 0.1).toFixed(2);
     ctx.strokeStyle = _rgba(tp.platEdgeGlowR, tp.platEdgeGlowG, tp.platEdgeGlowB, edgeGlow);
     ctx.lineWidth = 1.5;
@@ -531,20 +567,18 @@ function drawPlatform(plat, reveal) {
     ctx.lineTo(x + w, screenY + h - 0.5);
     ctx.stroke();
 
-    // Lava proximity heat glow on lower platforms
+    // Dynamic: heat proximity glow
     const heatFactor = Math.max(0, 1 - (CANVAS_H - screenY) / (CANVAS_H * 0.4));
     if (heatFactor > 0) {
       ctx.fillStyle = _rgba(tp.heatGlowR, tp.heatGlowG, tp.heatGlowB, (heatFactor * 0.3).toFixed(2));
       ctx.fillRect(x, screenY + h - depth - 2, w, depth + 4);
     }
 
-    // Crumble reveal — red cracks bleed through as fake platform breaks apart
+    // Dynamic: crumble animation
     if (plat.crumbling) {
       const crumbleProgress = Math.min(1, plat.crumbleTimer * 3.5);
-      // Danger wash
       ctx.fillStyle = `rgba(${tp.crumbleWash},${(crumbleProgress * 0.65).toFixed(2)})`;
       ctx.fillRect(x, screenY, w, h - depth);
-      // Crack lines radiating from center
       ctx.strokeStyle = `rgba(${tp.crumbleCrack},${(crumbleProgress * 0.9).toFixed(2)})`;
       ctx.lineWidth = 1.5;
       const cx2 = x + w / 2, cy2 = screenY + (h - depth) / 2;
@@ -556,7 +590,6 @@ function drawPlatform(plat, reveal) {
         ctx.lineTo(cx2 + Math.cos(angle) * len, cy2 + Math.sin(angle) * len);
         ctx.stroke();
       }
-      // Hot border glow
       ctx.shadowColor = tp.crumbleGlow;
       ctx.shadowBlur = 12 * crumbleProgress;
       ctx.strokeStyle = `rgba(${tp.crumbleBorder},${(crumbleProgress * 0.8).toFixed(2)})`;
@@ -586,18 +619,16 @@ function drawPlayer() {
     bob = G.player.onPlatform.bobOffset || 0;
   }
 
+  let airPhase = 0;
   if (G.jumpAnim.active) {
     const t = G.jumpAnim.t;
+    airPhase = Math.sin(t * Math.PI);
     px = G.jumpAnim.startX + (G.jumpAnim.endX - G.jumpAnim.startX) * t;
     const linearY = G.jumpAnim.startY + (G.jumpAnim.endY - G.jumpAnim.startY) * t;
-    const arcH = JUMP_ARC_HEIGHT * Math.sin(t * Math.PI);
-    py = linearY + arcH - G.camera.y;
+    py = linearY + JUMP_ARC_HEIGHT * airPhase - G.camera.y;
 
-    // Shadow stays at ground level (interpolated between platforms)
-    shadowY = (G.jumpAnim.startY + (G.jumpAnim.endY - G.jumpAnim.startY) * t) - G.camera.y + PLAYER_Y_OFFSET;
+    shadowY = linearY - G.camera.y + PLAYER_Y_OFFSET;
 
-    // Squash/stretch: stretch vertically at peak, squash on takeoff/landing
-    const airPhase = Math.sin(t * Math.PI);
     scaleX = 1 - SQUASH_X * airPhase;
     scaleY = 1 + STRETCH_Y * airPhase;
   } else {
@@ -605,7 +636,7 @@ function drawPlayer() {
   }
 
   // Ground shadow on platform surface
-  const shadowScale = G.jumpAnim.active ? 0.4 + 0.6 * (1 - Math.sin(G.jumpAnim.t * Math.PI)) : 1;
+  const shadowScale = G.jumpAnim.active ? 0.4 + 0.6 * (1 - airPhase) : 1;
   ctx.fillStyle = 'rgba(0,0,0,0.4)';
   ctx.beginPath();
   ctx.ellipse(px, shadowY, 14 * shadowScale, 5 * shadowScale, 0, 0, Math.PI * 2);
@@ -652,7 +683,7 @@ function drawPlayer() {
   // Lean rotation during jump based on horizontal travel direction
   if (G.jumpAnim.active) {
     const dx = G.jumpAnim.endX - G.jumpAnim.startX;
-    jumpRotation = (dx !== 0 ? Math.sign(dx) : 0) * 0.22 * Math.sin(G.jumpAnim.t * Math.PI);
+    jumpRotation = (dx !== 0 ? Math.sign(dx) : 0) * 0.22 * airPhase;
   }
 
   // Player emoji — large, fully opaque, centered on platform face
@@ -718,7 +749,7 @@ function drawRescueCharacter(noClip) {
   drawEmoji(ctx, G.rescueChar.emoji, gx, gy + floatY, EMOJI_SIZE);
 
   ctx.fillStyle = '#fff';
-  ctx.font = 'bold 17px "Nunito", sans-serif';
+  ctx.font = FONT_HELP;
   ctx.fillText(t('rescue.help'), gx, gy + floatY - 36);
 }
 
@@ -774,7 +805,7 @@ function drawCoins() {
 
     // Star symbol in center
     ctx.fillStyle = '#B8860B';
-    ctx.font = 'bold 15px "Nunito", sans-serif';
+    ctx.font = FONT_COIN;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText('\u2605', 0, 0);
@@ -800,7 +831,7 @@ function drawAlmostThere() {
   ctx.shadowColor = '#44ff88';
   ctx.shadowBlur = 16 + Math.sin(G.lavaTime * 6) * 6;
   ctx.fillStyle = '#ffffff';
-  ctx.font = '800 30px "Nunito", sans-serif';
+  ctx.font = FONT_ALMOST;
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
   ctx.fillText(phrase, CANVAS_W / 2, CANVAS_H * 0.25 - rise);
@@ -808,7 +839,7 @@ function drawAlmostThere() {
   // Smaller sub-text with rescue character emoji
   if (G.rescueChar) {
     ctx.shadowBlur = 8;
-    ctx.font = '600 19px "Nunito", sans-serif';
+    ctx.font = FONT_ALMOST_SUB;
     ctx.fillStyle = '#ffcc44';
     ctx.fillText(G.rescueChar.emoji + ' ' + t('rescue.help'), CANVAS_W / 2, CANVAS_H * 0.25 + 28 - rise);
   }
@@ -1009,7 +1040,7 @@ function drawRouteSteps() {
 
     // Step number text
     ctx.fillStyle = '#fff';
-    ctx.font = 'bold 12px "Nunito", sans-serif';
+    ctx.font = FONT_STEP;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(String(i + 1), px, py);
@@ -1132,7 +1163,7 @@ function drawPathReveal(revealCount) {
     ctx.arc(px, py, 11, 0, Math.PI * 2);
     ctx.fill();
     ctx.fillStyle = '#1a0a00';
-    ctx.font = 'bold 12px "Nunito", sans-serif';
+    ctx.font = FONT_STEP;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.fillText(String(i + 1), px, py);

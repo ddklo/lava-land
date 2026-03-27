@@ -65,6 +65,15 @@ function applyTheme() {
   G.lavaCacheCtx = null;
   G.lavaCacheMem = null;
   G.lavaCacheMemCtx = null;
+  // Invalidate platform texture caches (colors changed)
+  if (G.platforms) {
+    for (const row of G.platforms) {
+      for (const plat of row) {
+        plat._cache = null;
+        plat._cacheRevealed = null;
+      }
+    }
+  }
 }
 
 function updateStartBtn() {

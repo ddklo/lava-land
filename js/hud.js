@@ -83,7 +83,7 @@ function drawStreakPopups() {
     ctx.translate(p.x, screenY);
     ctx.scale(scale, scale);
     ctx.fillStyle = '#ffcc44';
-    ctx.font = '800 23px "Nunito", sans-serif';
+    ctx.font = FONT_STREAK;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
     ctx.shadowColor = 'rgba(0,0,0,0.8)';
@@ -281,7 +281,7 @@ function drawTutorialHint(ctx, tx, ty, text) {
   // Text
   ctx.globalAlpha = 0.95;
   ctx.fillStyle = '#ffffff';
-  ctx.font = '800 17px "Nunito", sans-serif';
+  ctx.font = FONT_TUTORIAL;
   ctx.textAlign = 'center';
   ctx.fillText(text, tx, ty - 34);
 
