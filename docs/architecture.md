@@ -100,6 +100,7 @@ All state mutation happens in `update(dt)`. All drawing happens in `render()` as
 
 - `updateParticles(dt)` -- advances particle physics (drawing.js)
 - `updateCrumbleTimers(dt)` -- advances platform crumble state (scenes.js)
+- `updateDissolve(dt)` -- advances dissolve timers; triggers next fake platform dissolution from queue (scenes.js)
 - `updatePlatformBob(dt)` -- damped spring animation (scenes.js)
 - `updateTrailMarks(dt)` -- trail mark fade (drawing.js)
 - `drawParticles()` -- renders particles without mutation (drawing.js)
@@ -382,7 +383,7 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - State initialization
 - Platform generation (correct dimensions, safe path validity, fake marking)
 - Board rules (BOARD_RULES config, max consecutive same-direction enforcement, bounds safety, no straight-down column exploit)
-- Platform initialization (all properties including `destroyed` are explicit)
+- Platform initialization (all properties including `destroyed`, `dissolving`, `dissolveTimer` are explicit)
 - Player reset (position, platform reference)
 - Timer system (add, fire, clear, concurrent timers)
 - Scene manager (push, pop, replace, delegation)
