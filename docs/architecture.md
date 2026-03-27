@@ -162,6 +162,8 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `COIN_SPIN_SPEED` | — | Coin spin animation speed |
 | `COMBO_MILESTONES` | — | Streak thresholds that trigger combo callout text |
 | `ALMOST_THERE_ROWS` | — | Rows from goal to trigger "almost there" prompt |
+| `RESCUE_HELP_ROWS` | — | Rows from goal at which rescue "Help!" speech bubble appears |
+| `RESCUE_PROXIMITY_BOUNCE_MULT` | — | Extra bounce pixels for rescue character at max proximity |
 | `COUNTDOWN_TICK_START` | — | Seconds remaining when countdown ticks begin |
 | `VICTORY_DANCE_DURATION` | — | Duration of victory dance phase (seconds) |
 | `LEVEL_STORIES` | — | Per-level story blurb strings |
@@ -288,7 +290,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `_drawFakeRevealedStatic(ctx, tp, x, y, w, h, depth)` - Renders static fake revealed platform (red X, dashed border) to a given context
 - `drawPlatform(p, reveal)` - Draws cached platform image + dynamic effects (underglow, edge glow, heat, crumble); falls back to full render if cache unavailable
 - `drawPlayer()` - Player emoji with squash/stretch and shadow
-- `drawRescueCharacter()` - Floating rescue target with SOS rings, sparkles, and "Help!"
+- `drawRescueCharacter()` - Floating rescue target with SOS rings, sparkles; proximity-reactive (excitement scales with player distance, "Help!" speech bubble appears within RESCUE_HELP_ROWS)
 - `updateParticles(dt)` / `drawParticles()` - Particle physics and rendering
 - `updateTrailMarks(dt)` / `drawTrailMarks()` - Trail breadcrumb system (swap-and-pop removal, capped at MAX_TRAIL_MARKS)
 - `drawRouteSteps()` - Draw numbered step markers and arrows on safeRoute during memorize (only when backtracks exist; no longer called from MemorizeScene)
