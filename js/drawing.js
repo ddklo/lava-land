@@ -24,13 +24,13 @@ function _font(size, style) {
   const key = style + size;
   return _fontCache[key] || (_fontCache[key] = size + 'px ' + style);
 }
-const FONT_COIN = 'bold 15px "Nunito", sans-serif';
-const FONT_HELP = 'bold 17px "Nunito", sans-serif';
-const FONT_ALMOST = '800 30px "Nunito", sans-serif';
-const FONT_ALMOST_SUB = '600 19px "Nunito", sans-serif';
-const FONT_STEP = 'bold 12px "Nunito", sans-serif';
-const FONT_STREAK = '800 23px "Nunito", sans-serif';
-const FONT_TUTORIAL = '800 17px "Nunito", sans-serif';
+const FONT_COIN = 'bold 19px "Nunito", sans-serif';
+const FONT_HELP = 'bold 21px "Nunito", sans-serif';
+const FONT_ALMOST = '800 38px "Nunito", sans-serif';
+const FONT_ALMOST_SUB = '600 24px "Nunito", sans-serif';
+const FONT_STEP = 'bold 15px "Nunito", sans-serif';
+const FONT_STREAK = '800 29px "Nunito", sans-serif';
+const FONT_TUTORIAL = '800 21px "Nunito", sans-serif';
 
 // ─── PLATFORM TEXTURE CACHE ─────────────────────────────────────
 // Pre-render static platform visuals to offscreen canvases once per level.
