@@ -12,8 +12,8 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="css/theme.css?v=1.7.5">
-  <link rel="stylesheet" href="css/style.css?v=1.7.5">
+  <link rel="stylesheet" href="css/theme.css?v=1.8.0">
+  <link rel="stylesheet" href="css/style.css?v=1.8.0">
 </head>
 <body>
   <div class="game-area">
@@ -48,7 +48,6 @@
         <button class="btn btn-custom" id="custom-btn" disabled data-i18n="menu.custom">CUSTOM MODE</button>
         <button class="btn btn-settings" id="settings-btn" data-i18n="menu.settings">&#9881; SETTINGS</button>
       </div>
-      <div id="settings-summary" class="settings-summary">Custom: Easy &middot; Medium grid &middot; 10s memorize</div>
       <div class="instructions" id="instructions-keyboard">
         <kbd>&larr;</kbd> <kbd>&rarr;</kbd> Hop left / right (same row)<br>
         <kbd>&darr;</kbd> / <kbd>Space</kbd> Jump forward (next row)<br>
@@ -66,6 +65,54 @@
 
     <div id="settings-screen" class="menu-screen" style="display:none;">
       <h1 data-i18n="settings.title">&#9881; SETTINGS</h1>
+
+      <h3 data-i18n="settings.language">Language</h3>
+      <div class="option-row" id="lang-row">
+        <div class="opt-card selected" data-lang="en">
+          <div class="opt-label" data-i18n="lang.en">English</div>
+        </div>
+        <div class="opt-card" data-lang="no">
+          <div class="opt-label" data-i18n="lang.no">Norsk</div>
+        </div>
+      </div>
+
+      <h3 data-i18n="settings.soundtrack">Soundtrack</h3>
+      <div class="option-row" id="soundtrack-row">
+        <div class="opt-card selected" data-soundtrack="classic">
+          <div class="opt-label" data-i18n="soundtrack.classic">Classic</div>
+          <div class="opt-desc" data-i18n="soundtrack.classic.desc">80s synth-funk</div>
+        </div>
+        <div class="opt-card" data-soundtrack="retro">
+          <div class="opt-label" data-i18n="soundtrack.retro">Retro</div>
+          <div class="opt-desc" data-i18n="soundtrack.retro.desc">Chiptune 8-bit</div>
+        </div>
+        <div class="opt-card" data-soundtrack="chill">
+          <div class="opt-label" data-i18n="soundtrack.chill">Chill</div>
+          <div class="opt-desc" data-i18n="soundtrack.chill.desc">Ambient lo-fi</div>
+        </div>
+      </div>
+
+      <h3 data-i18n="settings.theme">Theme</h3>
+      <div class="option-row" id="theme-row">
+        <div class="opt-card selected" data-theme="volcano">
+          <div class="opt-label" data-i18n="theme.volcano">Volcano</div>
+          <div class="opt-desc" data-i18n="theme.volcano.desc">Fire &amp; lava</div>
+        </div>
+        <div class="opt-card" data-theme="ocean">
+          <div class="opt-label" data-i18n="theme.ocean">Ocean</div>
+          <div class="opt-desc" data-i18n="theme.ocean.desc">Deep sea</div>
+        </div>
+        <div class="opt-card" data-theme="forest">
+          <div class="opt-label" data-i18n="theme.forest">Forest</div>
+          <div class="opt-desc" data-i18n="theme.forest.desc">Enchanted woods</div>
+        </div>
+      </div>
+
+      <button class="btn" id="settings-back-btn" data-i18n="settings.done">DONE</button>
+    </div>
+
+    <div id="custom-setup-screen" class="menu-screen" style="display:none;">
+      <h1 data-i18n="custom.title">CUSTOM MODE</h1>
 
       <h3 data-i18n="settings.difficulty">Difficulty</h3>
       <div class="option-row" id="diff-row">
@@ -115,49 +162,8 @@
         </div>
       </div>
 
-      <h3 data-i18n="settings.language">Language</h3>
-      <div class="option-row" id="lang-row">
-        <div class="opt-card selected" data-lang="en">
-          <div class="opt-label" data-i18n="lang.en">English</div>
-        </div>
-        <div class="opt-card" data-lang="no">
-          <div class="opt-label" data-i18n="lang.no">Norsk</div>
-        </div>
-      </div>
-
-      <h3 data-i18n="settings.soundtrack">Soundtrack</h3>
-      <div class="option-row" id="soundtrack-row">
-        <div class="opt-card selected" data-soundtrack="classic">
-          <div class="opt-label" data-i18n="soundtrack.classic">Classic</div>
-          <div class="opt-desc" data-i18n="soundtrack.classic.desc">80s synth-funk</div>
-        </div>
-        <div class="opt-card" data-soundtrack="retro">
-          <div class="opt-label" data-i18n="soundtrack.retro">Retro</div>
-          <div class="opt-desc" data-i18n="soundtrack.retro.desc">Chiptune 8-bit</div>
-        </div>
-        <div class="opt-card" data-soundtrack="chill">
-          <div class="opt-label" data-i18n="soundtrack.chill">Chill</div>
-          <div class="opt-desc" data-i18n="soundtrack.chill.desc">Ambient lo-fi</div>
-        </div>
-      </div>
-
-      <h3 data-i18n="settings.theme">Theme</h3>
-      <div class="option-row" id="theme-row">
-        <div class="opt-card selected" data-theme="volcano">
-          <div class="opt-label" data-i18n="theme.volcano">Volcano</div>
-          <div class="opt-desc" data-i18n="theme.volcano.desc">Fire &amp; lava</div>
-        </div>
-        <div class="opt-card" data-theme="ocean">
-          <div class="opt-label" data-i18n="theme.ocean">Ocean</div>
-          <div class="opt-desc" data-i18n="theme.ocean.desc">Deep sea</div>
-        </div>
-        <div class="opt-card" data-theme="forest">
-          <div class="opt-label" data-i18n="theme.forest">Forest</div>
-          <div class="opt-desc" data-i18n="theme.forest.desc">Enchanted woods</div>
-        </div>
-      </div>
-
-      <button class="btn" id="settings-back-btn" data-i18n="settings.done">DONE</button>
+      <button class="btn" id="custom-start-btn" data-i18n="custom.start">START GAME</button>
+      <button class="btn btn-secondary" id="custom-back-btn" data-i18n="custom.back">BACK</button>
     </div>
 
     <div id="lose-screen" class="menu-screen" style="display:none;">
@@ -193,25 +199,25 @@
   <div id="transition-overlay"></div>
 
 
-  <script src="js/config.js?v=1.7.5"></script>
-  <script src="js/i18n.js?v=1.7.5"></script>
-  <script src="js/state.js?v=1.7.5"></script>
-  <script src="js/timers.js?v=1.7.5"></script>
-  <script src="js/audio.js?v=1.7.5"></script>
-  <script src="js/soundtracks.js?v=1.7.5"></script>
-  <script src="js/pathgen.js?v=1.7.5"></script>
-  <script src="js/platforms.js?v=1.7.5"></script>
-  <script src="js/player.js?v=1.7.5"></script>
-  <script src="js/drawing.js?v=1.7.5"></script>
-  <script src="js/hud.js?v=1.7.5"></script>
-  <script src="js/effects.js?v=1.7.5"></script>
-  <script src="js/scenes.js?v=1.7.5"></script>
-  <script src="js/scoring.js?v=1.7.5"></script>
-  <script src="js/logic.js?v=1.7.5"></script>
-  <script src="js/input.js?v=1.7.5"></script>
-  <script src="js/loop.js?v=1.7.5"></script>
-  <script src="js/menu.js?v=1.7.5"></script>
-  <script src="js/init.js?v=1.7.5"></script>
+  <script src="js/config.js?v=1.8.0"></script>
+  <script src="js/i18n.js?v=1.8.0"></script>
+  <script src="js/state.js?v=1.8.0"></script>
+  <script src="js/timers.js?v=1.8.0"></script>
+  <script src="js/audio.js?v=1.8.0"></script>
+  <script src="js/soundtracks.js?v=1.8.0"></script>
+  <script src="js/pathgen.js?v=1.8.0"></script>
+  <script src="js/platforms.js?v=1.8.0"></script>
+  <script src="js/player.js?v=1.8.0"></script>
+  <script src="js/drawing.js?v=1.8.0"></script>
+  <script src="js/hud.js?v=1.8.0"></script>
+  <script src="js/effects.js?v=1.8.0"></script>
+  <script src="js/scenes.js?v=1.8.0"></script>
+  <script src="js/scoring.js?v=1.8.0"></script>
+  <script src="js/logic.js?v=1.8.0"></script>
+  <script src="js/input.js?v=1.8.0"></script>
+  <script src="js/loop.js?v=1.8.0"></script>
+  <script src="js/menu.js?v=1.8.0"></script>
+  <script src="js/init.js?v=1.8.0"></script>
   <script>
     if ('serviceWorker' in navigator) {
       navigator.serviceWorker.register('sw.js').catch(function() {});

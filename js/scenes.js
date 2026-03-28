@@ -148,6 +148,7 @@ const MenuScene = {
     G.gameState = 'menu';
     document.getElementById('menu-screen').style.display = 'block';
     document.getElementById('settings-screen').style.display = 'none';
+    document.getElementById('custom-setup-screen').style.display = 'none';
     document.getElementById('win-screen').style.display = 'none';
     document.getElementById('lose-screen').style.display = 'none';
     document.getElementById('game-hud').style.display = 'none';
@@ -156,6 +157,7 @@ const MenuScene = {
   onExit() {
     document.getElementById('menu-screen').style.display = 'none';
     document.getElementById('settings-screen').style.display = 'none';
+    document.getElementById('custom-setup-screen').style.display = 'none';
   },
   update(dt) {
     G.lavaTime += dt;
