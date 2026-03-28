@@ -7,6 +7,16 @@ function destroyDeparturePlatform() {
   }
 }
 
+function _denyJump() {
+  // Rate-limit denied feedback to avoid buzzing on key repeat
+  const now = performance.now();
+  if (G._lastDeniedTime && now - G._lastDeniedTime < 200) return;
+  G._lastDeniedTime = now;
+  playDeniedSound();
+  G.shakeTimer = 2;
+  haptic(15);
+}
+
 function tryJump(direction) {
   if (G.jumpAnim.active) return;
   if (G.gameState !== 'playing') return;
@@ -21,7 +31,7 @@ function tryJump(direction) {
     let targetCol = currentCol;
     if (direction === 'left') { targetCol = Math.max(0, currentCol - 1); G.player.facing = 'left'; }
     if (direction === 'right') { targetCol = Math.min(row.length - 1, currentCol + 1); G.player.facing = 'right'; }
-    if (targetCol === currentCol) return;
+    if (targetCol === currentCol) { _denyJump(); return; }
 
     const targetPlat = row[targetCol];
     G.jumpCount++;
@@ -47,7 +57,7 @@ function tryJump(direction) {
   // Backward jump — go back one row
   if (direction === 'backward') {
     const targetRow = currentRow - 1;
-    if (targetRow < 0) return;
+    if (targetRow < 0) { _denyJump(); return; }
 
     const prevRowPlats = G.platforms[targetRow];
     let nearest = 0;
@@ -84,7 +94,7 @@ function tryJump(direction) {
   // Forward jump — advance one row
   const targetRow = currentRow + 1;
   if (targetRow >= G.platforms.length) {
-    // Can't jump past the last row
+    _denyJump();
     return;
   }
 

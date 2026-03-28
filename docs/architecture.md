@@ -205,7 +205,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Level Preview | `levelPreview` | MemorizeScene |
 | Path Reveal | `memorizeInitialTime`, `pathRevealCount` | MemorizeScene |
 | Timers | `timers` | timers.js |
-| Input | `keys`, `isTouchDevice` | input.js |
+| Input | `keys`, `isTouchDevice`, `hapticEnabled` | input.js, audio.js |
 | Loop | `lastTime`, `accumulator` | loop.js |
 | Coins | `coins`, `coinsCollected`, `coinScore` | platforms.js, logic.js |
 | Idle | `idleTimer`, `idleBobPhase` | PlayingScene |
@@ -265,6 +265,7 @@ Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, 
 - `playLandSound()` / `playCrumbleSound()` / `playFallSound()` - Impact SFX (land uses character-specific pitch + type)
 - `playCoinSound()` - Coin collection SFX
 - `playCountdownTick(secsLeft)` - Countdown tick SFX during memorize phase
+- `playDeniedSound()` - Short low buzz when jump is blocked at grid edge
 - `playAlmostThereSound()` - "Almost there" proximity alert SFX
 - `playWinSound()` - 10-second procedural victory fanfare
 - `playLoseSound()` - Sad descending trombone
@@ -342,12 +343,14 @@ Note: `drawLevelPreview()` now shows level story blurbs from `LEVEL_STORIES`.
 - `calculateStars(score, levelNum)` - Compute 1-3 star rating (pure function)
 
 ### logic.js (3 functions)
+- `_denyJump()` - Rate-limited denied feedback (sound + micro-shake + haptic) for blocked jumps
 - `destroyDeparturePlatform()` - Explode and mark current platform as destroyed
-- `tryJump(direction)` - Handle left/right/forward/backward jump; uses destroyDeparturePlatform
+- `tryJump(direction)` - Handle left/right/forward/backward jump; uses destroyDeparturePlatform; calls _denyJump at grid edges
 - `landOnPlatform(plat, row, col)` - Process landing; collect coins, check win/fake/destroyed
 
 ### input.js (1 function)
-- `setupInput()` - Register keyboard + touch event listeners
+- `getSwipeThreshold()` - Viewport-scaled swipe threshold (4% of smallest dimension, clamped)
+- `setupInput()` - Register keyboard + touch event listeners; clears keys on blur/visibilitychange
 
 ### loop.js (1 function + 2 variables)
 - `TICK` - Fixed timestep interval (1/60 seconds)
@@ -426,6 +429,12 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - New state fields (level, levelConfig, gameMode, scoring fields, routeRevealed)
 - Level difficulty balance (monotonic progression, no excessive fake jumps, endless continuity)
 - Statistical board generation (column spread, lateral move fraction, fake density tolerance, per-level validity)
+- Timer error resilience (callback throw does not break remaining timers)
+- Impact ring particle cap (spawnImpactRing respects MAX_PARTICLES)
+- Firework colors use theme palette
+- Denied jump feedback at grid edges (sound + shake)
+- Touch input constants in config (SWIPE_THRESHOLD_*, LONG_PRESS_MS)
+- Haptic toggle (G.hapticEnabled guard)
 
 ---
 

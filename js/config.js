@@ -53,6 +53,13 @@ const MAX_PARTICLES_LOW = 200;
 const TRAIL_FADE_RATE = 0.12;
 const MAX_TRAIL_MARKS = 50;
 
+// Touch input thresholds (used in input.js)
+const SWIPE_THRESHOLD_FRAC = 0.04; // 4% of viewport smallest dimension
+const SWIPE_THRESHOLD_MIN = 20;
+const SWIPE_THRESHOLD_MAX = 60;
+const LONG_PRESS_MS = 500;
+const LONG_PRESS_MOVE_CANCEL = 12;
+
 // Performance monitoring
 const FPS_SAMPLE_SIZE = 60;
 
@@ -217,6 +224,7 @@ const THEME_PALETTES = {
     lavaBurstColors: ['#ff4400', '#ff6600', '#ffaa00', '#ff2200'],
     trailColors: ['#ffdd88', '#ffaa44'],
     impactRingColor: '#ffcc66',
+    fireworkColors: ['#ff4444', '#ffaa00', '#ff6600', '#ffff44', '#ff44ff', '#ffcc66', '#ff8800', '#ff66aa'],
     cssClass: 'theme-volcano',
   },
   ocean: {
@@ -267,6 +275,7 @@ const THEME_PALETTES = {
     lavaBurstColors: ['#0044aa', '#0066cc', '#00aaff', '#0022aa'],
     trailColors: ['#88ddff', '#44aaff'],
     impactRingColor: '#66ccff',
+    fireworkColors: ['#4488ff', '#44ffff', '#00aaff', '#44ff88', '#88ccff', '#66ddff', '#0088ff', '#aaeeff'],
     cssClass: 'theme-ocean',
   },
   forest: {
@@ -317,6 +326,7 @@ const THEME_PALETTES = {
     lavaBurstColors: ['#336600', '#448800', '#88cc00', '#225500'],
     trailColors: ['#ccdd88', '#aacc44'],
     impactRingColor: '#ccdd66',
+    fireworkColors: ['#44ff44', '#aacc44', '#88cc00', '#ccdd66', '#ffcc00', '#88ff44', '#44cc22', '#eeff88'],
     cssClass: 'theme-forest',
   },
 };

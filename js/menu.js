@@ -8,6 +8,7 @@ function saveSettings() {
     localStorage.setItem('ll_language', G.language);
     localStorage.setItem('ll_soundtrack', G.soundtrack);
     localStorage.setItem('ll_theme', G.theme);
+    localStorage.setItem('ll_haptic', G.hapticEnabled ? 'on' : 'off');
   } catch (e) {
     // Briefly show a non-blocking warning if storage is unavailable
     var summary = document.getElementById('settings-summary');
@@ -33,6 +34,8 @@ function loadSettings() {
     if (lang && ['en', 'no'].includes(lang))                           G.language = lang;
     if (snd  && ['classic', 'retro', 'chill'].includes(snd))           G.soundtrack = snd;
     if (thm  && ['volcano', 'ocean', 'forest'].includes(thm))         G.theme = thm;
+    const hap = localStorage.getItem('ll_haptic');
+    if (hap === 'off') G.hapticEnabled = false;
   } catch (e) { /* storage unavailable */ }
 }
 
@@ -183,6 +186,9 @@ function setupMenu() {
   document.querySelectorAll('#theme-row .opt-card').forEach(c => {
     c.classList.toggle('selected', c.dataset.theme === G.theme);
   });
+  document.querySelectorAll('#haptic-row .opt-card').forEach(c => {
+    c.classList.toggle('selected', (c.dataset.haptic === 'on') === G.hapticEnabled);
+  });
   applyLanguage();
   applyTheme();
 
@@ -244,6 +250,16 @@ function setupMenu() {
       card.classList.add('selected');
       G.theme = card.dataset.theme;
       applyTheme();
+      saveSettings();
+    });
+  });
+
+  // Haptic feedback toggle
+  document.querySelectorAll('#haptic-row .opt-card').forEach(card => {
+    card.addEventListener('click', () => {
+      document.querySelectorAll('#haptic-row .opt-card').forEach(c => c.classList.remove('selected'));
+      card.classList.add('selected');
+      G.hapticEnabled = card.dataset.haptic === 'on';
       saveSettings();
     });
   });

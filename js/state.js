@@ -120,6 +120,7 @@ const G = {
   // Input
   keys: {},
   isTouchDevice: false,
+  hapticEnabled: true,
 
   // Loop
   lastTime: 0,

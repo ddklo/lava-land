@@ -54,12 +54,22 @@ function setupInput() {
 
   document.addEventListener('keyup', (e) => { G.keys[e.code] = false; });
 
+  // Clear pressed keys when window loses focus — prevents phantom inputs
+  // if a key was held when the user alt-tabbed away.
+  window.addEventListener('blur', () => { G.keys = {}; });
+  document.addEventListener('visibilitychange', () => {
+    if (document.hidden) G.keys = {};
+  });
+
   // ── Touch ──────────────────────────────────────
   // Swipe left/right to hop, tap or swipe up to jump forward.
-  // Long-press (~0.8s) to reveal the safe route.
-  const SWIPE_THRESHOLD = 30;
-  const LONG_PRESS_MS = 800;
-  const LONG_PRESS_MOVE_CANCEL = 12; // px of movement that cancels long-press
+  // Long-press to reveal the safe route.
+  // Constants (SWIPE_THRESHOLD_*, LONG_PRESS_MS, LONG_PRESS_MOVE_CANCEL)
+  // are defined in config.js.
+  function getSwipeThreshold() {
+    const base = Math.min(window.innerWidth, window.innerHeight) * SWIPE_THRESHOLD_FRAC;
+    return Math.max(SWIPE_THRESHOLD_MIN, Math.min(SWIPE_THRESHOLD_MAX, base));
+  }
   let touchStartX = 0;
   let touchStartY = 0;
   let touchId = null;
@@ -135,14 +145,15 @@ function setupInput() {
     const dy = found.clientY - touchStartY;
     const absDx = Math.abs(dx);
     const absDy = Math.abs(dy);
+    const swipeT = getSwipeThreshold();
 
-    if (absDx > SWIPE_THRESHOLD && absDx > absDy * 1.2) {
+    if (absDx > swipeT && absDx > absDy * 1.2) {
       // Horizontal swipe (must clearly dominate vertical)
       tryJump(dx < 0 ? 'left' : 'right');
-    } else if (absDy > SWIPE_THRESHOLD && absDy > absDx * 1.2) {
+    } else if (absDy > swipeT && absDy > absDx * 1.2) {
       // Vertical swipe (must clearly dominate horizontal)
       tryJump(dy > 0 ? 'forward' : 'backward');
-    } else if (absDx > SWIPE_THRESHOLD || absDy > SWIPE_THRESHOLD) {
+    } else if (absDx > swipeT || absDy > swipeT) {
       // Diagonal-ish swipe — pick dominant axis
       if (absDx >= absDy) {
         tryJump(dx < 0 ? 'left' : 'right');

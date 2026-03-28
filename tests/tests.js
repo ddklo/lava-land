@@ -2203,6 +2203,106 @@
   });
 
   // ═══════════════════════════════════════════════════════════════
+  // TIMER ERROR RESILIENCE
+  // ═══════════════════════════════════════════════════════════════
+  suite('Timer — callback error does not break remaining timers', () => {
+    clearTimers();
+    const order = [];
+    addTimer(0.1, () => { throw new Error('intentional test error'); });
+    addTimer(0.1, () => { order.push('second'); });
+    addTimer(0.1, () => { order.push('third'); });
+    // Suppress expected console.error
+    const origError = console.error;
+    console.error = () => {};
+    updateTimers(0.2);
+    console.error = origError;
+    assertEqual(order.length, 2, 'Both remaining timers fire despite first throwing');
+    assertEqual(order[0], 'second', 'Second timer fires');
+    assertEqual(order[1], 'third', 'Third timer fires');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // IMPACT RING RESPECTS PARTICLE CAP
+  // ═══════════════════════════════════════════════════════════════
+  suite('spawnImpactRing — Respects Particle Cap', () => {
+    G.particles = [];
+    G.perfMode = 'high';
+    // Fill to cap
+    for (let i = 0; i < MAX_PARTICLES; i++) {
+      G.particles.push({ x: 0, y: 0, vx: 0, vy: 0, size: 1, color: '#fff', life: 1 });
+    }
+    const plat = { x: 100, y: 100, w: 60, h: 20 };
+    spawnImpactRing(plat);
+    assertEqual(G.particles.length, MAX_PARTICLES, 'spawnImpactRing respects cap');
+    G.particles = [];
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // FIREWORK COLORS USE THEME PALETTE
+  // ═══════════════════════════════════════════════════════════════
+  suite('Firework Colors — Theme Palette', () => {
+    assert(Array.isArray(palette().fireworkColors), 'palette() has fireworkColors array');
+    assert(palette().fireworkColors.length >= 4, 'fireworkColors has at least 4 entries');
+
+    // Check all themes have fireworkColors
+    ['volcano', 'ocean', 'forest'].forEach(theme => {
+      assert(Array.isArray(THEME_PALETTES[theme].fireworkColors),
+        theme + ' theme has fireworkColors');
+    });
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // DENIED JUMP FEEDBACK
+  // ═══════════════════════════════════════════════════════════════
+  suite('Denied Jump — edge feedback', () => {
+    G.gridCols = 5;
+    G.gridRows = 8;
+    G.difficulty = 'easy';
+    G.gameMode = 'adventure';
+    G.level = 1;
+    G.levelConfig = getLevelConfig(1);
+    generatePlatforms();
+    resetPlayer();
+    G.gameState = 'playing';
+    G.jumpAnim = { active: false };
+    G._lastDeniedTime = 0;
+
+    // Player on row 0 — backward should be denied
+    assertEqual(G.player.row, 0, 'Player starts at row 0');
+    const prevShake = G.shakeTimer;
+    tryJump('backward');
+    assertEqual(G.jumpAnim.active, false, 'Backward jump at row 0 is denied');
+    assertEqual(G.shakeTimer, 2, 'Denied jump triggers micro-shake');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // TOUCH INPUT CONSTANTS
+  // ═══════════════════════════════════════════════════════════════
+  suite('Touch Input Constants in Config', () => {
+    assertEqual(typeof SWIPE_THRESHOLD_FRAC, 'number', 'SWIPE_THRESHOLD_FRAC defined');
+    assertEqual(typeof SWIPE_THRESHOLD_MIN, 'number', 'SWIPE_THRESHOLD_MIN defined');
+    assertEqual(typeof SWIPE_THRESHOLD_MAX, 'number', 'SWIPE_THRESHOLD_MAX defined');
+    assertEqual(typeof LONG_PRESS_MS, 'number', 'LONG_PRESS_MS defined');
+    assert(LONG_PRESS_MS <= 600, 'LONG_PRESS_MS is ≤ 600ms (industry standard range)');
+    assert(SWIPE_THRESHOLD_MIN < SWIPE_THRESHOLD_MAX, 'MIN < MAX for swipe threshold');
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  // HAPTIC TOGGLE
+  // ═══════════════════════════════════════════════════════════════
+  suite('Haptic Toggle — G.hapticEnabled', () => {
+    assertEqual(typeof G.hapticEnabled, 'boolean', 'hapticEnabled exists on G');
+    // haptic() should not throw regardless of setting
+    G.hapticEnabled = true;
+    try { haptic(10); assert(true, 'haptic(10) with enabled=true does not throw'); }
+    catch (e) { assert(false, 'haptic threw: ' + e.message); }
+    G.hapticEnabled = false;
+    try { haptic(10); assert(true, 'haptic(10) with enabled=false does not throw'); }
+    catch (e) { assert(false, 'haptic threw: ' + e.message); }
+    G.hapticEnabled = true;
+  });
+
+  // ═══════════════════════════════════════════════════════════════
   // RENDER RESULTS
   // ═══════════════════════════════════════════════════════════════
   const container = document.getElementById('results');

@@ -22,6 +22,9 @@ const TRANSLATIONS = {
     'settings.language': 'Language',
     'settings.soundtrack': 'Soundtrack',
     'settings.theme': 'Theme',
+    'settings.haptic': 'Haptic Feedback',
+    'settings.on': 'ON',
+    'settings.off': 'OFF',
     'settings.done': 'DONE',
 
     // Difficulty
@@ -245,6 +248,9 @@ const TRANSLATIONS = {
     'settings.language': 'Spr\u00E5k',
     'settings.soundtrack': 'Musikk',
     'settings.theme': 'Tema',
+    'settings.haptic': 'Haptisk tilbakemelding',
+    'settings.on': 'P\u00C5',
+    'settings.off': 'AV',
     'settings.done': 'FERDIG',
 
     // Difficulty

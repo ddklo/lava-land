@@ -13,7 +13,8 @@ function updateTimers(dt) {
   for (let i = 0; i < processing.length; i++) {
     processing[i].remaining -= dt;
     if (processing[i].remaining <= 0) {
-      processing[i].callback();
+      try { processing[i].callback(); }
+      catch (e) { console.error('Timer callback error:', e); }
     } else {
       G.timers.push(processing[i]);
     }

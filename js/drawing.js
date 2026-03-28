@@ -1029,8 +1029,8 @@ function drawParticles() {
 
 function updateTrailMarks(dt) {
   // Cap trail marks to prevent unbounded growth
-  while (G.trailMarks.length > MAX_TRAIL_MARKS) {
-    G.trailMarks.shift();
+  if (G.trailMarks.length > MAX_TRAIL_MARKS) {
+    G.trailMarks.splice(0, G.trailMarks.length - MAX_TRAIL_MARKS);
   }
   // Swap-and-pop removal (O(1) per removal vs O(n) splice)
   let i = 0;

@@ -90,7 +90,7 @@ function spawnLavaSplash(x, y) {
 }
 
 function spawnFirework(x, y) {
-  const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff', '#44ffff', '#ffaa00', '#ff66aa'];
+  const colors = palette().fireworkColors;
   const color = colors[Math.floor(Math.random() * colors.length)];
   const fwCount = G.perfMode === 'low' ? 15 : 30;
   for (let i = 0; i < fwCount; i++) {
@@ -133,7 +133,7 @@ function spawnJumpTrail(x, y) {
 
 function spawnImpactRing(plat) {
   // Shockwave ring that expands outward on landing
-  G.particles.push({
+  pushParticle({
     x: plat.x + plat.w / 2,
     y: plat.y,
     vx: 0, vy: 0, size: 0,

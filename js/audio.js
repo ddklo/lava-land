@@ -1,6 +1,6 @@
 // ─── HAPTIC FEEDBACK ────────────────────────────────────────────
 function haptic(pattern) {
-  if (navigator.vibrate) navigator.vibrate(pattern);
+  if (G.hapticEnabled && navigator.vibrate) navigator.vibrate(pattern);
 }
 
 // ─── AUDIO ENGINE ───────────────────────────────────────────────
@@ -834,6 +834,24 @@ function playCountdownTick(secsLeft) {
   click.connect(cg).connect(G.audioCtx.destination);
   click.start(now);
   click.stop(now + 0.05);
+}
+
+// ─── DENIED / EDGE BUMP SOUND ──────────────────────────────────
+function playDeniedSound() {
+  initAudio();
+  if (!hasAudio()) return;
+  const now = G.audioCtx.currentTime;
+  // Short low buzz to indicate blocked movement
+  const osc = G.audioCtx.createOscillator();
+  osc.type = 'sine';
+  osc.frequency.setValueAtTime(150, now);
+  osc.frequency.exponentialRampToValueAtTime(100, now + 0.1);
+  const g = G.audioCtx.createGain();
+  g.gain.setValueAtTime(0.12, now);
+  g.gain.linearRampToValueAtTime(0, now + 0.12);
+  osc.connect(g).connect(G.audioCtx.destination);
+  osc.start(now);
+  osc.stop(now + 0.12);
 }
 
 // ─── ALMOST THERE SOUND ────────────────────────────────────────
