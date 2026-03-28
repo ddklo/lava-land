@@ -278,12 +278,6 @@ canvas {
 
 /* ─── Menu extras ────────────────────────────────────────── */
 
-.settings-summary {
-  color: var(--text-faint);
-  font-size: 14px;
-  margin-top: 8px;
-}
-
 .menu-credit {
   color: var(--text-faint);
   font-size: 13px;
@@ -734,8 +728,6 @@ canvas {
   .menu-secondary .btn { font-size: 15px; padding: 10px 22px; }
 
   .instructions { font-size: 15px; margin-top: 12px; }
-  .settings-summary { font-size: 14px; }
-
   #settings-screen h1 { font-size: 34px; }
 
   #pause-inner { padding: 28px 32px; }

@@ -68,8 +68,10 @@ const TRANSLATIONS = {
     'theme.forest': 'Forest',
     'theme.forest.desc': 'Enchanted woods',
 
-    // Settings summary
-    'settings.summary': 'Custom: {diff} \u00B7 {size} grid \u00B7 {mem}s memorize',
+    // Custom mode setup
+    'custom.title': 'CUSTOM MODE',
+    'custom.start': 'START GAME',
+    'custom.back': 'BACK',
 
     // Game HUD
     'hud.time': 'TIME',
@@ -291,8 +293,10 @@ const TRANSLATIONS = {
     'theme.forest': 'Skog',
     'theme.forest.desc': 'Fortryllet skog',
 
-    // Settings summary
-    'settings.summary': 'Egendefinert: {diff} \u00B7 {size} rutenett \u00B7 {mem}s husketid',
+    // Custom mode setup
+    'custom.title': 'EGENDEFINERT MODUS',
+    'custom.start': 'START SPILL',
+    'custom.back': 'TILBAKE',
 
     // Game HUD
     'hud.time': 'TID',

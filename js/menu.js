@@ -9,13 +9,7 @@ function saveSettings() {
     localStorage.setItem('ll_soundtrack', G.soundtrack);
     localStorage.setItem('ll_theme', G.theme);
   } catch (e) {
-    // Briefly show a non-blocking warning if storage is unavailable
-    var summary = document.getElementById('settings-summary');
-    if (summary) {
-      var orig = summary.textContent;
-      summary.textContent = t('error.storage');
-      setTimeout(function () { summary.textContent = orig; }, 2000);
-    }
+    console.warn(t('error.storage'));
   }
 }
 
@@ -52,7 +46,6 @@ function applyLanguage() {
   if (kb) kb.innerHTML = '<kbd>&larr;</kbd> <kbd>&rarr;</kbd> ' + t('instructions.keyboard.1') + '<br><kbd>&darr;</kbd> / <kbd>Space</kbd> ' + t('instructions.keyboard.2') + '<br><kbd>&uarr;</kbd> ' + t('instructions.keyboard.3') + '<br>' + t('instructions.keyboard.4');
   var touch = document.getElementById('instructions-touch');
   if (touch) touch.innerHTML = t('instructions.touch.1') + '<br>' + t('instructions.touch.2') + '<br>' + t('instructions.touch.3') + '<br>' + t('instructions.touch.4');
-  updateSettingsSummary();
 }
 
 function applyTheme() {
@@ -80,13 +73,6 @@ function updateStartBtn() {
   const ready = !!(G.heroChoice && G.rescueChoice);
   document.getElementById('start-btn').disabled = !ready;
   document.getElementById('custom-btn').disabled = !ready;
-}
-
-function updateSettingsSummary() {
-  const diffLabel = t('diff.' + G.difficulty);
-  const sizeLabel = t('size.' + G.selectedSize);
-  const memSecs = MEMORIZE_TIMES[G.selectedMemTime];
-  document.getElementById('settings-summary').textContent = t('settings.summary', { diff: diffLabel, size: sizeLabel, mem: memSecs });
 }
 
 function returnToMenu() {
@@ -227,13 +213,15 @@ function setupMenu() {
     });
   });
 
-  // Soundtrack selector
+  // Soundtrack selector (with preview)
   document.querySelectorAll('#soundtrack-row .opt-card').forEach(card => {
     card.addEventListener('click', () => {
       document.querySelectorAll('#soundtrack-row .opt-card').forEach(c => c.classList.remove('selected'));
       card.classList.add('selected');
       G.soundtrack = card.dataset.soundtrack;
       saveSettings();
+      initAudio();
+      playActionMusic();
     });
   });
 
@@ -256,9 +244,9 @@ function setupMenu() {
 
   // Settings done button — back to menu
   document.getElementById('settings-back-btn').addEventListener('click', () => {
+    stopMusic();
     document.getElementById('settings-screen').style.display = 'none';
     document.getElementById('menu-screen').style.display = 'block';
-    updateSettingsSummary();
   });
 
   // Adventure mode button (primary)
@@ -274,16 +262,27 @@ function setupMenu() {
     startLevel();
   });
 
-  // Custom mode button
+  // Custom mode button — open custom setup screen
   document.getElementById('custom-btn').addEventListener('click', () => {
-    document.getElementById('start-btn').disabled = true;
-    document.getElementById('custom-btn').disabled = true;
+    document.getElementById('menu-screen').style.display = 'none';
+    document.getElementById('custom-setup-screen').style.display = 'block';
+  });
+
+  // Custom setup — start game
+  document.getElementById('custom-start-btn').addEventListener('click', () => {
+    document.getElementById('custom-setup-screen').style.display = 'none';
     initAudio();
     G.heroChar = CHARACTERS.find(c => c.id === G.heroChoice);
     G.rescueChar = CHARACTERS.find(c => c.id === G.rescueChoice);
     G.gameMode = 'custom';
     G.levelConfig = null;
     startGame();
+  });
+
+  // Custom setup — back to menu
+  document.getElementById('custom-back-btn').addEventListener('click', () => {
+    document.getElementById('custom-setup-screen').style.display = 'none';
+    document.getElementById('menu-screen').style.display = 'block';
   });
 
   // Forfeit button (playing HUD)
