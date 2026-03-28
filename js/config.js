@@ -13,7 +13,7 @@ const PLAT_H = 48;
 const PLAT_DEPTH = 7;
 
 // Player rendering
-const EMOJI_SIZE = 58;
+const EMOJI_SIZE = 72;
 const PLAYER_Y_OFFSET = 16;
 
 // Physics
