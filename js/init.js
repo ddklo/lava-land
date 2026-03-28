@@ -10,7 +10,7 @@ if (!G.canvas) {
 // viewport aspect ratio so platforms use the full vertical space.
 function resizeCanvas() {
   var isMobile = window.innerWidth <= 600;
-  var hudH = isMobile ? 40 : 48;
+  var hudH = isMobile ? 70 : 80;
   var availW = window.innerWidth;
   var availH = (window.visualViewport ? window.visualViewport.height : window.innerHeight) - hudH;
 
