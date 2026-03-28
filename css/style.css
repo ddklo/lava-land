@@ -316,7 +316,7 @@ canvas {
 
 #game-hud {
   width: 100%;
-  height: 60px;
+  height: 80px;
   background: linear-gradient(180deg, var(--hud-bg-top), var(--hud-bg-bottom));
   border-bottom: 1px solid var(--border-glow);
   pointer-events: none;
@@ -330,7 +330,7 @@ canvas {
 #hud-left {
   position: absolute;
   left: 12px;
-  top: 0; height: 60px;
+  top: 0; height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -338,7 +338,7 @@ canvas {
 }
 
 #hud-left .hud-level-line {
-  font-size: 19px;
+  font-size: 24px;
   font-weight: 800;
   color: var(--accent-warm);
   text-shadow: 0 0 8px var(--hud-level-glow);
@@ -347,7 +347,7 @@ canvas {
 }
 
 #hud-left .hud-total-score {
-  font-size: 16px;
+  font-size: 20px;
   font-weight: 700;
   color: var(--accent-gold);
   margin-top: 1px;
@@ -358,7 +358,7 @@ canvas {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
-  top: 0; height: 60px;
+  top: 0; height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -366,7 +366,7 @@ canvas {
 }
 
 #hud-game-title {
-  font-size: 30px;
+  font-size: 38px;
   font-family: var(--font-heading);
   font-weight: 400;
   color: var(--primary);
@@ -378,7 +378,7 @@ canvas {
 }
 
 #hud-game-author {
-  font-size: 15px;
+  font-size: 19px;
   color: var(--accent-cream);
   opacity: 0.7;
   margin-top: 1px;
@@ -430,7 +430,7 @@ canvas {
 #hud-stats {
   position: absolute;
   right: 8px;
-  top: 0; height: 60px;
+  top: 0; height: 80px;
   display: flex;
   flex-direction: column;
   justify-content: center;
@@ -449,14 +449,14 @@ canvas {
   display: inline-flex;
   align-items: baseline;
   color: var(--accent-light);
-  font-size: 24px;
+  font-size: 30px;
   font-weight: 800;
   line-height: 1.2;
 }
 
 #hud-stats .stat-label {
   color: var(--text-dim);
-  font-size: 15px;
+  font-size: 19px;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -466,7 +466,7 @@ canvas {
 
 #hud-stats .timer-warn {
   color: var(--timer-warn);
-  font-size: 28px;
+  font-size: 36px;
   font-weight: bold;
   line-height: 1;
   text-align: right;
@@ -475,7 +475,7 @@ canvas {
 
 #hud-stats .timer-hint {
   color: var(--text-muted);
-  font-size: 16px;
+  font-size: 20px;
   line-height: 1.2;
   text-align: right;
 }
@@ -744,23 +744,23 @@ canvas {
   /* HUD: hide center title — prevents overlap with stats on narrow screens */
   #hud-center { display: none; }
 
-  #game-hud { height: 54px; }
-  #hud-left { height: 54px; left: 8px; }
-  #hud-stats { height: 54px; right: 8px; }
+  #game-hud { height: 70px; }
+  #hud-left { height: 70px; left: 8px; }
+  #hud-stats { height: 70px; right: 8px; }
   .hud-progress-dots { display: none; }
   #hud-left .hud-level-line {
-    font-size: 15px;
+    font-size: 19px;
     line-height: 1.2;
     max-width: 42vw;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  #hud-left .hud-total-score { font-size: 13px; line-height: 1.2; }
-  #hud-stats .stat-item { font-size: 18px; }
-  #hud-stats .stat-label { font-size: 12px; }
+  #hud-left .hud-total-score { font-size: 16px; line-height: 1.2; }
+  #hud-stats .stat-item { font-size: 22px; }
+  #hud-stats .stat-label { font-size: 15px; }
   #hud-stats .stat-row { gap: 8px; }
-  #hud-stats .timer-warn { font-size: 24px; }
-  #hud-stats .timer-hint { font-size: 14px; }
+  #hud-stats .timer-warn { font-size: 30px; }
+  #hud-stats .timer-hint { font-size: 17px; }
 
   #win-screen h1 { font-size: 46px; }
   .win-emojis { font-size: 36px; }
@@ -799,11 +799,11 @@ canvas {
   #game-hud { height: 54px; }
   #hud-left, #hud-stats { height: 54px; }
   canvas { margin-top: 0; }
-  #hud-left .hud-level-line { font-size: 16px; }
-  #hud-left .hud-total-score { font-size: 14px; }
-  #hud-stats .stat-item { font-size: 20px; }
-  #hud-stats .stat-label { font-size: 13px; }
+  #hud-left .hud-level-line { font-size: 19px; }
+  #hud-left .hud-total-score { font-size: 16px; }
+  #hud-stats .stat-item { font-size: 24px; }
+  #hud-stats .stat-label { font-size: 15px; }
   #hud-stats .stat-row { gap: 8px; }
-  #hud-stats .timer-warn { font-size: 24px; }
-  #hud-stats .timer-hint { font-size: 14px; }
+  #hud-stats .timer-warn { font-size: 30px; }
+  #hud-stats .timer-hint { font-size: 17px; }
 }
