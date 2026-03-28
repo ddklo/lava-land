@@ -21,6 +21,7 @@ const JUMP_ARC_HEIGHT = -70;
 const JUMP_SPEED = 3;
 const CAMERA_SMOOTHING = 0.08;
 const CAMERA_PLAYER_OFFSET = 0.35;
+const ZOOM_IN_DURATION = 0.4;  // seconds for memorize→playing zoom animation
 
 // Platform spring (damped spring: F = -k*x - b*v)
 const SPRING_STIFFNESS = 280;
