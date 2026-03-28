@@ -830,12 +830,28 @@ const WonScene = {
     stopMusic();
     playWinSound();
 
+    const isUltimateWin = G.gameMode === 'adventure' && G.level === 20;
+
     document.getElementById('win-emojis').textContent =
       `${G.heroChar.emoji} \u{1F91D} ${G.rescueChar.emoji}`;
     const heroName = t('char.' + G.heroChar.name);
     const rescueName = t('char.' + G.rescueChar.name);
     document.getElementById('win-msg').textContent =
       t('win.saved', { hero: heroName, rescue: rescueName });
+
+    // Ultimate win screen for level 20
+    const winTitle = document.querySelector('#win-screen h1');
+    const ultimateMsg = document.getElementById('ultimate-win-msg');
+    if (isUltimateWin) {
+      winTitle.textContent = t('win.ultimate_title');
+      winTitle.classList.add('ultimate');
+      ultimateMsg.textContent = t('win.ultimate_msg');
+      ultimateMsg.style.display = '';
+    } else {
+      winTitle.textContent = t('win.title');
+      winTitle.classList.remove('ultimate');
+      ultimateMsg.style.display = 'none';
+    }
 
     // Score & level display
     const winLevelInfo = document.getElementById('win-level-info');
@@ -897,6 +913,7 @@ const WonScene = {
       winScoreSection.innerHTML = scoreHtml;
       winScoreSection.style.display = '';
 
+      nextLevelBtn.textContent = isUltimateWin ? t('win.challenge_impossible') : t('win.next_level');
       nextLevelBtn.style.display = '';
     } else {
       winLevelInfo.style.display = 'none';

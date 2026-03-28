@@ -76,7 +76,7 @@ Only `init.js` executes code at parse time. All other files only define function
 
 ### Game Modes
 
-- **Adventure Mode** (default): 15 hand-tuned levels + infinite scaling from level 16+. Score breakdown with stars on win. "Next Level" button advances.
+- **Adventure Mode** (default): 20 hand-tuned levels + infinite scaling from level 21+. Score breakdown with stars on win. "Next Level" button advances. Special "Legendary" win screen on completing level 20, with option to continue into endless mode.
 - **Custom Mode**: Manual difficulty/grid/memorize settings. No levels or scoring. Original behavior.
 
 ### Game States (Scenes)

@@ -1006,13 +1006,13 @@
   // LEVEL CONFIG TESTS
   // ═══════════════════════════════════════════════════════════════
   suite('Level Config — LEVELS Array', () => {
-    assertEqual(LEVELS.length, 15, 'LEVELS has 15 entries');
+    assertEqual(LEVELS.length, 20, 'LEVELS has 20 entries');
     for (let i = 0; i < LEVELS.length; i++) {
       const lvl = LEVELS[i];
       assert(lvl.cols >= 5 && lvl.cols <= 7, `Level ${i + 1} cols in range (got ${lvl.cols})`);
-      assert(lvl.rows >= 5 && lvl.rows <= 16, `Level ${i + 1} rows in range (got ${lvl.rows})`);
-      assert(lvl.fake >= 0.35 && lvl.fake <= 0.80, `Level ${i + 1} fake in range (got ${lvl.fake})`);
-      assert(lvl.memTime >= 6 && lvl.memTime <= 10, `Level ${i + 1} memTime in range (got ${lvl.memTime})`);
+      assert(lvl.rows >= 5 && lvl.rows <= 20, `Level ${i + 1} rows in range (got ${lvl.rows})`);
+      assert(lvl.fake >= 0.35 && lvl.fake <= 0.82, `Level ${i + 1} fake in range (got ${lvl.fake})`);
+      assert(lvl.memTime >= 4 && lvl.memTime <= 10, `Level ${i + 1} memTime in range (got ${lvl.memTime})`);
       assert(typeof lvl.name === 'string' && lvl.name.length > 0, `Level ${i + 1} has a name`);
       assert(lvl.maxShift >= 1 && lvl.maxShift <= 3, `Level ${i + 1} maxShift in range (got ${lvl.maxShift})`);
       assert(typeof lvl.decoys === 'number' && lvl.decoys >= 0, `Level ${i + 1} decoys is non-negative (got ${lvl.decoys})`);

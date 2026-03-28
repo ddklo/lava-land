@@ -409,7 +409,7 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - `destroyDeparturePlatform()` helper (with and without platform)
 - `drawEmoji()` helper (renders without error, resets shadow state)
 - PlayingScene HUD caching properties
-- Level config validation (15 entries, ranges, difficulty increases)
+- Level config validation (20 entries, ranges, difficulty increases)
 - `getLevelConfig()` table and formula ranges
 - `calculateScore()` basic, perfect, speed, floor at zero, route reveal penalty, difficulty bonus scaling
 - `calculateStars()` thresholds (1/2/3 stars)

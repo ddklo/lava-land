@@ -116,12 +116,18 @@ const LEVELS = [
   { cols: 7, rows: 15, fake: 0.62, memTime: 7,  maxShift: 2, decoys: 2, backtracks: 1, decoyFakes: 1, name: 'Hellfire Sprint' },
   { cols: 7, rows: 16, fake: 0.66, memTime: 7,  maxShift: 3, decoys: 2, backtracks: 1, decoyFakes: 2, name: 'Core Meltdown' },
   { cols: 7, rows: 16, fake: 0.72, memTime: 6,  maxShift: 3, decoys: 3, backtracks: 2, decoyFakes: 2, name: 'Final Descent' },
+  // Tier 5 (7-col): Legend — extreme grids, minimal memorize time, max deception
+  { cols: 7, rows: 17, fake: 0.74, memTime: 6,  maxShift: 3, decoys: 3, backtracks: 2, decoyFakes: 2, name: 'Ash Wastes' },
+  { cols: 7, rows: 17, fake: 0.76, memTime: 5,  maxShift: 3, decoys: 3, backtracks: 2, decoyFakes: 3, name: 'Pyroclasm' },
+  { cols: 7, rows: 18, fake: 0.78, memTime: 5,  maxShift: 3, decoys: 4, backtracks: 2, decoyFakes: 3, name: 'Crucible' },
+  { cols: 7, rows: 19, fake: 0.80, memTime: 5,  maxShift: 3, decoys: 4, backtracks: 3, decoyFakes: 3, name: 'Eruption' },
+  { cols: 7, rows: 20, fake: 0.82, memTime: 4,  maxShift: 3, decoys: 4, backtracks: 3, decoyFakes: 3, name: 'Lava Lord' },
 ];
 
 function getLevelConfig(levelNum) {
   if (levelNum <= LEVELS.length) return LEVELS[levelNum - 1];
-  // Endless scaling for level 16+
-  const n = levelNum - LEVELS.length; // how many beyond 15
+  // Endless scaling for level 21+
+  const n = levelNum - LEVELS.length; // how many beyond 20
   const rows = Math.min(20, 16 + Math.floor(n / 3));
   // memTime scales with grid size: larger grids get proportionally more time,
   // but still decreases as levels progress (minimum 4s)
