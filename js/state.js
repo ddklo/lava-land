@@ -75,6 +75,9 @@ const G = {
   // Scene transitions
   transition: { active: false, nextScene: null },
 
+  // Zoom transition (memorize → playing)
+  zoomIn: null,
+
   // Tutorial (level 1 adventure mode)
   tutorialShown: false,
   tutorialActive: false,

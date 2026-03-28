@@ -1,7 +1,7 @@
 // ─── SERVICE WORKER ─────────────────────────────────────────────
 // Cache-first strategy for fully offline play.
 // Bump VERSION on every deploy to invalidate stale caches.
-const VERSION = '1.8.1';
+const VERSION = '1.9.0';
 const CACHE_NAME = 'lava-land-v' + VERSION;
 const ASSETS = [
   'index.html',

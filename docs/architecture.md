@@ -130,6 +130,7 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `SPRING_STIFFNESS` | 280 | Platform bob spring constant |
 | `SPRING_DAMPING` | 14 | Platform bob damping |
 | `CAMERA_SMOOTHING` | 0.08 | Camera follow smoothing factor |
+| `ZOOM_IN_DURATION` | 0.4 | Seconds for memorize→playing zoom animation |
 | `MAX_PARTICLES` | 500 | Particle array cap (prevents memory growth) |
 | `MAX_PARTICLES_LOW` | 200 | Particle cap in low perf mode (mobile) |
 | `TRAIL_FADE_RATE` | 0.12 | Trail mark fade speed |
@@ -199,7 +200,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Effects | `particles`, `lavaTime`, `shakeTimer`, `fallY`, `trailMarks` | scenes, drawing.js |
 | Animation | `jumpAnim` | logic.js, PlayingScene |
 | Win/Play | `winTimer`, `playTimer` | WonScene, PlayingScene |
-| Transitions | `transition` | drawing.js (updateTransition, transitionTo) |
+| Transitions | `transition`, `zoomIn` | drawing.js (updateTransition, transitionTo) |
 | Tutorial | `tutorialShown`, `tutorialActive` | logic.js, PlayingScene |
 | Streak | `streak`, `streakPopups` | logic.js, PlayingScene |
 | Level Preview | `levelPreview` | MemorizeScene |
@@ -244,7 +245,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 - **Adventure Mode**: levels progress via `startLevel()` / `advanceLevel()`, score accumulates
 - **Custom Mode**: manual settings, no levels/scoring, uses `startGame()`
 
-Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, next level, return to menu). Instant transitions use `SceneManager.replace()` directly (memorize→playing, playing→falling, playing→won). Each scene's `onExit()` calls `clearTimers()`.
+Most transitions use `transitionTo()` for smooth fades (menu↔memorize, retry, next level, return to menu). The memorize→playing transition uses `SceneManager.replace()` with an animated zoom-in (0.4s easeOutQuad from overview scale to 1:1). Other instant transitions use `SceneManager.replace()` directly (playing→falling, playing→won). Each scene's `onExit()` calls `clearTimers()`.
 
 ---
 

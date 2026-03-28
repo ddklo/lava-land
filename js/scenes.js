@@ -376,6 +376,24 @@ const PlayingScene = {
     G.almostThereTimer = 0;
     G.idleTimer = 0;
     G.idleBobPhase = 0;
+
+    // Smooth zoom-in from memorize overview to 1:1 playing view
+    G.zoomIn = null;
+    const lastPlat = G.platforms.length > 0 ? G.platforms[G.platforms.length - 1][0] : null;
+    if (lastPlat) {
+      const levelTotalH = lastPlat.y + lastPlat.h + 60;
+      const memScale = Math.min(1, CANVAS_H / levelTotalH);
+      if (memScale < 1) {
+        G.zoomIn = {
+          timer: ZOOM_IN_DURATION,
+          duration: ZOOM_IN_DURATION,
+          startScale: memScale,
+          startOffsetX: (CANVAS_W - CANVAS_W * memScale) / 2,
+          startOffsetY: Math.max(0, (CANVAS_H - levelTotalH * memScale) / 2),
+        };
+      }
+    }
+
     this._lastRow = -1;
     this._lastCol = -1;
     this._lastTimerStr = '';
@@ -458,6 +476,10 @@ const PlayingScene = {
   update(dt) {
     G.lavaTime += dt;
     G.playTimer += dt;
+    if (G.zoomIn) {
+      G.zoomIn.timer -= dt;
+      if (G.zoomIn.timer <= 0) G.zoomIn = null;
+    }
     updateParticles(dt);
     updateTimers(dt);
     updateCrumbleTimers(dt);
@@ -573,7 +595,20 @@ const PlayingScene = {
     ctx.save();
     applyShake(ctx);
 
+    // Lava always fills the screen (drawn before zoom transform)
     drawLava(G.camera.y, CANVAS_H);
+
+    // Smooth zoom-in from memorize overview to 1:1 playing view
+    if (G.zoomIn) {
+      const progress = 1 - (G.zoomIn.timer / G.zoomIn.duration);
+      const ease = progress * (2 - progress); // easeOutQuad
+      const scale = G.zoomIn.startScale + (1 - G.zoomIn.startScale) * ease;
+      const offsetX = G.zoomIn.startOffsetX * (1 - ease);
+      const offsetY = G.zoomIn.startOffsetY * (1 - ease);
+      ctx.translate(offsetX, offsetY);
+      ctx.scale(scale, scale);
+    }
+
     renderPlatforms(G.revealRoute);
     drawCoins();
     drawTrailMarks();
