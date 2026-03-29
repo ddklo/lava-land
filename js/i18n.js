@@ -126,6 +126,9 @@ const TRANSLATIONS = {
     'win.streak_bonus': 'Streak bonus!',
     'win.level_score': 'Level Score',
     'win.total_score': 'Total Score: {score}',
+    'win.ultimate_title': 'LEGENDARY!',
+    'win.ultimate_msg': 'You conquered all 20 levels! A true Lava Land champion!',
+    'win.challenge_impossible': 'CHALLENGE THE IMPOSSIBLE',
 
     // Pause screen
     'pause.title': 'PAUSED',
@@ -185,6 +188,11 @@ const TRANSLATIONS = {
     'level.Hellfire Sprint': 'Hellfire Sprint',
     'level.Core Meltdown': 'Core Meltdown',
     'level.Final Descent': 'Final Descent',
+    'level.Ash Wastes': 'Ash Wastes',
+    'level.Pyroclasm': 'Pyroclasm',
+    'level.Crucible': 'Crucible',
+    'level.Eruption': 'Eruption',
+    'level.Lava Lord': 'Lava Lord',
 
     // Endless level
     'level.Endless': 'Endless {n}',
@@ -351,6 +359,9 @@ const TRANSLATIONS = {
     'win.streak_bonus': 'Seriebonus!',
     'win.level_score': 'Niv\u00E5poeng',
     'win.total_score': 'Totalpoeng: {score}',
+    'win.ultimate_title': 'LEGENDARISK!',
+    'win.ultimate_msg': 'Du erobret alle 20 nivåer! En ekte Lavaland-mester!',
+    'win.challenge_impossible': 'UTFORDRE DET UMULIGE',
 
     // Pause screen
     'pause.title': 'PAUSE',
@@ -410,6 +421,11 @@ const TRANSLATIONS = {
     'level.Hellfire Sprint': 'Helvedessprint',
     'level.Core Meltdown': 'Kjernesmelte',
     'level.Final Descent': 'Siste nedstigning',
+    'level.Ash Wastes': 'Askeslettene',
+    'level.Pyroclasm': 'Pyroklasme',
+    'level.Crucible': 'Smeltedigelen',
+    'level.Eruption': 'Utbruddet',
+    'level.Lava Lord': 'Lavaherren',
 
     // Endless level
     'level.Endless': 'Uendelig {n}',

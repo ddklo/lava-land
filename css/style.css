@@ -571,6 +571,27 @@ canvas {
   text-shadow: 0 0 30px var(--win-glow);
 }
 
+#win-screen h1.ultimate {
+  font-size: 64px;
+  color: #ffd700;
+  text-shadow: 0 0 40px #ffa500, 0 0 80px #ff4500, 0 0 120px #ffd700;
+  animation: ultimatePulse 1.5s ease-in-out infinite;
+}
+
+@keyframes ultimatePulse {
+  0%, 100% { text-shadow: 0 0 40px #ffa500, 0 0 80px #ff4500, 0 0 120px #ffd700; transform: scale(1); }
+  50% { text-shadow: 0 0 60px #ffa500, 0 0 100px #ff4500, 0 0 160px #ffd700; transform: scale(1.05); }
+}
+
+.ultimate-win-msg {
+  font-size: 18px;
+  color: #ffcc44;
+  text-shadow: 0 0 12px rgba(255, 170, 0, 0.6);
+  margin: 8px 0 4px;
+  font-weight: bold;
+  letter-spacing: 0.5px;
+}
+
 .win-emojis {
   font-size: 40px;
   margin: 10px 0;
@@ -755,6 +776,8 @@ canvas {
   #hud-stats .timer-hint { font-size: 17px; }
 
   #win-screen h1 { font-size: 46px; }
+  #win-screen h1.ultimate { font-size: 52px; }
+  .ultimate-win-msg { font-size: 15px; }
   .win-emojis { font-size: 36px; }
 
   /* Lose screen: match win screen sizes */
