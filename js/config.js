@@ -146,8 +146,9 @@ function getLevelConfig(levelNum) {
 }
 
 // ─── SCORING ────────────────────────────────────────────────────
-const SCORE_TIME_BASE = 5000;
+const SCORE_TIME_BASE = 3000;
 const SCORE_TIME_PENALTY = 50;
+const SCORE_TIME_FAKE_BONUS = 15;  // points per undissolved fake platform at win
 const SCORE_JUMP_BASE = 3000;
 const SCORE_JUMP_PENALTY = 100;
 const SCORE_LEVEL_MULT = 300;
@@ -155,10 +156,10 @@ const SCORE_PERFECT_BASE = 500;          // base perfect-path bonus (scales with
 const SCORE_PERFECT_LEVEL_MULT = 100;    // perfect bonus = base + level × this
 const SCORE_SPEED_BASE = 300;            // base speed bonus (scales with level)
 const SCORE_SPEED_LEVEL_MULT = 60;       // speed bonus = base + level × this
-const SCORE_EARLY_MEM_MULT = 80; // points per second of memorize time saved
-const SCORE_STREAK_MULT = 50;    // points per streak-level per clean forward row
-const SCORE_DIFFICULTY_MULT = 30;  // bonus points per grid cell (rows * cols) to reward harder grids
-const SCORE_FAKE_MULT = 2000;      // bonus multiplied by fake chance to reward denser fake boards
+const SCORE_EARLY_MEM_MULT = 160; // points per second of memorize time saved
+const SCORE_STREAK_MULT = 120;    // points per streak-level per clean forward row
+const SCORE_DIFFICULTY_MULT = 8;   // bonus points per grid cell (rows * cols) to reward harder grids
+const SCORE_FAKE_MULT = 400;       // bonus multiplied by fake chance to reward denser fake boards
 const SPEED_BONUS_THRESHOLD = 0.5;
 const STAR_TWO_THRESHOLD = 0.5;
 const STAR_THREE_THRESHOLD = 0.75;
@@ -334,7 +335,7 @@ function palette() {
 
 // ─── COLLECTIBLE COINS ──────────────────────────────────────────
 const COIN_CHANCE = 0.3;       // chance a safe non-path platform gets a coin
-const COIN_POINTS = 150;       // points per coin collected
+const COIN_POINTS = 300;       // points per coin collected
 const COIN_SIZE = 14;          // radius of coin sprite
 const COIN_BOB_SPEED = 3;     // bob animation speed
 const COIN_BOB_HEIGHT = 4;    // bob amplitude in pixels

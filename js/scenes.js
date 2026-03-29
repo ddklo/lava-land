@@ -863,6 +863,7 @@ const WonScene = {
         routeRevealed: G.routeRevealed,
         totalCols: G.gridCols,
         fakeChance: G.levelConfig.fake,
+        fakesRemaining: G.fakeDissolveQueue ? G.fakeDissolveQueue.length : 0,
       });
       // Add coin bonus to breakdown
       breakdown.coinBonus = G.coinScore || 0;

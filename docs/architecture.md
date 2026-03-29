@@ -138,8 +138,9 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `FPS_SAMPLE_SIZE` | 60 | Rolling window size for FPS averaging |
 | `PLAT_DEPTH` | 7 | 3D platform depth face height |
 | `EMOJI_SIZE` | 48 | Character emoji font size |
-| `SCORE_TIME_BASE` | 5000 | Base time score |
+| `SCORE_TIME_BASE` | 3000 | Base time score |
 | `SCORE_TIME_PENALTY` | 50 | Points lost per second |
+| `SCORE_TIME_FAKE_BONUS` | 15 | Points per undissolved fake platform at win |
 | `SCORE_JUMP_BASE` | 3000 | Base jump efficiency score |
 | `SCORE_JUMP_PENALTY` | 100 | Points lost per excess jump |
 | `SCORE_LEVEL_MULT` | 300 | Points per level number |
@@ -149,8 +150,8 @@ All physics tuning values, dimensions, and magic numbers are defined as named co
 | `SCORE_SPEED_LEVEL_MULT` | 60 | Additional speed bonus per level |
 | `STREAK_REALISM_FACTOR` | 0.35 | Fraction of theoretical max streak for star thresholds |
 | `STAR_THREE_THRESHOLD` | 0.75 | Score fraction needed for 3 stars |
-| `SCORE_DIFFICULTY_MULT` | 30 | Bonus points per grid cell, scaled by fake density |
-| `SCORE_FAKE_MULT` | 2000 | Bonus multiplied by fake chance for harder boards |
+| `SCORE_DIFFICULTY_MULT` | 8 | Bonus points per grid cell, scaled by fake density |
+| `SCORE_FAKE_MULT` | 400 | Bonus multiplied by fake chance for harder boards |
 | `BOARD_RULES.maxConsecutiveStraight` | 1 | Max consecutive straight-down rows |
 | `BOARD_RULES.maxConsecutiveSameDirection` | 5 | Max consecutive same lateral direction |
 | `BOARD_RULES.minLateralMoveFraction` | 0.4 | Min fraction of rows with lateral moves |
