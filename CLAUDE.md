@@ -23,15 +23,14 @@ See [docs/rules.md](docs/rules.md) for complete game rules documentation.
 ### File Layout
 
 ```
-index.html          HTML + 17 script tags + service worker registration (entry point)
-manifest.json       PWA web app manifest (name, icons, display, orientation)
+index.html          HTML + 19 script tags + service worker registration (entry point)
+privacy.html        Privacy policy page (required by app stores)
+manifest.json       PWA web app manifest (name, icons, display, categories, shortcuts)
 sw.js               Service worker — cache-first offline support
 css/theme.css       CSS custom properties (colors, fonts) — design tokens
-css/style.css       All styles (responsive, mobile-friendly), references theme.css
-images/             Static assets
+css/style.css       All styles (responsive, mobile-friendly, safe-area insets), references theme.css
+images/             Static assets (icons at 48/72/96/128/144/180/192/384/512 + maskable variants)
   background.svg    Volcanic cave background (referenced by css/style.css)
-  icon-192.png      App icon 192×192 (PWA / Android)
-  icon-512.png      App icon 512×512 (PWA / splash)
 js/config.js        Constants, physics tuning, LEVELS array, getLevelConfig(), scoring constants
 js/state.js         Shared mutable state object: const G = {}
 js/timers.js        Managed timer system (addTimer, updateTimers, clearTimers)
@@ -48,7 +47,7 @@ js/logic.js         Core game rules (tryJump, landOnPlatform, destroyDeparturePl
 js/input.js         Keyboard + touch event listeners
 js/loop.js          Fixed-timestep game loop (TICK=1/60)
 js/menu.js          Menu/settings UI + startGame/startLevel/advanceLevel/returnToMenu
-js/init.js          Bootstrap (only file that runs at parse time)
+js/init.js          Bootstrap + PWA install prompt (only file that runs at parse time)
 tests/test.html     Browser-based test runner
 tests/tests.js      Test suite
 docs/architecture.md  Full architecture documentation

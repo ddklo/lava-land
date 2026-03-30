@@ -822,3 +822,46 @@ canvas {
   #hud-stats .timer-warn { font-size: 30px; }
   #hud-stats .timer-hint { font-size: 17px; }
 }
+
+/* ─── Safe area insets (notched devices) ────────────────────── */
+
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+
+  #hud-actions {
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    right: calc(12px + env(safe-area-inset-right));
+  }
+
+  .menu-screen {
+    padding-bottom: calc(16px + env(safe-area-inset-bottom));
+  }
+}
+
+/* ─── Standalone display mode (installed PWA) ───────────────── */
+
+@media (display-mode: standalone) {
+  body {
+    /* Remove any browser-chrome-aware offsets when running standalone */
+    height: 100vh;
+    height: 100dvh;
+  }
+}
+
+/* ─── Install button on menu ─────────────────────────────────── */
+
+#install-btn {
+  display: none;
+  margin-top: 8px;
+  font-size: 14px;
+  opacity: 0.85;
+}
+
+#install-btn:hover {
+  opacity: 1;
+}

@@ -55,6 +55,35 @@ window.addEventListener('resize', function () {
 G.perfMode = (window.innerWidth <= 600 || ('ontouchstart' in window && navigator.maxTouchPoints > 0))
   ? 'low' : 'high';
 
+// ─── PWA INSTALL PROMPT ────────────────────────────────────────
+var deferredInstallPrompt = null;
+var installBtn = document.getElementById('install-btn');
+
+window.addEventListener('beforeinstallprompt', function (e) {
+  e.preventDefault();
+  deferredInstallPrompt = e;
+  // Show install button only when prompt is available and not already installed
+  if (installBtn && !window.matchMedia('(display-mode: standalone)').matches) {
+    installBtn.style.display = 'block';
+  }
+});
+
+if (installBtn) {
+  installBtn.addEventListener('click', function () {
+    if (!deferredInstallPrompt) return;
+    deferredInstallPrompt.prompt();
+    deferredInstallPrompt.userChoice.then(function () {
+      deferredInstallPrompt = null;
+      installBtn.style.display = 'none';
+    });
+  });
+}
+
+// Hide install button if already running as installed PWA
+if (window.matchMedia('(display-mode: standalone)').matches && installBtn) {
+  installBtn.style.display = 'none';
+}
+
 setupInput();
 setupMenu();
 SceneManager.push(MenuScene);

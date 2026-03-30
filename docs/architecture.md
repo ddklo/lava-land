@@ -11,17 +11,27 @@ Lava Land is a browser-based memory-platformer. The player memorizes a grid of p
 ```
 lava-land/
   index.html              HTML markup + <link> + 19 <script> tags + SW registration
-  manifest.json           PWA web app manifest (name, icons, display, orientation)
+  privacy.html            Privacy policy page (required by app stores)
+  manifest.json           PWA web app manifest (name, icons, display, orientation, categories, shortcuts)
   sw.js                   Service worker — cache-first offline support
   css/
     theme.css             CSS custom properties (colors, fonts) — design tokens + theme variants
-    style.css             All CSS (responsive, mobile-friendly), uses theme.css variables
+    style.css             All CSS (responsive, mobile-friendly, safe-area insets), uses theme.css variables
   images/
     background.svg        Volcanic cave background (default theme)
     background-ocean.svg  Underwater ocean background (ocean theme)
     background-forest.svg Enchanted forest background (forest theme)
+    icon-48.png           App icon 48×48
+    icon-72.png           App icon 72×72
+    icon-96.png           App icon 96×96
+    icon-128.png          App icon 128×128
+    icon-144.png          App icon 144×144
+    icon-180.png          App icon 180×180 (Apple touch icon)
     icon-192.png          App icon 192×192 (PWA / Android)
+    icon-384.png          App icon 384×384
     icon-512.png          App icon 512×512 (PWA / splash)
+    icon-maskable-192.png Maskable icon 192×192 (Android adaptive icons)
+    icon-maskable-512.png Maskable icon 512×512 (Android adaptive icons)
   js/
     config.js             Constants, physics tuning, CHARACTERS (with color/soundPitch/soundType), LEVELS, getLevelConfig(), scoring constants, THEME_PALETTES, coin/combo/almost-there/victory-dance/story constants
     i18n.js               Translation dictionary (en/no) + t() helper + SPEECH_LANG (includes combo callout, almost-there, coin, and level story keys)
@@ -41,7 +51,7 @@ lava-land/
     input.js              Keyboard + touch event listeners
     loop.js               Fixed-timestep game loop
     menu.js               Menu/settings UI + startGame + applyLanguage/applyTheme
-    init.js               Bootstrap (canvas setup, starts loop)
+    init.js               Bootstrap (canvas setup, PWA install prompt, starts loop)
   tests/
     test.html             Test runner HTML (opens in browser)
     tests.js              Test suite (config, state, platforms, logic, scenes, timers)

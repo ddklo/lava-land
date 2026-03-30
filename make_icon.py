@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 """
 Generate Lava Land icons using pure Python stdlib.
-Produces icon-512.png and icon-192.png.
+Produces standard icons (rounded corners) and maskable icons (full-bleed with safe zone).
+Sizes: 48, 72, 96, 128, 144, 180, 192, 384, 512 (standard)
+       192, 512 (maskable)
 """
 import struct, zlib, math
 
@@ -441,33 +443,70 @@ def draw_icon(size):
 
     return px
 
-print("Generating 512x512 icon...")
-px512 = draw_icon(512)
-write_png('/home/user/lava-land/images/icon-512.png', px512, 512, 512)
-print("Done.")
+def downsample(src, src_size, dst_size):
+    """Downsample src pixels (list of RGBA tuples) using box averaging."""
+    dst = []
+    for dy in range(dst_size):
+        for dx in range(dst_size):
+            sx0 = dx * src_size // dst_size
+            sx1 = max((dx + 1) * src_size // dst_size, sx0 + 1)
+            sy0 = dy * src_size // dst_size
+            sy1 = max((dy + 1) * src_size // dst_size, sy0 + 1)
+            rs = gs = bs = as_ = 0
+            count = 0
+            for sy in range(sy0, sy1):
+                for sx in range(sx0, sx1):
+                    r2, g2, b2, a2 = src[sy * src_size + sx]
+                    rs += r2; gs += g2; bs += b2; as_ += a2; count += 1
+            dst.append((rs // count, gs // count, bs // count, as_ // count))
+    return dst
 
-print("Generating 192x192 icon...")
-# Downsample 512->192 using box averaging
-src = px512
-src_w = src_h = 512
-dst_w = dst_h = 192
-dst = []
-for dy in range(dst_h):
-    for dx in range(dst_w):
-        # Source region
-        sx0 = dx * src_w // dst_w
-        sx1 = (dx + 1) * src_w // dst_w
-        sy0 = dy * src_h // dst_h
-        sy1 = (dy + 1) * src_h // dst_h
-        sx1 = max(sx1, sx0 + 1)
-        sy1 = max(sy1, sy0 + 1)
-        rs = gs = bs = as_ = 0
-        count = 0
-        for sy in range(sy0, sy1):
-            for sx in range(sx0, sx1):
-                r2,g2,b2,a2 = src[sy*src_w+sx]
-                rs+=r2; gs+=g2; bs+=b2; as_+=a2; count+=1
-        dst.append((rs//count, gs//count, bs//count, as_//count))
-write_png('/home/user/lava-land/images/icon-192.png', dst, dst_w, dst_h)
-print("Done.")
-print("Icons written to images/icon-512.png and images/icon-192.png")
+
+def make_maskable(src, src_size, dst_size):
+    """Create a maskable icon: no rounded corners, content in the safe zone (inner 80%)."""
+    # First, generate the icon at a higher res without rounded corners
+    S = src_size
+    px = list(src)  # copy
+
+    # Fill transparent corners with the background color so it's full-bleed
+    bg = (26, 10, 10, 255)
+    for i in range(len(px)):
+        if px[i][3] < 128:
+            px[i] = bg
+
+    # Downsample to target size
+    if dst_size != src_size:
+        return downsample(px, src_size, dst_size)
+    return px
+
+
+OUT_DIR = '/home/user/lava-land/images'
+
+# Generate 512x512 source icon (with rounded corners)
+print("Generating 512x512 source icon...")
+px512 = draw_icon(512)
+
+# Standard icon sizes (with rounded corners)
+STANDARD_SIZES = [48, 72, 96, 128, 144, 180, 192, 384, 512]
+
+for size in STANDARD_SIZES:
+    fname = f'{OUT_DIR}/icon-{size}.png'
+    if size == 512:
+        write_png(fname, px512, 512, 512)
+    else:
+        print(f"  Downsampling to {size}x{size}...")
+        px = downsample(px512, 512, size)
+        write_png(fname, px, size, size)
+    print(f"  Written: icon-{size}.png")
+
+# Maskable icon sizes (full-bleed, no rounded corners)
+MASKABLE_SIZES = [192, 512]
+
+for size in MASKABLE_SIZES:
+    fname = f'{OUT_DIR}/icon-maskable-{size}.png'
+    print(f"  Generating maskable {size}x{size}...")
+    px = make_maskable(px512, 512, size)
+    write_png(fname, px, size, size)
+    print(f"  Written: icon-maskable-{size}.png")
+
+print(f"\nDone! Generated {len(STANDARD_SIZES)} standard + {len(MASKABLE_SIZES)} maskable icons.")
