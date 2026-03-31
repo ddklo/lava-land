@@ -10,6 +10,7 @@ const SceneManager = {
   push(scene) {
     if (this.current) this.current.onPause?.();
     this.stack.push(scene);
+    G.perf.adaptFrames = 0; // reset adaptive warmup for new scene
     scene.onEnter();
   },
 
@@ -27,6 +28,7 @@ const SceneManager = {
     } else {
       this.stack.push(scene);
     }
+    G.perf.adaptFrames = 0; // reset adaptive warmup for new scene
     scene.onEnter();
   },
 
@@ -80,6 +82,16 @@ function applyShake(ctx) {
 
 // ─── HELPER: advance platform bob spring animation ──────────────
 function updatePlatformBob(dt) {
+  if (G.perfMode === 'minimal') {
+    // Skip spring physics — snap to rest instantly
+    for (const row of G.platforms) {
+      for (const plat of row) {
+        plat.bobOffset = 0;
+        plat.bobVel = 0;
+      }
+    }
+    return;
+  }
   for (const row of G.platforms) {
     for (const plat of row) {
       if (plat.bobOffset === 0 && plat.bobVel === 0) continue;

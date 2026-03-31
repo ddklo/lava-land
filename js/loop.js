@@ -1,3 +1,41 @@
+// ─── ADAPTIVE PERFORMANCE ───────────────────────────────────────
+// Monitor rolling average FPS and shift between quality tiers
+// ('high' → 'low' → 'minimal') to maintain a playable frame rate.
+const _PERF_TIERS = ['minimal', 'low', 'high'];
+
+function adaptPerf() {
+  const perf = G.perf;
+  if (perf.frameCount < FPS_SAMPLE_SIZE) return; // need full buffer
+
+  perf.adaptFrames++;
+  if (perf.adaptFrames < PERF_WARMUP_FRAMES) return;
+  if ((perf.adaptFrames - PERF_WARMUP_FRAMES) % PERF_CHECK_INTERVAL !== 0) return;
+
+  const currentIdx = _PERF_TIERS.indexOf(G.perfMode);
+  const ceilingIdx = _PERF_TIERS.indexOf(G.perfInitial);
+
+  if (perf.avgFps < PERF_DOWNGRADE_FPS && currentIdx > 0) {
+    perf.lowCount++;
+    perf.highCount = 0;
+    if (perf.lowCount >= PERF_DOWNGRADE_COUNT) {
+      G.perfMode = _PERF_TIERS[currentIdx - 1];
+      perf.lowCount = 0;
+      perf.adaptFrames = 0; // restart warmup as cooldown
+    }
+  } else if (perf.avgFps > PERF_UPGRADE_FPS && currentIdx < ceilingIdx) {
+    perf.highCount++;
+    perf.lowCount = 0;
+    if (perf.highCount >= PERF_UPGRADE_COUNT) {
+      G.perfMode = _PERF_TIERS[currentIdx + 1];
+      perf.highCount = 0;
+      perf.adaptFrames = 0; // restart warmup as cooldown
+    }
+  } else {
+    perf.lowCount = Math.max(0, perf.lowCount - 1);
+    perf.highCount = Math.max(0, perf.highCount - 1);
+  }
+}
+
 // ─── MAIN LOOP (Fixed Timestep) ─────────────────────────────────
 // Physics/logic update at a fixed 60 Hz rate via accumulator.
 // Rendering happens once per requestAnimationFrame.
@@ -34,6 +72,7 @@ function gameLoop(timestamp) {
     }
     perf.avgFps = Math.round(perf.frameCount / sum);
     perf.minFps = Math.round(1 / worst);
+    adaptPerf();
     if (perf.showFps) drawFpsCounter();
   }
 }

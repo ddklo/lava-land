@@ -2149,6 +2149,13 @@
     assertEqual(G.particles.length, MAX_PARTICLES_LOW, 'Particle count capped at MAX_PARTICLES_LOW in low perf mode');
 
     G.particles = [];
+    G.perfMode = 'minimal';
+    for (let i = 0; i < MAX_PARTICLES; i++) {
+      pushParticle({ x: 0, y: 0, vx: 0, vy: 0, size: 1, color: '#fff', life: 1 });
+    }
+    assertEqual(G.particles.length, MAX_PARTICLES_MIN, 'Particle count capped at MAX_PARTICLES_MIN in minimal perf mode');
+
+    G.particles = [];
     G.perfMode = 'high';
     for (let i = 0; i < MAX_PARTICLES + 50; i++) {
       pushParticle({ x: 0, y: 0, vx: 0, vy: 0, size: 1, color: '#fff', life: 1 });
@@ -2191,7 +2198,8 @@
     assertEqual(typeof G.perf.minFps, 'number', 'G.perf.minFps is a number');
     assert(G.perf.frameTimes instanceof Float64Array, 'G.perf.frameTimes is a Float64Array');
     assertEqual(typeof G.perf.showFps, 'boolean', 'G.perf.showFps is boolean');
-    assert(['high', 'low'].includes(G.perfMode), 'G.perfMode is valid');
+    assert(['high', 'low', 'minimal'].includes(G.perfMode), 'G.perfMode is valid');
+    assert(['high', 'low', 'minimal'].includes(G.perfInitial), 'G.perfInitial is valid');
   });
 
   suite('Performance: Vignette Cache', () => {
@@ -2216,6 +2224,69 @@
     } catch (e) {
       assert(false, 'drawFpsCounter threw: ' + e.message);
     }
+  });
+
+  suite('Performance: Adaptive Quality (adaptPerf)', () => {
+    const saved = { perfMode: G.perfMode, perfInitial: G.perfInitial, perf: Object.assign({}, G.perf) };
+    const savedFrameTimes = new Float64Array(G.perf.frameTimes);
+
+    assert(typeof adaptPerf === 'function', 'adaptPerf function exists');
+    assertEqual(typeof PERF_DOWNGRADE_FPS, 'number', 'PERF_DOWNGRADE_FPS constant exists');
+    assertEqual(typeof PERF_UPGRADE_FPS, 'number', 'PERF_UPGRADE_FPS constant exists');
+    assertEqual(typeof MAX_PARTICLES_MIN, 'number', 'MAX_PARTICLES_MIN constant exists');
+    assert(MAX_PARTICLES_MIN < MAX_PARTICLES_LOW, 'MAX_PARTICLES_MIN < MAX_PARTICLES_LOW');
+
+    // Helper: simulate N frames of adaptPerf calls
+    function simFrames(n) {
+      for (let i = 0; i < n; i++) adaptPerf();
+    }
+
+    // Test downgrade: high → low after sustained low FPS
+    G.perfMode = 'high';
+    G.perfInitial = 'high';
+    G.perf.frameCount = FPS_SAMPLE_SIZE;
+    G.perf.avgFps = 25;
+    G.perf.adaptFrames = 0;
+    G.perf.lowCount = 0;
+    G.perf.highCount = 0;
+    // Need warmup (120) + 2 check intervals (60 each) = 240 frames
+    simFrames(300);
+    assertEqual(G.perfMode, 'low', 'perfMode downgrades high → low after sustained low FPS');
+
+    // Test downgrade continues: low → minimal
+    simFrames(300);
+    assertEqual(G.perfMode, 'minimal', 'perfMode downgrades low → minimal after continued low FPS');
+
+    // Test no further downgrade below minimal
+    simFrames(300);
+    assertEqual(G.perfMode, 'minimal', 'perfMode stays at minimal (floor)');
+
+    // Test that upgrade does not exceed perfInitial ceiling
+    G.perfMode = 'minimal';
+    G.perfInitial = 'low';
+    G.perf.avgFps = 60;
+    G.perf.adaptFrames = 0;
+    G.perf.lowCount = 0;
+    G.perf.highCount = 0;
+    simFrames(600); // plenty of frames for upgrade
+    assertEqual(G.perfMode, 'low', 'perfMode upgrades to low but not above perfInitial ceiling');
+
+    // Test upgrade from minimal → low with high perfInitial
+    G.perfMode = 'minimal';
+    G.perfInitial = 'high';
+    G.perf.avgFps = 60;
+    G.perf.adaptFrames = 0;
+    G.perf.lowCount = 0;
+    G.perf.highCount = 0;
+    // Need warmup (120) + 4 check intervals (60 each) = 360 frames
+    simFrames(400);
+    assertEqual(G.perfMode, 'low', 'perfMode upgrades minimal → low with good FPS');
+
+    // Restore
+    G.perfMode = saved.perfMode;
+    G.perfInitial = saved.perfInitial;
+    Object.assign(G.perf, saved.perf);
+    G.perf.frameTimes = savedFrameTimes;
   });
 
   // ═══════════════════════════════════════════════════════════════
