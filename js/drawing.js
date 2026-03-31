@@ -823,7 +823,7 @@ function drawRescueCharacter(noClip) {
 
     // Text
     ctx.globalAlpha = helpFade;
-    ctx.fillStyle = '#cc2200';
+    ctx.fillStyle = palette().fakeBorder;
     ctx.font = FONT_HELP;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -835,13 +835,16 @@ function drawRescueCharacter(noClip) {
 // ─── COIN RENDERING ─────────────────────────────────────────────
 let _coinGrad = null;
 let _coinGradCtx = null;
+let _coinGradTheme = null;
 function _getCoinGrad(ctx) {
-  if (_coinGrad && _coinGradCtx === ctx) return _coinGrad;
+  if (_coinGrad && _coinGradCtx === ctx && _coinGradTheme === G.theme) return _coinGrad;
   _coinGradCtx = ctx;
+  _coinGradTheme = G.theme;
+  const tp = palette();
   _coinGrad = ctx.createRadialGradient(-3, -3, 1, 0, 0, COIN_SIZE);
-  _coinGrad.addColorStop(0, '#FFF44F');
-  _coinGrad.addColorStop(0.5, '#FFD700');
-  _coinGrad.addColorStop(1, '#DAA520');
+  _coinGrad.addColorStop(0, tp.coinGradLight);
+  _coinGrad.addColorStop(0.5, tp.coinGradMid);
+  _coinGrad.addColorStop(1, tp.coinGradDark);
   return _coinGrad;
 }
 function drawCoins() {
@@ -863,9 +866,10 @@ function drawCoins() {
     ctx.translate(cx, cy);
     ctx.scale(scaleX, 1);
 
+    const tp = palette();
     // Outer glow
     ctx.globalAlpha = 0.3 + Math.sin(G.lavaTime * 3 + coin.row) * 0.1;
-    ctx.fillStyle = '#FFD700';
+    ctx.fillStyle = tp.coinGlow;
     ctx.beginPath();
     ctx.arc(0, 0, COIN_SIZE + 3, 0, Math.PI * 2);
     ctx.fill();
@@ -878,12 +882,12 @@ function drawCoins() {
     ctx.fill();
 
     // Coin border
-    ctx.strokeStyle = '#B8860B';
+    ctx.strokeStyle = tp.coinBorder;
     ctx.lineWidth = 1.5;
     ctx.stroke();
 
     // Star symbol in center
-    ctx.fillStyle = '#B8860B';
+    ctx.fillStyle = tp.coinBorder;
     ctx.font = FONT_COIN;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -907,7 +911,8 @@ function drawAlmostThere() {
   const phrases = ['almost.there', 'almost.one_more', 'almost.you_got_this', 'almost.so_close'];
   const phrase = t(phrases[Math.floor(G.lavaTime * 0.3) % phrases.length]);
 
-  ctx.shadowColor = '#44ff88';
+  const tp = palette();
+  ctx.shadowColor = tp.almostGlow;
   ctx.shadowBlur = 16 + Math.sin(G.lavaTime * 6) * 6;
   ctx.fillStyle = '#ffffff';
   ctx.font = FONT_ALMOST;
@@ -919,7 +924,7 @@ function drawAlmostThere() {
   if (G.rescueChar) {
     ctx.shadowBlur = 8;
     ctx.font = FONT_ALMOST_SUB;
-    ctx.fillStyle = '#ffcc44';
+    ctx.fillStyle = tp.almostText;
     ctx.fillText(G.rescueChar.emoji + ' ' + t('rescue.help'), CANVAS_W / 2, CANVAS_H * 0.25 + 28 - rise);
   }
 
@@ -1108,6 +1113,7 @@ function drawRouteSteps() {
   if (G.safeRoute.length <= G.gridRows) return;
 
   const ctx = G.ctx;
+  const tp = palette();
   for (let i = 0; i < G.safeRoute.length; i++) {
     const step = G.safeRoute[i];
     const plat = G.platforms[step.row][step.col];
@@ -1119,10 +1125,10 @@ function drawRouteSteps() {
     const isBackward = i > 0 && G.safeRoute[i].row < G.safeRoute[i - 1].row;
     const isHop = i > 0 && G.safeRoute[i].row === G.safeRoute[i - 1].row;
 
-    // Background circle — orange for backtrack steps, blue for hops, green for normal
-    let bgColor = 'rgba(40,180,80,0.85)';
-    if (isBackward) bgColor = 'rgba(220,120,30,0.9)';
-    else if (isHop) bgColor = 'rgba(60,120,200,0.85)';
+    // Background circle — themed for backtrack steps, hops, normal
+    let bgColor = tp.routeNormal;
+    if (isBackward) bgColor = tp.routeBackward;
+    else if (isHop) bgColor = tp.routeHop;
 
     ctx.fillStyle = bgColor;
     ctx.beginPath();
@@ -1155,7 +1161,7 @@ function drawRouteSteps() {
       const bx = px - nx * 14;
       const by = py - ny * 14;
 
-      ctx.strokeStyle = isBackward ? 'rgba(255,150,50,0.7)' : isHop ? 'rgba(100,160,255,0.7)' : 'rgba(80,255,120,0.5)';
+      ctx.strokeStyle = isBackward ? tp.routeArrowBackward : isHop ? tp.routeArrowHop : tp.routeArrowNormal;
       ctx.lineWidth = 2;
       ctx.beginPath();
       ctx.moveTo(ax, ay);
@@ -1184,6 +1190,7 @@ function drawPathReveal(revealCount) {
   if (!route || route.length === 0) return;
 
   const ctx = G.ctx;
+  const tp = palette();
   const count = Math.min(revealCount, route.length);
 
   for (let i = 0; i < count; i++) {
@@ -1195,19 +1202,19 @@ function drawPathReveal(revealCount) {
     const py = plat.y + (PLAT_H - PLAT_DEPTH) / 2;
     const isLatest = (i === count - 1);
 
-    // Gold glow overlay on platform
+    // Glow overlay on platform
     const pulse = isLatest ? 0.45 + 0.25 * Math.abs(Math.sin(G.lavaTime * 4)) : 0.25;
     ctx.save();
-    ctx.shadowColor = '#ffe066';
+    ctx.shadowColor = tp.trailGlow;
     ctx.shadowBlur  = isLatest ? 24 : 12;
     ctx.globalAlpha = pulse;
-    ctx.fillStyle   = '#ffe066';
+    ctx.fillStyle   = tp.trailGlow;
     ctx.fillRect(plat.x - 2, plat.y - 2, plat.w + 4, PLAT_H + 4);
     ctx.restore();
 
-    // Gold border
+    // Border
     ctx.save();
-    ctx.strokeStyle = isLatest ? '#ffe066' : 'rgba(255,200,40,0.65)';
+    ctx.strokeStyle = isLatest ? tp.trailGlow : tp.trailBadgeBorder;
     ctx.lineWidth   = isLatest ? 3 : 2;
     ctx.strokeRect(plat.x - 1, plat.y - 1, plat.w + 2, PLAT_H + 2);
     ctx.restore();
@@ -1229,7 +1236,7 @@ function drawPathReveal(revealCount) {
 
       ctx.save();
       ctx.globalAlpha = isLatest ? 0.9 : 0.5;
-      ctx.strokeStyle = '#ffe066';
+      ctx.strokeStyle = tp.trailGlow;
       ctx.lineWidth   = 2;
       ctx.beginPath();
       ctx.moveTo(ax, ay);
@@ -1237,7 +1244,7 @@ function drawPathReveal(revealCount) {
       ctx.stroke();
 
       const headLen = 6;
-      ctx.fillStyle = '#ffe066';
+      ctx.fillStyle = tp.trailGlow;
       ctx.beginPath();
       ctx.moveTo(bx, by);
       ctx.lineTo(bx - headLen * nx + headLen * 0.5 * ny, by - headLen * ny - headLen * 0.5 * nx);
@@ -1249,11 +1256,11 @@ function drawPathReveal(revealCount) {
 
     // Step number badge
     ctx.save();
-    ctx.fillStyle = isLatest ? 'rgba(255,200,20,0.95)' : 'rgba(200,150,20,0.80)';
+    ctx.fillStyle = isLatest ? tp.trailBadgeFill : tp.trailBadgeFillDim;
     ctx.beginPath();
     ctx.arc(px, py, 11, 0, Math.PI * 2);
     ctx.fill();
-    ctx.fillStyle = '#1a0a00';
+    ctx.fillStyle = tp.trailBadgeText;
     ctx.font = FONT_STEP;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';

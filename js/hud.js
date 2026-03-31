@@ -82,7 +82,7 @@ function drawStreakPopups() {
     ctx.globalAlpha = alpha;
     ctx.translate(p.x, screenY);
     ctx.scale(scale, scale);
-    ctx.fillStyle = '#ffcc44';
+    ctx.fillStyle = palette().streakText;
     ctx.font = FONT_STREAK;
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -100,20 +100,22 @@ function drawStreakPopups() {
 // Cached to an offscreen canvas to avoid creating a radial gradient every frame.
 let _vignetteCache = null;
 let _vignetteCacheH = 0;
+let _vignetteCacheTheme = null;
 
 function _getVignetteCache() {
-  if (_vignetteCache && _vignetteCacheH === CANVAS_H) return _vignetteCache;
+  if (_vignetteCache && _vignetteCacheH === CANVAS_H && _vignetteCacheTheme === G.theme) return _vignetteCache;
   _vignetteCache = document.createElement('canvas');
   _vignetteCache.width = CANVAS_W;
   _vignetteCache.height = CANVAS_H;
   _vignetteCacheH = CANVAS_H;
+  _vignetteCacheTheme = G.theme;
   const vctx = _vignetteCache.getContext('2d');
   const gradient = vctx.createRadialGradient(
     CANVAS_W / 2, CANVAS_H / 2, CANVAS_H * 0.2,
     CANVAS_W / 2, CANVAS_H / 2, CANVAS_H * 0.8
   );
   gradient.addColorStop(0, 'transparent');
-  gradient.addColorStop(1, 'rgba(180,0,0,1)');
+  gradient.addColorStop(1, palette().urgencyEdge);
   vctx.fillStyle = gradient;
   vctx.fillRect(0, 0, CANVAS_W, CANVAS_H);
   return _vignetteCache;
@@ -145,12 +147,12 @@ function drawLevelPreview() {
   ctx.font = '800 55px "Nunito", sans-serif';
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  ctx.shadowColor = 'rgba(255,100,0,0.6)';
+  ctx.shadowColor = palette().previewShadow;
   ctx.shadowBlur = 20;
   ctx.fillText(t('level.preview', { level: G.level }), CANVAS_W / 2, CANVAS_H / 2 - 30);
 
   ctx.font = '700 31px "Nunito", sans-serif';
-  ctx.fillStyle = '#ffaa55';
+  ctx.fillStyle = palette().previewSubtitle;
   ctx.shadowBlur = 0;
   ctx.fillText(G.levelConfig ? t('level.' + G.levelConfig.name, { n: G.level }) : '', CANVAS_W / 2, CANVAS_H / 2 + 15);
 
@@ -162,14 +164,14 @@ function drawLevelPreview() {
       G.levelPreview._diffLevel = G.level;
     }
     ctx.font = '600 24px "Nunito", sans-serif';
-    ctx.fillStyle = '#cc8855';
+    ctx.fillStyle = palette().previewDifficulty;
     ctx.fillText(G.levelPreview._diffStr, CANVAS_W / 2, CANVAS_H / 2 + 55);
   }
 
   // Level story blurb (word-wrap cached to avoid per-frame measureText)
   if (G.level <= LEVEL_STORIES.length && G.heroChar && G.rescueChar) {
     ctx.font = 'italic 600 20px "Nunito", sans-serif';
-    ctx.fillStyle = '#ffddaa';
+    ctx.fillStyle = palette().previewStory;
     ctx.shadowBlur = 0;
     if (!G.levelPreview._wrappedLines || G.levelPreview._wrappedLevel !== G.level) {
       const heroName = t('char.' + G.heroChar.name);
@@ -275,7 +277,7 @@ function drawTutorialHint(ctx, tx, ty, text) {
 
   // Pulsing green glow for text and arrow
   const pulse = 8 + Math.sin(G.lavaTime * 4) * 4;
-  ctx.shadowColor = '#44ff88';
+  ctx.shadowColor = palette().almostGlow;
   ctx.shadowBlur = pulse;
 
   // Text
@@ -287,7 +289,7 @@ function drawTutorialHint(ctx, tx, ty, text) {
 
   // Gradient arrow pointing down (larger than before)
   const grad = ctx.createLinearGradient(tx, ty - 20, tx, ty);
-  grad.addColorStop(0, '#44ff88');
+  grad.addColorStop(0, palette().almostGlow);
   grad.addColorStop(1, '#ffffff');
   ctx.fillStyle = grad;
   ctx.beginPath();

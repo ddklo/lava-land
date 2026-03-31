@@ -643,7 +643,7 @@ const PlayingScene = {
       ctx.fillStyle = '#000';
       ctx.fillRect(0, 0, CANVAS_W, 36);
       ctx.globalAlpha = 1;
-      ctx.fillStyle = '#44ff88';
+      ctx.fillStyle = palette().routeRevealText;
       ctx.font = 'bold 16px sans-serif';
       ctx.textAlign = 'center';
       ctx.textBaseline = 'middle';
@@ -897,7 +897,7 @@ const WonScene = {
       }).join('');
       let scoreHtml = `<div class="score-stars">${starStr}</div>`;
       if (breakdown.routeRevealed) {
-        scoreHtml += `<div class="score-row bonus" style="color:#ff6644"><span>${t('win.route_revealed')}</span><span>0</span></div>`;
+        scoreHtml += `<div class="score-row penalty"><span>${t('win.route_revealed')}</span><span>0</span></div>`;
       } else {
         scoreHtml += `<div class="score-row"><span>${t('win.time_bonus')}</span><span>${breakdown.timeScore}</span></div>`;
         scoreHtml += `<div class="score-row"><span>${t('win.jump_efficiency')}</span><span>${breakdown.jumpScore}</span></div>`;
