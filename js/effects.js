@@ -90,7 +90,7 @@ function spawnLavaSplash(x, y) {
 }
 
 function spawnFirework(x, y) {
-  const colors = ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff', '#44ffff', '#ffaa00', '#ff66aa'];
+  const colors = palette().fireworkColors;
   const color = colors[Math.floor(Math.random() * colors.length)];
   const fwCount = G.perfMode === 'minimal' ? 8 : G.perfMode === 'low' ? 15 : 30;
   for (let i = 0; i < fwCount; i++) {
@@ -147,7 +147,7 @@ function spawnImpactRing(plat) {
 
 // ─── COIN COLLECT SPARKLE ────────────────────────────────────────
 function spawnCoinSparkle(x, y) {
-  const colors = ['#FFD700', '#FFF44F', '#FFEC8B', '#FFE066', '#FFFFFF'];
+  const colors = palette().coinSparkleColors;
   for (let i = 0; i < 12; i++) {
     const angle = (i / 12) * Math.PI * 2 + Math.random() * 0.4;
     const speed = 1.5 + Math.random() * 3;
@@ -185,7 +185,7 @@ function spawnSpeedLines(x, y, dx) {
 
 // ─── FLY-AWAY EXHAUST ──────────────────────────────────────────
 function spawnFlyExhaust(x, y, vx, vy) {
-  const colors = ['#FF6600', '#FFAA00', '#FFD700', '#FF4400', '#FFFF66', '#FFFFFF'];
+  const colors = palette().flyExhaustColors;
   const count = G.perfMode === 'minimal' ? 1 : G.perfMode === 'low' ? 3 : 6;
   const speed = Math.sqrt(vx * vx + vy * vy);
   if (speed < 1) return;
@@ -210,7 +210,7 @@ function spawnFlyExhaust(x, y, vx, vy) {
 
 // ─── VICTORY DANCE SPARKLES ─────────────────────────────────────
 function spawnVictorySparkle(x, y) {
-  const colors = ['#FFD700', '#FF69B4', '#44FF88', '#44CCFF', '#FF44FF', '#FFFFFF'];
+  const colors = palette().victorySparkleColors;
   for (let i = 0; i < 3; i++) {
     const angle = Math.random() * Math.PI * 2;
     const speed = 0.5 + Math.random() * 1.5;

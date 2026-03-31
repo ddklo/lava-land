@@ -235,6 +235,25 @@ const THEME_PALETTES = {
     lavaBurstColors: ['#ff4400', '#ff6600', '#ffaa00', '#ff2200'],
     trailColors: ['#ffdd88', '#ffaa44'],
     impactRingColor: '#ffcc66',
+    // Coins
+    coinGlow: '#FFD700', coinBorder: '#B8860B', coinGradLight: '#FFF44F', coinGradMid: '#FFD700', coinGradDark: '#DAA520',
+    coinSparkleColors: ['#FFD700', '#FFF44F', '#FFEC8B', '#FFE066', '#FFFFFF'],
+    // UI overlays
+    almostGlow: '#44ff88', almostText: '#ffcc44',
+    urgencyEdge: 'rgba(180,0,0,1)',
+    streakText: '#ffcc44',
+    // Level preview
+    previewShadow: 'rgba(255,100,0,0.6)', previewSubtitle: '#ffaa55', previewDifficulty: '#cc8855', previewStory: '#ffddaa',
+    // Route visualization
+    routeNormal: 'rgba(40,180,80,0.85)', routeBackward: 'rgba(220,120,30,0.9)', routeHop: 'rgba(60,120,200,0.85)',
+    routeArrowNormal: 'rgba(80,255,120,0.5)', routeArrowBackward: 'rgba(255,150,50,0.7)', routeArrowHop: 'rgba(100,160,255,0.7)',
+    routeRevealText: '#44ff88',
+    // Trail mark overlays
+    trailGlow: '#ffe066', trailBadgeFill: 'rgba(255,200,20,0.95)', trailBadgeFillDim: 'rgba(200,150,20,0.80)', trailBadgeBorder: 'rgba(255,200,40,0.65)', trailBadgeText: '#1a0a00',
+    // Celebration effects
+    fireworkColors: ['#ff4444', '#44ff44', '#4444ff', '#ffff44', '#ff44ff', '#44ffff', '#ffaa00', '#ff66aa'],
+    flyExhaustColors: ['#FF6600', '#FFAA00', '#FFD700', '#FF4400', '#FFFF66', '#FFFFFF'],
+    victorySparkleColors: ['#FFD700', '#FF69B4', '#44FF88', '#44CCFF', '#FF44FF', '#FFFFFF'],
     cssClass: 'theme-volcano',
   },
   ocean: {
@@ -285,6 +304,25 @@ const THEME_PALETTES = {
     lavaBurstColors: ['#0044aa', '#0066cc', '#00aaff', '#0022aa'],
     trailColors: ['#88ddff', '#44aaff'],
     impactRingColor: '#66ccff',
+    // Coins
+    coinGlow: '#44DDFF', coinBorder: '#2088AA', coinGradLight: '#AAEEFF', coinGradMid: '#44DDFF', coinGradDark: '#2088AA',
+    coinSparkleColors: ['#44DDFF', '#AAEEFF', '#88CCEE', '#66BBDD', '#FFFFFF'],
+    // UI overlays
+    almostGlow: '#44ffcc', almostText: '#44ccff',
+    urgencyEdge: 'rgba(0,0,180,1)',
+    streakText: '#44ccff',
+    // Level preview
+    previewShadow: 'rgba(0,100,255,0.6)', previewSubtitle: '#55aacc', previewDifficulty: '#5599aa', previewStory: '#aaddee',
+    // Route visualization
+    routeNormal: 'rgba(40,140,180,0.85)', routeBackward: 'rgba(30,80,220,0.9)', routeHop: 'rgba(60,200,180,0.85)',
+    routeArrowNormal: 'rgba(80,200,255,0.5)', routeArrowBackward: 'rgba(50,100,255,0.7)', routeArrowHop: 'rgba(80,220,200,0.7)',
+    routeRevealText: '#44ffcc',
+    // Trail mark overlays
+    trailGlow: '#66ddff', trailBadgeFill: 'rgba(20,180,255,0.95)', trailBadgeFillDim: 'rgba(20,120,200,0.80)', trailBadgeBorder: 'rgba(40,180,255,0.65)', trailBadgeText: '#001a2a',
+    // Celebration effects
+    fireworkColors: ['#4488ff', '#44ffcc', '#88aaff', '#ffff44', '#ff44ff', '#00ffcc', '#44ddff', '#ff88cc'],
+    flyExhaustColors: ['#0088FF', '#00BBFF', '#44DDFF', '#0066CC', '#88EEFF', '#FFFFFF'],
+    victorySparkleColors: ['#44DDFF', '#FF69B4', '#44FFCC', '#88AAFF', '#FF44FF', '#FFFFFF'],
     cssClass: 'theme-ocean',
   },
   forest: {
@@ -335,6 +373,25 @@ const THEME_PALETTES = {
     lavaBurstColors: ['#336600', '#448800', '#88cc00', '#225500'],
     trailColors: ['#ccdd88', '#aacc44'],
     impactRingColor: '#ccdd66',
+    // Coins
+    coinGlow: '#CCDD44', coinBorder: '#668820', coinGradLight: '#EEFF88', coinGradMid: '#CCDD44', coinGradDark: '#668820',
+    coinSparkleColors: ['#CCDD44', '#EEFF88', '#BBCC66', '#AADD44', '#FFFFFF'],
+    // UI overlays
+    almostGlow: '#88ff44', almostText: '#ccdd44',
+    urgencyEdge: 'rgba(100,60,0,1)',
+    streakText: '#ccdd44',
+    // Level preview
+    previewShadow: 'rgba(80,180,0,0.6)', previewSubtitle: '#aacc55', previewDifficulty: '#88aa55', previewStory: '#ddeebb',
+    // Route visualization
+    routeNormal: 'rgba(80,160,40,0.85)', routeBackward: 'rgba(180,120,30,0.9)', routeHop: 'rgba(60,160,120,0.85)',
+    routeArrowNormal: 'rgba(120,255,80,0.5)', routeArrowBackward: 'rgba(200,150,50,0.7)', routeArrowHop: 'rgba(80,200,160,0.7)',
+    routeRevealText: '#88ff44',
+    // Trail mark overlays
+    trailGlow: '#ccdd66', trailBadgeFill: 'rgba(160,220,20,0.95)', trailBadgeFillDim: 'rgba(120,160,20,0.80)', trailBadgeBorder: 'rgba(160,220,40,0.65)', trailBadgeText: '#0a1a00',
+    // Celebration effects
+    fireworkColors: ['#88cc00', '#44ff44', '#ccdd44', '#ffff44', '#ff88cc', '#44ffcc', '#aaff00', '#ff66aa'],
+    flyExhaustColors: ['#448800', '#66AA00', '#88CC00', '#336600', '#CCDD66', '#FFFFFF'],
+    victorySparkleColors: ['#CCDD44', '#FF69B4', '#88FF44', '#44FFCC', '#FF44FF', '#FFFFFF'],
     cssClass: 'theme-forest',
   },
 };

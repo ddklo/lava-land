@@ -80,6 +80,18 @@
   --kbd-bg: #332211;
   --kbd-border: #664422;
 
+  /* ── Button hovers ───────────────────────────────────────────── */
+  --btn-secondary-hover-top: #666;
+  --btn-secondary-hover-bottom: #444;
+  --btn-custom-hover-top: #5577aa;
+  --btn-custom-hover-bottom: #335577;
+
+  /* ── Action buttons (forfeit / pause) ──────────────────────── */
+  --btn-action-bg: rgba(80, 20, 0, 0.8);
+  --btn-action-border: rgba(255, 100, 30, 0.4);
+  --btn-action-text: #ff8855;
+  --btn-action-hover-bg: rgba(130, 40, 0, 0.9);
+
   /* ── Canvas ─────────────────────────────────────────────────── */
   --canvas-border: #ff4400;
   --canvas-glow: rgba(255, 68, 0, 0.4);
@@ -133,11 +145,18 @@ body.theme-ocean {
   --timer-warn: #00ccff;
   --kbd-bg: #112233;
   --kbd-border: #224466;
+  --btn-secondary-hover-top: #445566;
+  --btn-secondary-hover-bottom: #333344;
+  --btn-custom-hover-top: #5588aa;
+  --btn-custom-hover-bottom: #336688;
+  --btn-action-bg: rgba(0, 30, 80, 0.8);
+  --btn-action-border: rgba(0, 100, 255, 0.4);
+  --btn-action-text: #5599ff;
+  --btn-action-hover-bg: rgba(0, 50, 130, 0.9);
   --canvas-border: #0066cc;
   --canvas-glow: rgba(0, 100, 255, 0.4);
   background-image: url('../images/background-ocean.svg');
 }
-body.theme-ocean .opt-card.selected .opt-desc { color: #88bbdd; }
 
 /* ── FOREST THEME ─────────────────────────────────────────────── */
 body.theme-forest {
@@ -187,8 +206,15 @@ body.theme-forest {
   --timer-warn: #ccdd00;
   --kbd-bg: #223311;
   --kbd-border: #446622;
+  --btn-secondary-hover-top: #556644;
+  --btn-secondary-hover-bottom: #334422;
+  --btn-custom-hover-top: #778855;
+  --btn-custom-hover-bottom: #557733;
+  --btn-action-bg: rgba(40, 30, 0, 0.8);
+  --btn-action-border: rgba(100, 160, 30, 0.4);
+  --btn-action-text: #88cc44;
+  --btn-action-hover-bg: rgba(60, 50, 0, 0.9);
   --canvas-border: #44aa00;
   --canvas-glow: rgba(60, 160, 0, 0.4);
   background-image: url('../images/background-forest.svg');
 }
-body.theme-forest .opt-card.selected .opt-desc { color: #99bb77; }
