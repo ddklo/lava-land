@@ -42,7 +42,9 @@ function drawEmoji(ctx, emoji, x, y, size) {
   ctx.font = _font(size, 'serif');
   ctx.textAlign = 'center';
   ctx.textBaseline = 'middle';
-  if (G.perfMode === 'low') {
+  if (G.perfMode === 'minimal') {
+    ctx.fillText(emoji, x, y);
+  } else if (G.perfMode === 'low') {
     ctx.shadowColor = 'rgba(0,0,0,0.7)';
     ctx.shadowBlur = 2;
     ctx.fillText(emoji, x, y);
@@ -167,13 +169,15 @@ function _renderLavaLayers(ctx, drawH, t, offsetY) {
     }
   }
 
-  // Layers 4-6 skipped in low perf mode (keep base + rivers + cracks)
-  if (G.perfMode === 'low') {
-    // Layer 7 only: Heat haze shimmer overlay (cheap)
-    ctx.fillStyle = p.lavaHaze;
-    for (let y = 0; y < drawH; y += 12) {
-      const wobble = Math.sin(y * 0.05 + t * 2) * 8;
-      ctx.fillRect(wobble, y, CANVAS_W, 6);
+  // Layers 4-6 skipped in low/minimal perf mode (keep base + rivers + cracks)
+  if (G.perfMode !== 'high') {
+    if (G.perfMode !== 'minimal') {
+      // Layer 7 only: Heat haze shimmer overlay (cheap)
+      ctx.fillStyle = p.lavaHaze;
+      for (let y = 0; y < drawH; y += 12) {
+        const wobble = Math.sin(y * 0.05 + t * 2) * 8;
+        ctx.fillRect(wobble, y, CANVAS_W, 6);
+      }
     }
     return;
   }
@@ -285,7 +289,8 @@ function drawLava(offsetY, height) {
       G.lavaCacheCtx = G.lavaCache.getContext('2d');
     }
     G.lavaFrameCount++;
-    if (G.lavaFrameCount % 3 === 0) {
+    const _lavaSkip = G.perfMode === 'minimal' ? LAVA_FRAME_SKIP_MINIMAL : 3;
+    if (G.lavaFrameCount % _lavaSkip === 0) {
       G.lavaCacheCtx.clearRect(0, 0, CANVAS_W, CANVAS_H);
       _renderLavaLayers(G.lavaCacheCtx, drawH, t, offsetY);
     }
@@ -302,7 +307,8 @@ function drawLava(offsetY, height) {
     G.lavaMemFrameCount = 0;
   }
   G.lavaMemFrameCount++;
-  if (G.lavaMemFrameCount % 3 === 0 || G.lavaMemFrameCount === 1) {
+  const _lavaMemSkip = G.perfMode === 'minimal' ? LAVA_FRAME_SKIP_MINIMAL : 3;
+  if (G.lavaMemFrameCount % _lavaMemSkip === 0 || G.lavaMemFrameCount === 1) {
     G.lavaCacheMemCtx.clearRect(0, 0, CANVAS_W, drawH);
     _renderLavaLayers(G.lavaCacheMemCtx, drawH, t, offsetY);
   }
@@ -527,7 +533,8 @@ function drawPlatform(plat, reveal) {
 
   } else if (!plat.fake && reveal) {
     // Dynamic: pulsing green glow (applied to cached image via shadowBlur)
-    const glowPulse = G.perfMode === 'low'
+    const glowPulse = G.perfMode === 'minimal' ? 3
+      : G.perfMode === 'low'
       ? 3 + Math.sin(G.lavaTime * 4 + plat.x * 0.01) * 2
       : 8 + Math.sin(G.lavaTime * 4 + plat.x * 0.01) * 5;
     ctx.shadowColor = tp.safeGlow;
@@ -1048,13 +1055,25 @@ function updateTrailMarks(dt) {
 function drawTrailMarks() {
   const ctx = G.ctx;
   const tp = palette();
+  const minimal = G.perfMode === 'minimal';
   for (const m of G.trailMarks) {
     const screenY = m.y - G.camera.y;
     if (screenY < -30 || screenY > CANVAS_H + 30) continue;
 
     const a = m.life;
-    const pulse = 0.8 + Math.sin(G.lavaTime * 4 + m.x * 0.05) * 0.2;
     const r = 8 + (1 - a) * 4;
+
+    if (minimal) {
+      // Single circle only
+      ctx.globalAlpha = a * 0.6;
+      ctx.fillStyle = tp.trailCore;
+      ctx.beginPath();
+      ctx.arc(m.x, screenY, r * 0.5, 0, Math.PI * 2);
+      ctx.fill();
+      continue;
+    }
+
+    const pulse = 0.8 + Math.sin(G.lavaTime * 4 + m.x * 0.05) * 0.2;
 
     // Outer glow
     ctx.globalAlpha = a * 0.25 * pulse;

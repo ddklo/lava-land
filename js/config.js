@@ -49,6 +49,7 @@ const LAND_SQUASH_DURATION = 0.25;
 // Particle system cap (prevents memory growth on low-end devices)
 const MAX_PARTICLES = 500;
 const MAX_PARTICLES_LOW = 200;
+const MAX_PARTICLES_MIN = 80;
 
 // Trail marks
 const TRAIL_FADE_RATE = 0.12;
@@ -56,6 +57,15 @@ const MAX_TRAIL_MARKS = 50;
 
 // Performance monitoring
 const FPS_SAMPLE_SIZE = 60;
+
+// Adaptive performance — runtime FPS-based quality adjustment
+const PERF_CHECK_INTERVAL = 60;      // frames between avgFps checks
+const PERF_WARMUP_FRAMES = 120;      // skip after scene enter / tier change
+const PERF_DOWNGRADE_FPS = 35;       // avgFps below this → consider downgrade
+const PERF_UPGRADE_FPS = 52;         // avgFps above this → consider upgrade
+const PERF_DOWNGRADE_COUNT = 2;      // consecutive bad checks before downgrade
+const PERF_UPGRADE_COUNT = 4;        // consecutive good checks before upgrade
+const LAVA_FRAME_SKIP_MINIMAL = 6;   // lava re-render interval for minimal tier
 
 // Memorize times (seconds)
 const MEMORIZE_TIMES = {

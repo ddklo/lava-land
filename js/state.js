@@ -129,7 +129,8 @@ const G = {
   accumulator: 0,
 
   // Performance
-  perfMode: 'high',  // 'high' (desktop) or 'low' (mobile)
-  perf: { fps: 0, avgFps: 0, minFps: 60, frameTimes: new Float64Array(FPS_SAMPLE_SIZE), frameIdx: 0, frameCount: 0, showFps: false },
+  perfMode: 'high',     // 'high', 'low', or 'minimal' — adaptive at runtime
+  perfInitial: 'high',  // ceiling — never upgrade above initial detection
+  perf: { fps: 0, avgFps: 0, minFps: 60, frameTimes: new Float64Array(FPS_SAMPLE_SIZE), frameIdx: 0, frameCount: 0, showFps: false, adaptFrames: 0, lowCount: 0, highCount: 0 },
   lastParallaxY: -999,
 };

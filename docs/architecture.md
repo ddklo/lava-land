@@ -215,7 +215,7 @@ All mutable state lives in a single global object `G` defined in `state.js`. Con
 | Victory Dance | `victoryDanceTimer`, `victoryDanceActive` | WonScene |
 | Countdown | `countdownTicksPlayed` | MemorizeScene |
 | Dissolve | `fakeDissolveQueue` (fake platforms queued to dissolve, top-to-bottom), `dissolveTimer` (countdown to next dissolve event), `dissolveInterval` (seconds between dissolves, calculated per level) | PlayingScene |
-| Performance | `perfMode`, `perf` (fps, avgFps, minFps, frameTimes (Float64Array circular buffer), frameIdx, frameCount, showFps), `lastParallaxY` | loop.js, init.js, drawing.js |
+| Performance | `perfMode` ('high'/'low'/'minimal'), `perfInitial` (upgrade ceiling), `perf` (fps, avgFps, minFps, frameTimes (Float64Array circular buffer), frameIdx, frameCount, showFps, adaptFrames, lowCount, highCount), `lastParallaxY` | loop.js, init.js, drawing.js |
 
 ---
 
@@ -355,6 +355,7 @@ Note: `drawLevelPreview()` now shows level story blurbs from `LEVEL_STORIES`.
 - `TICK` - Fixed timestep interval (1/60 seconds)
 - `_loopPaused` - Boolean flag set by visibilitychange handler
 - `gameLoop(timestamp)` - RAF loop (pauses when tab hidden)
+- `adaptPerf()` - Runtime FPS-based quality tier adjustment (called each frame from game loop)
 
 ### menu.js (7 functions)
 - `setupMenu()` - Build character cards, wire selectors + buttons
@@ -418,7 +419,7 @@ The test suite lives in `tests/test.html` and `tests/tests.js`. Open `tests/test
 - Performance: FPS tracking (rolling average, min FPS, sample size)
 - Performance: Particle cap in low/high perf modes
 - Performance: Trail marks cap and swap-and-pop removal
-- Performance: State fields (`G.perf`, `G.perfMode`)
+- Performance: State fields (`G.perf`, `G.perfMode`, `G.perfInitial`), adaptive quality tier transitions (`adaptPerf`)
 - Performance: Vignette cache (offscreen canvas reuse)
 - Performance: FPS counter rendering
 - Loop pause variable (`_loopPaused` existence and default)
