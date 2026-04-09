@@ -7,6 +7,18 @@ function destroyDeparturePlatform() {
   }
 }
 
+// Return the index of the platform in the given row whose center is closest
+// to the player's current x position.
+function nearestColInRow(rowIdx) {
+  const plats = G.platforms[rowIdx];
+  let nearest = 0, nearestDist = Infinity;
+  for (let i = 0; i < plats.length; i++) {
+    const dist = Math.abs(plats[i].x + plats[i].w / 2 - G.player.x);
+    if (dist < nearestDist) { nearestDist = dist; nearest = i; }
+  }
+  return nearest;
+}
+
 function tryJump(direction) {
   if (G.jumpAnim.active) return;
   if (G.gameState !== 'playing') return;
@@ -49,19 +61,8 @@ function tryJump(direction) {
     const targetRow = currentRow - 1;
     if (targetRow < 0) return;
 
-    const prevRowPlats = G.platforms[targetRow];
-    let nearest = 0;
-    let nearestDist = Infinity;
-    for (let i = 0; i < prevRowPlats.length; i++) {
-      const platCenter = prevRowPlats[i].x + prevRowPlats[i].w / 2;
-      const dist = Math.abs(platCenter - G.player.x);
-      if (dist < nearestDist) {
-        nearestDist = dist;
-        nearest = i;
-      }
-    }
-
-    const targetPlat = prevRowPlats[nearest];
+    const nearest = nearestColInRow(targetRow);
+    const targetPlat = G.platforms[targetRow][nearest];
     G.jumpCount++;
     playJumpSound();
     haptic(55);
@@ -88,19 +89,8 @@ function tryJump(direction) {
     return;
   }
 
-  const nextRowPlats = G.platforms[targetRow];
-  let nearest = 0;
-  let nearestDist = Infinity;
-  for (let i = 0; i < nextRowPlats.length; i++) {
-    const platCenter = nextRowPlats[i].x + nextRowPlats[i].w / 2;
-    const dist = Math.abs(platCenter - G.player.x);
-    if (dist < nearestDist) {
-      nearestDist = dist;
-      nearest = i;
-    }
-  }
-
-  const targetPlat = nextRowPlats[nearest];
+  const nearest = nearestColInRow(targetRow);
+  const targetPlat = G.platforms[targetRow][nearest];
   G.jumpCount++;
   playJumpSound();
   haptic(55);
@@ -117,6 +107,53 @@ function tryJump(direction) {
     targetCol: nearest,
     targetPlat: targetPlat,
   };
+}
+
+// ─── landOnPlatform helpers ──────────────────────────────────────
+
+function _updateStreak(row) {
+  if (row > G.player.row) {
+    if (G.hopsThisRow === 0) {
+      G.jumpStreak++;
+      G.streakBonus += G.jumpStreak * SCORE_STREAK_MULT;
+    } else {
+      G.jumpStreak = 0;
+    }
+    G.hopsThisRow = 0;
+  } else if (row < G.player.row) {
+    // Backward jump resets streak
+    G.jumpStreak = 0;
+    G.hopsThisRow = 0;
+  }
+}
+
+function _collectCoin(plat, row, col) {
+  for (const coin of G.coins) {
+    if (!coin.collected && coin.row === row && coin.col === col) {
+      coin.collected = true;
+      G.coinsCollected++;
+      G.coinScore += COIN_POINTS;
+      playCoinSound();
+      haptic([30, 15, 50]);
+      spawnCoinSparkle(plat.x + plat.w / 2, plat.y + (PLAT_H - PLAT_DEPTH) / 2 - 18);
+      G.streakPopups.push({
+        x: plat.x + plat.w / 2,
+        y: plat.y - 35,
+        text: '+' + COIN_POINTS,
+        timer: 1.0,
+      });
+      break;
+    }
+  }
+}
+
+function _checkWin(plat, row, col) {
+  const rescueCol = G.safePath[G.safePath.length - 1];
+  if (row === G.platforms.length - 1 && col === rescueCol) {
+    spawnPlatformExplosion(plat);
+    plat.destroyed = true;
+    SceneManager.replace(WonScene);
+  }
 }
 
 function landOnPlatform(plat, row, col) {
@@ -139,20 +176,7 @@ function landOnPlatform(plat, row, col) {
     playLandSound();
     haptic(40);
 
-    // Streak tracking: a clean forward row = no hops made before jumping forward
-    if (row > G.player.row) {
-      if (G.hopsThisRow === 0) {
-        G.jumpStreak++;
-        G.streakBonus += G.jumpStreak * SCORE_STREAK_MULT;
-      } else {
-        G.jumpStreak = 0;
-      }
-      G.hopsThisRow = 0;
-    } else if (row < G.player.row) {
-      // Backward jump resets streak
-      G.jumpStreak = 0;
-      G.hopsThisRow = 0;
-    }
+    _updateStreak(row);
 
     G.player.x = plat.x + plat.w / 2;
     G.player.y = plat.y - PLAYER_Y_OFFSET;
@@ -185,25 +209,7 @@ function landOnPlatform(plat, row, col) {
       G.tutorialShown = true;
     }
 
-    // Coin collection
-    for (const coin of G.coins) {
-      if (!coin.collected && coin.row === row && coin.col === col) {
-        coin.collected = true;
-        G.coinsCollected++;
-        G.coinScore += COIN_POINTS;
-        playCoinSound();
-        haptic([30, 15, 50]);
-        spawnCoinSparkle(plat.x + plat.w / 2, plat.y + (PLAT_H - PLAT_DEPTH) / 2 - 18);
-        // Coin popup
-        G.streakPopups.push({
-          x: plat.x + plat.w / 2,
-          y: plat.y - 35,
-          text: '+' + COIN_POINTS,
-          timer: 1.0,
-        });
-        break;
-      }
-    }
+    _collectCoin(plat, row, col);
 
     // Trail mark
     G.trailMarks.push({
@@ -212,12 +218,6 @@ function landOnPlatform(plat, row, col) {
       life: 1.0,
     });
 
-    // Win only when landing on the rescue character's platform
-    const rescueCol = G.safePath[G.safePath.length - 1];
-    if (row === G.platforms.length - 1 && col === rescueCol) {
-      spawnPlatformExplosion(plat);
-      plat.destroyed = true;
-      SceneManager.replace(WonScene);
-    }
+    _checkWin(plat, row, col);
   }
 }

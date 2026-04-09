@@ -21,9 +21,9 @@ function loadSettings() {
     const lang = localStorage.getItem('ll_language');
     const snd  = localStorage.getItem('ll_soundtrack');
     const thm  = localStorage.getItem('ll_theme');
-    if (diff && ['easy', 'medium', 'hard'].includes(diff))             G.difficulty = diff;
-    if (size && ['small', 'medium', 'large'].includes(size))           G.selectedSize = size;
-    if (mem  && ['short', 'medium', 'long'].includes(mem))             G.selectedMemTime = mem;
+    if (diff && Object.keys(DIFFICULTY_FAKE_CHANCE).includes(diff))    G.difficulty = diff;
+    if (size && Object.keys(GRID_SIZES).includes(size))                G.selectedSize = size;
+    if (mem  && Object.keys(MEMORIZE_TIMES).includes(mem))             G.selectedMemTime = mem;
     if (lang && ['en', 'no'].includes(lang))                           G.language = lang;
     if (snd  && ['classic', 'retro', 'chill'].includes(snd))           G.soundtrack = snd;
     if (thm  && ['volcano', 'ocean', 'forest'].includes(thm))         G.theme = thm;
