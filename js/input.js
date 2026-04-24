@@ -136,14 +136,8 @@ function setupInput() {
     const absDx = Math.abs(dx);
     const absDy = Math.abs(dy);
 
-    if (absDx > SWIPE_THRESHOLD && absDx > absDy * 1.2) {
-      // Horizontal swipe (must clearly dominate vertical)
-      tryJump(dx < 0 ? 'left' : 'right');
-    } else if (absDy > SWIPE_THRESHOLD && absDy > absDx * 1.2) {
-      // Vertical swipe (must clearly dominate horizontal)
-      tryJump(dy > 0 ? 'forward' : 'backward');
-    } else if (absDx > SWIPE_THRESHOLD || absDy > SWIPE_THRESHOLD) {
-      // Diagonal-ish swipe — pick dominant axis
+    if (absDx > SWIPE_THRESHOLD || absDy > SWIPE_THRESHOLD) {
+      // Pick the dominant axis; horizontal wins on a tie
       if (absDx >= absDy) {
         tryJump(dx < 0 ? 'left' : 'right');
       } else {

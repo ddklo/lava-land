@@ -3,6 +3,39 @@
 // not on platform objects. Depends only on BOARD_RULES from config.js
 // and G.extraSafeCols / G.safeRoute / G.levelConfig from state.js.
 
+// Fill safePath[startRow..endRow-1] using the step-wise random walk.
+// safePath[startRow - 1] must already be set before calling.
+function _generatePathSegment(safePath, startRow, endRow, gridCols, maxShift) {
+  let stayCount = 0;
+  for (let row = startRow; row < endRow; row++) {
+    const prevCol = safePath[row - 1];
+    const forceSide = stayCount >= BOARD_RULES.maxConsecutiveStraight;
+    const stayProb = maxShift === 1 ? 0.2 : maxShift === 2 ? 0.2 : 0.1;
+    if (forceSide || Math.random() >= stayProb) {
+      let shift;
+      const r = Math.random();
+      if (maxShift === 1) {
+        shift = Math.random() < 0.5 ? 1 : -1;
+      } else if (maxShift === 2) {
+        // 55% shift±1, 25% shift±2 (out of the 80% that shift)
+        shift = (r < 0.69 ? 1 : 2) * (Math.random() < 0.5 ? 1 : -1);
+      } else {
+        // maxShift === 3: 40%→±1, 30%→±2, 20%→±3 (out of the 90% that shift)
+        shift = (r < 0.44 ? 1 : r < 0.78 ? 2 : 3) * (Math.random() < 0.5 ? 1 : -1);
+      }
+      safePath[row] = Math.max(0, Math.min(gridCols - 1, prevCol + shift));
+      // If clamped to same column, try opposite direction
+      if (safePath[row] === prevCol) {
+        safePath[row] = Math.max(0, Math.min(gridCols - 1, prevCol - shift));
+      }
+      stayCount = (safePath[row] === prevCol) ? stayCount + 1 : 0;
+    } else {
+      safePath[row] = prevCol;
+      stayCount++;
+    }
+  }
+}
+
 // Enforce BOARD_RULES.maxConsecutiveSameDirection on a safe path.
 // Scans for runs of consecutive same-direction moves (left or right)
 // that exceed the limit and breaks them by reversing the direction
@@ -118,26 +151,8 @@ function insertBacktracks(safePath, gridCols, gridRows, numBacktracks) {
 
     // Regenerate path from R+1 onward starting from returnCol
     safePath[R] = returnCol;
-    let stayCount = 0;
     const maxShift = (G.levelConfig && G.levelConfig.maxShift) || 1;
-    for (let row = R + 1; row < gridRows; row++) {
-      const prevCol = safePath[row - 1];
-      const forceSide = stayCount >= BOARD_RULES.maxConsecutiveStraight;
-      const stayProb = maxShift === 1 ? 0.2 : maxShift === 2 ? 0.2 : 0.1;
-      if (forceSide || Math.random() >= stayProb) {
-        let shift;
-        const r2 = Math.random();
-        if (maxShift === 1) shift = Math.random() < 0.5 ? 1 : -1;
-        else if (maxShift === 2) shift = (r2 < 0.69 ? 1 : 2) * (Math.random() < 0.5 ? 1 : -1);
-        else shift = (r2 < 0.44 ? 1 : r2 < 0.78 ? 2 : 3) * (Math.random() < 0.5 ? 1 : -1);
-        safePath[row] = Math.max(0, Math.min(gridCols - 1, prevCol + shift));
-        if (safePath[row] === prevCol) safePath[row] = Math.max(0, Math.min(gridCols - 1, prevCol - shift));
-        stayCount = (safePath[row] === prevCol) ? stayCount + 1 : 0;
-      } else {
-        safePath[row] = prevCol;
-        stayCount++;
-      }
-    }
+    _generatePathSegment(safePath, R + 1, gridRows, gridCols, maxShift);
     applyMaxConsecutiveDirectionRule(safePath, gridCols);
   }
 

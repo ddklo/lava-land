@@ -11,7 +11,7 @@ function _rgb(r, g) {
 }
 const _rgbaCache = {};
 function _rgba(r, g, b, a) {
-  const key = `${r},${g},${b},${a}`;
+  const key = `${r},${g},${b},${typeof a === 'number' ? +a.toFixed(2) : a}`;
   return _rgbaCache[key] || (_rgbaCache[key] = `rgba(${r},${g},${b},${a})`);
 }
 // Platform gradient cache — keyed by platform identity + screenY

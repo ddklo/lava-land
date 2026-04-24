@@ -61,16 +61,18 @@ function gameLoop(timestamp) {
   if (frameDt > 0) {
     const perf = G.perf;
     perf.fps = Math.round(1 / frameDt);
+    // Subtract the slot being overwritten from the running sum before replacing it
+    perf.frameSum -= perf.frameTimes[perf.frameIdx];
     perf.frameTimes[perf.frameIdx] = frameDt;
+    perf.frameSum += frameDt;
     perf.frameIdx = (perf.frameIdx + 1) % FPS_SAMPLE_SIZE;
     if (perf.frameCount < FPS_SAMPLE_SIZE) perf.frameCount++;
-    let sum = 0;
+    perf.avgFps = Math.round(perf.frameCount / perf.frameSum);
+    // Worst-case (minFps) still scans the buffer; it's only used for display
     let worst = 0;
     for (let i = 0; i < perf.frameCount; i++) {
-      sum += perf.frameTimes[i];
       if (perf.frameTimes[i] > worst) worst = perf.frameTimes[i];
     }
-    perf.avgFps = Math.round(perf.frameCount / sum);
     perf.minFps = Math.round(1 / worst);
     adaptPerf();
     if (perf.showFps) drawFpsCounter();
